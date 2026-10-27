@@ -5,3 +5,6 @@ node_modules/
 docs/captures/
 donnees/*.json
 packages/db/prisma/migrations/
+
+# Généré par Next.js
+next-env.d.ts

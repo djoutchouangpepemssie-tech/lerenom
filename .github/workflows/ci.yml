@@ -44,3 +44,75 @@ jobs:
 
       - name: Build
         run: pnpm run build
+
+  base:
+    name: Schéma et données de démonstration
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    services:
+      postgres:
+        image: postgis/postgis:16-3.4
+        env:
+          POSTGRES_PASSWORD: lerenom
+          POSTGRES_DB: lerenom
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgresql://postgres:lerenom@127.0.0.1:5432/lerenom
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.28.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Installer les dépendances
+        run: pnpm install --frozen-lockfile
+
+      - name: Générer le client Prisma
+        run: pnpm --filter @lerenom/db generer
+
+      - name: Créer le schéma
+        run: pnpm --filter @lerenom/db pousser
+
+      - name: Poser les index PostGIS et les garde-fous
+        run: psql "$DATABASE_URL" -f packages/db/prisma/sql/postgis.sql
+
+      - name: Semer les référentiels et la démonstration
+        run: pnpm --filter @lerenom/db semer
+
+      - name: Vérifier les comptes attendus
+        run: |
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -c "
+            DO \$\$
+            DECLARE
+              n_communes int;
+              n_univers int;
+              n_metiers int;
+              n_prestations int;
+            BEGIN
+              SELECT count(*) INTO n_communes FROM communes;
+              SELECT count(*) INTO n_univers FROM univers;
+              SELECT count(*) INTO n_metiers FROM metiers;
+              SELECT count(*) INTO n_prestations FROM prestations;
+              IF n_communes <> 1285 THEN
+                RAISE EXCEPTION '1 285 communes attendues, % trouvées', n_communes;
+              END IF;
+              IF n_univers <> 18 OR n_metiers <> 69 OR n_prestations <> 479 THEN
+                RAISE EXCEPTION 'Catalogue attendu 18/69/479, obtenu %/%/%',
+                  n_univers, n_metiers, n_prestations;
+              END IF;
+            END
+            \$\$;"

@@ -37,6 +37,13 @@ prestation) et 23 maquettes interactives dans `maquettes-reference/`. Le dépôt
   parcours et les règles de chaque écran, et la consigne §2.14 est explicitement de **faire
   nettement mieux** que ces maquettes, pas de les recopier.
 
+**Blocage constaté à l'exécution.** La politique réseau de l'environnement de développement
+refuse `geo.api.gouv.fr` et `data.gouv.fr`. Les coordonnées des communes (Base Adresse Nationale)
+et l'import SIRENE ne peuvent donc pas être produits ici. Les deux scripts sont écrits et
+s'arrêtent avec un message explicite plutôt que d'inventer des données. Pour les faire tourner,
+il faut autoriser ces deux hôtes dans l'accès réseau de l'environnement, ou les lancer depuis un
+poste qui les joint.
+
 **Ce qu'il faut d'Arcel.** Soit les fichiers d'origine (ils remplacent alors les reconstructions
 sans autre changement, le schéma étant identique), soit la validation du catalogue et des prix
 reconstruits, métier par métier. **Les prix ne doivent pas être présentés comme des références

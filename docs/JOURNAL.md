@@ -105,13 +105,65 @@ défauts invisibles au code ont été trouvés en regardant les images :
 
 ---
 
-## Phase 1 — Données · à venir
+## Phase 1 — Données · 27 octobre 2026 · partielle
 
-Prochaine étape : schéma Prisma, catalogue, les 1 285 communes avec leurs géométries, les prix
-indicatifs, puis l'import SIRENE d'Île-de-France avec le statut de diffusion, le géocodage par
-la Base Adresse Nationale et la correspondance NAF 2025 → métiers.
+### Fait
 
-**Point d'attention** : les trois fichiers de `donnees/` annoncés comme fournis sont absents du
-dépôt reçu (`QUESTIONS.md` Q1). Ils seront reconstruits — les communes depuis la source
-officielle `@etalab/decoupage-administratif`, le catalogue et les prix depuis le cahier des
-charges et l'étude, marqués `aValider`.
+- **Les trois fichiers de `donnees/`**, reconstruits par des scripts reproductibles plutôt que
+  déposés à la main (`QUESTIONS.md` Q1) :
+  - `communes-ile-de-france.json` : **1 285 entrées**, 1 265 communes et les 20 arrondissements
+    de Paris, depuis la source officielle de l'Insee distribuée par Etalab. Chaque décompte
+    départemental tombe juste par rapport au cahier des charges. Le script vérifie l'unicité des
+    slugs : deux villes ne peuvent pas se disputer une URL.
+  - `catalogue.json` : **18 univers, 69 métiers, 479 prestations**. Le script échoue si les
+    comptes s'écartent de la règle validée n° 13.
+  - `prix-indicatifs.json` : une fourchette TTC pour **chacune des 479 prestations**, avec le
+    taux de TVA de son métier. Le script échoue si une seule prestation reste sans fourchette.
+- **Le schéma de base** : 65 tables, de `univers` à `scores_qualite`, couvrant l'intégralité du
+  modèle de données du §5. Poussé et vérifié sur un vrai PostgreSQL 16 + PostGIS 3.4.
+- **Les garde-fous posés dans la base, pas seulement dans le code**, et vérifiés :
+  - une facture émise ne peut être ni modifiée ni supprimée — un déclencheur la refuse, et seul
+    le passage en avoir est accepté ;
+  - le journal d'audit n'accepte ni modification ni suppression — une correction est une
+    nouvelle ligne ;
+  - une seule exclusivité active par métier × commune, par index partiel : on ne peut pas vendre
+    deux fois la même place n° 1.
+- **Le seed** : les référentiels réels, 21 paramètres historisés, et le jeu de démonstration du
+  §19 — les 7 plombiers de Paris 11e avec leurs formules, l'exclusivité de Plomberie Martin, les
+  3 emplacements payés et une demande en cours de distribution. Les entreprises de démonstration
+  portent `source: manuelle` et un SIRET de test, et le seed refuse de tourner en production.
+- **La CI exerce la base** : un service PostGIS, le schéma, les index, le seed, puis une
+  vérification en SQL que les comptes 1 285 et 18/69/479 tombent juste.
+
+### Bloqué par la politique réseau de cet environnement
+
+`geo.api.gouv.fr` et `data.gouv.fr` sont refusés par le proxy sortant. Deux livrables de la
+phase 1 en dépendent :
+
+- **les coordonnées des 1 285 communes** (Base Adresse Nationale) ;
+- **l'import SIRENE d'Île-de-France**, avec le statut de diffusion et le géocodage.
+
+Les deux scripts sont écrits (`data/geocoder_communes.py`, `data/importer_sirene.py`) et
+s'arrêtent avec un message explicite plutôt que d'inventer des données : une coordonnée fausse,
+c'est un professionnel éligible à tort ou écarté à tort, et une entreprise inventée n'a rien à
+faire dans un annuaire. Ils tourneront tels quels dans un environnement qui autorise ces hôtes.
+
+Conséquence sur le schéma : `latitude`, `longitude` et `sourceCoordonnees` sont nullables, et le
+calcul de distance reste une fonction pure testée dans `packages/core` — l'éligibilité d'un pro
+ne dépend ni de PostGIS ni de la présence des coordonnées pour être **juste**, seulement pour
+être **calculable**.
+
+### Porte de validation
+
+- [x] Catalogue, communes et prix conformes aux comptes validés, vérifiés en CI
+- [x] Schéma complet poussé sur PostgreSQL + PostGIS, seed vert, garde-fous testés
+- [ ] 100 % des établissements actifs d'Île-de-France importés — **bloqué**, voir ci-dessus
+
+---
+
+## Phases 2 à 11 · à venir
+
+Le site public, l'espace pro, le moteur de demandes, les devis et factures, la monétisation, le
+back-office, la personnalisation, les avis et le référencement technique restent à construire.
+`packages/core` porte déjà leurs règles, testées : ces phases les branchent sur des écrans et
+sur la base.

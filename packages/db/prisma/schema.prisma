@@ -1,0 +1,1803 @@
+// Schéma de données de Le Renom.
+//
+// Conventions :
+//   * les modèles et les champs sont en français, comme le reste du code métier ;
+//   * les tables sont en minuscules avec des traits de soulignement (@@map) ;
+//   * tout ce qui a une valeur d'argent, de preuve ou de litige est horodaté et jamais effacé :
+//     une facture émise, une distribution, un consentement et le journal d'audit se corrigent
+//     par ajout, pas par modification.
+//
+// Géographie : les coordonnées sont stockées en latitude/longitude. L'index géographique PostGIS
+// est ajouté par une migration dédiée (voir prisma/migrations/postgis). Le calcul de distance
+// lui-même vit dans packages/core, en fonction pure testée : l'éligibilité d'un pro ne dépend
+// jamais de la disponibilité de PostGIS.
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/genere"
+}
+
+// Prisma 7 : l'URL de connexion vit dans prisma.config.ts, plus dans le schéma.
+datasource db {
+  provider = "postgresql"
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Référentiels
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Univers {
+  id      String  @id @default(cuid())
+  slug    String  @unique
+  nom     String
+  couleur String
+  icone   String  @db.Text
+  rang    Int
+  masque  Boolean @default(false)
+  /// Reconstruction en attente de validation par Arcel (docs/QUESTIONS.md Q1).
+  aValider Boolean @default(true) @map("a_valider")
+
+  metiers Metier[]
+
+  creeLe DateTime @default(now()) @map("cree_le")
+  modifieLe DateTime @updatedAt @map("modifie_le")
+
+  @@map("univers")
+}
+
+model Metier {
+  id        String @id @default(cuid())
+  universId String @map("univers_id")
+  univers   Univers @relation(fields: [universId], references: [id], onDelete: Restrict)
+
+  slug          String   @unique
+  nom           String
+  /// Codes NAF 2008. La correspondance NAF 2025 vit dans `codesNaf2025`.
+  codesNaf2008 String[] @map("codes_naf2008")
+  codesNaf2025 String[] @default([]) @map("codes_naf2025")
+  /// Mots-clés du classement automatique des demandes.
+  motsCles String[] @map("mots_cles")
+  rang          Int
+  masque        Boolean  @default(false)
+  aValider Boolean  @default(true) @map("a_valider")
+  /// Note moyenne du métier, recalculée chaque nuit : c'est le C de la moyenne bayésienne.
+  noteMoyenne Float? @map("note_moyenne")
+
+  prestations  Prestation[]
+  metiersPro   MetierPro[]
+  demandes     Demande[]
+  emplacements Emplacement[]
+  exclusivites Exclusivite[]
+  prixMetier   PrixMetier?
+
+  creeLe DateTime @default(now()) @map("cree_le")
+  modifieLe DateTime @updatedAt @map("modifie_le")
+
+  @@index([universId])
+  @@map("metiers")
+}
+
+model Prestation {
+  id       String @id @default(cuid())
+  metierId String @map("metier_id")
+  metier   Metier @relation(fields: [metierId], references: [id], onDelete: Cascade)
+
+  slug        String  @unique
+  nom         String
+  unite       Unite
+  tresDemande Boolean @default(false) @map("tres_demande")
+  rang        Int
+  masque      Boolean @default(false)
+  aValider Boolean @default(true) @map("a_valider")
+
+  demandes       Demande[]
+  prestationsPro PrestationPro[]
+  prixPrestation PrixPrestation?
+
+  creeLe DateTime @default(now()) @map("cree_le")
+  modifieLe DateTime @updatedAt @map("modifie_le")
+
+  @@index([metierId])
+  @@map("prestations")
+}
+
+enum Unite {
+  forfait
+  heure
+  unite
+  m2
+  ml
+  jour
+}
+
+model Departement {
+  code String @id
+  nom  String
+  slug String @unique
+
+  communes Commune[]
+
+  @@map("departements")
+}
+
+model Commune {
+  code          String      @id
+  departementId String @map("departement_id")
+  departement   Departement @relation(fields: [departementId], references: [code], onDelete: Restrict)
+
+  nom                   String
+  slug                  String         @unique
+  codesPostaux String[] @map("codes_postaux")
+  population            Int?
+  arrondissementDeParis Boolean        @default(false) @map("arrondissement_de_paris")
+  statut                StatutCommune  @default(annuaire)
+
+  latitude           Float?
+  longitude          Float?
+  /// D'où viennent les coordonnées : « ban », « insee », ou null tant qu'elles manquent.
+  sourceCoordonnees String? @map("source_coordonnees")
+
+  quartiers    Quartier[]
+  zonesPro     ZonePro[]
+  demandes     Demande[]
+  agences      Agence[]
+  emplacements Emplacement[]
+  exclusivites Exclusivite[]
+  alertesOuverture AlerteOuverture[]
+
+  creeLe DateTime @default(now()) @map("cree_le")
+  modifieLe DateTime @updatedAt @map("modifie_le")
+
+  @@index([departementId])
+  @@index([statut])
+  @@index([latitude, longitude])
+  @@map("communes")
+}
+
+enum StatutCommune {
+  /// Les demandes de devis sont actives.
+  ouvert
+  /// La ville ouvre prochainement ; le visiteur peut demander à être prévenu.
+  bientot
+  /// Les fiches sont consultables ; une demande déposée ne part pas chez les pros.
+  annuaire
+}
+
+/// Quartiers des grandes villes. Prévus dès maintenant pour qu'un passage de l'exclusivité
+/// de la commune au quartier (docs/QUESTIONS.md Q3) soit un changement de granularité et non
+/// une refonte.
+model Quartier {
+  id         String  @id @default(cuid())
+  communeId String @map("commune_id")
+  commune    Commune @relation(fields: [communeId], references: [code], onDelete: Cascade)
+
+  nom       String
+  slug      String  @unique
+  latitude  Float?
+  longitude Float?
+
+  @@index([communeId])
+  @@map("quartiers")
+}
+
+/// Le visiteur d'une ville non ouverte qui demande à être prévenu.
+model AlerteOuverture {
+  id        String  @id @default(cuid())
+  communeId String @map("commune_id")
+  commune   Commune @relation(fields: [communeId], references: [code], onDelete: Cascade)
+
+  email      String
+  metierSlug String? @map("metier_slug")
+  prevenuLe DateTime? @map("prevenu_le")
+  creeLe DateTime @default(now()) @map("cree_le")
+
+  @@unique([communeId, email])
+  @@index([communeId])
+  @@map("alertes_ouverture")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Prix indicatifs
+// ─────────────────────────────────────────────────────────────────────────────
+
+model PrixMetier {
+  id       String @id @default(cuid())
+  metierId String @unique @map("metier_id")
+  metier   Metier @relation(fields: [metierId], references: [id], onDelete: Cascade)
+
+  /// Taux de TVA en pourcentage : 5.5, 10 ou 20.
+  tauxTva Decimal @db.Decimal(4, 2) @map("taux_tva")
+  aValider Boolean @default(true) @map("a_valider")
+
+  @@map("prix_metiers")
+}
+
+model PrixPrestation {
+  id           String     @id @default(cuid())
+  prestationId String     @unique @map("prestation_id")
+  prestation   Prestation @relation(fields: [prestationId], references: [id], onDelete: Cascade)
+
+  minTTC Decimal @db.Decimal(10, 2) @map("min_ttc")
+  maxTTC Decimal @db.Decimal(10, 2) @map("max_ttc")
+  /// « estimation » tant qu'Arcel n'a pas validé, « etude » pour les références parisiennes,
+  /// « observe » quand la fourchette vient des devis réellement signés sur Le Renom.
+  source   String  @default("estimation")
+  aValider Boolean @default(true) @map("a_valider")
+
+  modifieLe DateTime @updatedAt @map("modifie_le")
+
+  @@map("prix_prestations")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Entreprises et fiches
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Entreprise {
+  id     String  @id @default(cuid())
+  siret  String? @unique
+  siren  String?
+  nom    String
+  slug   String  @unique
+
+  /// Statut de diffusion SIRENE. Quand il est faux, le nom, l'adresse précise et la
+  /// géolocalisation ne sont jamais affichés : c'est une obligation, pas une préférence.
+  diffusible    Boolean          @default(true)
+  source        SourceEntreprise @default(sirene)
+  revendiquee   Boolean          @default(false)
+  verifiee      Boolean          @default(false)
+  suspendue     Boolean          @default(false)
+  /// Retrait demandé par l'entreprise : la fiche disparaît du site mais la ligne reste.
+  retireeLe DateTime? @map("retiree_le")
+  motifRetrait String? @map("motif_retrait")
+
+  /// Note moyenne et nombre d'avis publiés, dénormalisés pour le classement.
+  noteMoyenne Float? @map("note_moyenne")
+  nombreAvis Int   @default(0) @map("nombre_avis")
+
+  fiche          Fiche?
+  agences        Agence[]
+  zones          ZonePro[]
+  metiers        MetierPro[]
+  prestations    PrestationPro[]
+  utilisateurs   UtilisateurPro[]
+  verifications  Verification[]
+  abonnements    Abonnement[]
+  emplacements   Emplacement[]
+  exclusivites   Exclusivite[]
+  listesAttente  ListeAttente[]
+  quotas         QuotaMensuel[]
+  garanties      Garantie[]
+  distributions  Distribution[]
+  avis           Avis[]
+  scores         ScoreQualite[]
+  clients        ClientPro[]
+  devis          Devis[]
+  factures       Facture[]
+  ribs           Rib[]
+  parametresDocuments ParametresDocuments?
+  creneaux       Creneau[]
+  affichages     Affichage[]
+  clics          Clic[]
+  appels         Appel[]
+  contestations  Contestation[]
+
+  creeLe DateTime @default(now()) @map("cree_le")
+  modifieLe DateTime @updatedAt @map("modifie_le")
+
+  @@index([revendiquee, verifiee])
+  @@index([noteMoyenne])
+  @@map("entreprises")
+}
+
+enum SourceEntreprise {
+  /// Importée de la base SIRENE de l'Insee.
+  sirene
+  /// Créée par le professionnel lui-même.
+  inscription
+  /// Saisie par un administrateur.
+  manuelle
+}
+
+model Fiche {
+  id           String     @id @default(cuid())
+  entrepriseId String     @unique @map("entreprise_id")
+  entreprise   Entreprise @relation(fields: [entrepriseId], references: [id], onDelete: Cascade)
+
+  description String? @db.Text
+  slogan      String?
+  logoUrl String? @map("logo_url")
+  couvertureUrl String? @map("couverture_url")
+  siteWeb String? @map("site_web")
+  siteVerifieLe DateTime? @map("site_verifie_le")
+  telephone   String?
+  email       String?
+
+  /// Horaires au format JSON : un tableau de créneaux par jour de la semaine.
+  horaires Json?
+  atouts   String[] @default([])
+
+  decennaleNumero String? @map("decennale_numero")
+  decennaleAssureur String? @map("decennale_assureur")
+  decennaleExpireLe DateTime? @map("decennale_expire_le")
+  decennaleVerifieeLe DateTime? @map("decennale_verifiee_le")
+
+  /// Personnalisation Premium et Studio Exclusif. Les badges payants, le sceau, la mention
+  /// « Sponsorisé », les badges de mérite et le bouton de devis principal n'en dépendent jamais.
+  theme Json?
+
+  /// Complétude de la fiche, entre 0 et 1. Alimente le score et la garantie Exclusif.
+  completude Float @default(0)
+
+  photos        Photo[]
+  publications  Publication[]
+
+  creeLe DateTime @default(now()) @map("cree_le")
+  modifieLe DateTime @updatedAt @map("modifie_le")
+
+  @@map("fiches")
+}
+
+model Photo {
+  id      String @id @default(cuid())
+  ficheId String @map("fiche_id")
+  fiche   Fiche  @relation(fields: [ficheId], references: [id], onDelete: Cascade)
+
+  url       String
+  legende   String?
+  rang      Int     @default(0)
+  /// Les données EXIF sont retirées à l'envoi, sans exception.
+  exifRetire Boolean @default(true) @map("exif_retire")
+
+  creeLe DateTime @default(now()) @map("cree_le")
+
+  @@index([ficheId])
+  @@map("photos")
+}
+
+/// Une actualité publiée par un abonné (Studio Exclusif, site connecté).
+model Publication {
+  id      String @id @default(cuid())
+  ficheId String @map("fiche_id")
+  fiche   Fiche  @relation(fields: [ficheId], references: [id], onDelete: Cascade)
+
+  titre     String
+  contenu   String  @db.Text
+  imageUrl String? @map("image_url")
+  publiee   Boolean @default(false)
+  valideeLe DateTime? @map("validee_le")
+
+  creeLe DateTime @default(now()) @map("cree_le")
+  modifieLe DateTime @updatedAt @map("modifie_le")
+
+  @@index([ficheId])
+  @@map("publications")
+}
+
+model Agence {
+  id           String     @id @default(cuid())
+  entrepriseId String @map("entreprise_id")
+  entreprise   Entreprise @relation(fields: [entrepriseId], references: [id], onDelete: Cascade)
+
+  nom        String?
+  adresse    String
+  codePostal String @map("code_postal")
+  communeId String @map("commune_id")
+  commune    Commune @relation(fields: [communeId], references: [code], onDelete: Restrict)
+
+  latitude  Float?
+  longitude Float?
+  /// Rayon d'intervention en kilomètres. 10 km par défaut.
+  rayonKm Float   @default(10) @map("rayon_km")
+
+  /// Contact et canaux de notification propres à l'agence.
+  contactNom String? @map("contact_nom")
+  contactTelephone String? @map("contact_telephone")
+  contactEmail String? @map("contact_email")
+  notifierParSms Boolean @default(true) @map("notifier_par_sms")
+  notifierParEmail Boolean @default(true) @map("notifier_par_email")
+  notifierParPush Boolean @default(true) @map("notifier_par_push")
+
+  principale Boolean @default(false)
+
+  distributions Distribution[]
+  creneaux      Creneau[]
+
+  creeLe DateTime @default(now()) @map("cree_le")
+  modifieLe DateTime @updatedAt @map("modifie_le")
+
+  @@index([entrepriseId])
+  @@index([communeId])
+  @@index([latitude, longitude])
+  @@map("agences")
+}
+
+/// Une ville où le pro a choisi d'apparaître. Le nombre est limité par la formule :
+/// Gratuit 2, Essentiel 5, Premium 15, Exclusif sans limite.
+model ZonePro {
+  id           String     @id @default(cuid())
+  entrepriseId String @map("entreprise_id")
+  entreprise   Entreprise @relation(fields: [entrepriseId], references: [id], onDelete: Cascade)
+  communeId String @map("commune_id")
+  commune      Commune    @relation(fields: [communeId], references: [code], onDelete: Cascade)
+
+  creeLe DateTime @default(now()) @map("cree_le")
+
+  @@unique([entrepriseId, communeId])
+  @@index([communeId])
+  @@map("zones_pro")
+}
+
+model MetierPro {
+  id           String     @id @default(cuid())
+  entrepriseId String @map("entreprise_id")
+  entreprise   Entreprise @relation(fields: [entrepriseId], references: [id], onDelete: Cascade)
+  metierId String @map("metier_id")
+  metier       Metier     @relation(fields: [metierId], references: [id], onDelete: Cascade)
+
+  principal Boolean @default(false)
+
+  @@unique([entrepriseId, metierId])
+  @@index([metierId])
+  @@map("metiers_pro")
+}
+
+model PrestationPro {
+  id           String     @id @default(cuid())
+  entrepriseId String @map("entreprise_id")
+  entreprise   Entreprise @relation(fields: [entrepriseId], references: [id], onDelete: Cascade)
+  prestationId String @map("prestation_id")
+  prestation   Prestation @relation(fields: [prestationId], references: [id], onDelete: Cascade)
+
+  /// Prix affiché par le pro sur sa fiche, en euros TTC. Facultatif.
+  prixTTC Decimal? @db.Decimal(10, 2) @map("prix_ttc")
+
+  @@unique([entrepriseId, prestationId])
+  @@index([prestationId])
+  @@map("prestations_pro")
+}
+
+model UtilisateurPro {
+  id           String     @id @default(cuid())
+  entrepriseId String @map("entreprise_id")
+  entreprise   Entreprise @relation(fields: [entrepriseId], references: [id], onDelete: Cascade)
+
+  email         String   @unique
+  telephone     String?
+  nom           String
+  motDePasseHash String? @map("mot_de_passe_hash")
+  roleDansEntreprise String? @map("role_dans_entreprise")
+
+  emailVerifieLe DateTime? @map("email_verifie_le")
+  telephoneVerifieLe DateTime? @map("telephone_verifie_le")
+  derniereConnexion DateTime? @map("derniere_connexion")
+
+  creeLe DateTime @default(now()) @map("cree_le")
+  modifieLe DateTime @updatedAt @map("modifie_le")
+
+  @@index([entrepriseId])
+  @@map("utilisateurs_pro")
+}
+
+model Verification {
+  id           String     @id @default(cuid())
+  entrepriseId String @map("entreprise_id")
+  entreprise   Entreprise @relation(fields: [entrepriseId], references: [id], onDelete: Cascade)
+
+  type      TypeVerification
+  statut    StatutVerification @default(en_attente)
+  /// Document justificatif, s'il y en a un.
+  documentUrl String? @map("document_url")
+  motifRefus String? @map("motif_refus")
+  verifieePar String? @map("verifiee_par")
+  verifieeLe DateTime? @map("verifiee_le")
+
+  creeLe DateTime @default(now()) @map("cree_le")
+
+  @@index([entrepriseId, type])
+  @@map("verifications")
+}
+
+enum TypeVerification {
+  sms
+  email
+  siret
+  decennale
+  identite
+  domiciliation
+}
+
+enum StatutVerification {
+  en_attente
+  validee
+  refusee
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Abonnements, emplacements et exclusivités
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum Formule {
+  gratuit
+  essentiel
+  premium
+  exclusif
+}
+
+enum Periodicite {
+  mensuel
+  annuel
+}
+
+model Abonnement {
+  id           String     @id @default(cuid())
+  entrepriseId String @map("entreprise_id")
+  entreprise   Entreprise @relation(fields: [entrepriseId], references: [id], onDelete: Cascade)
+
+  formule     Formule
+  periodicite Periodicite @default(mensuel)
+  statut      StatutAbonnement @default(actif)
+
+  debuteLe DateTime @map("debute_le")
+  renouvelleLe DateTime? @map("renouvelle_le")
+  /// Seul l'Exclusif est engagé, pour 12 mois.
+  engageJusquA DateTime? @map("engage_jusqu_a")
+  resilieLe DateTime? @map("resilie_le")
+  motifResiliation String? @map("motif_resiliation")
+
+  /// Option « Visibilité partout » : +29 € HT en Premium, incluse en Exclusif. Phase ultérieure,
+  /// prévue ici pour que l'activer plus tard ne demande pas de migration.
+  visibilitePartout Boolean @default(false) @map("visibilite_partout")
+
+  /// Le pro accepte-t-il d'être facturé au-delà de son forfait ?
+  rechargeAutomatique Boolean  @default(false) @map("recharge_automatique")
+  plafondMensuelHT Decimal? @db.Decimal(10, 2) @map("plafond_mensuel_ht")
+
+  stripeAbonnementId String? @unique @map("stripe_abonnement_id")
+  stripeClientId String? @map("stripe_client_id")
+
+  factures FactureLeRenom[]
+
+  creeLe DateTime @default(now()) @map("cree_le")
+  modifieLe DateTime @updatedAt @map("modifie_le")
+
+  @@index([entrepriseId, statut])
+  @@map("abonnements")
+}
+
+enum StatutAbonnement {
+  actif
+  impaye
+  suspendu
+  resilie
+}
+
+/// Une place payée sur une page métier × ville. Jamais plus de 3 par page : 1 Exclusif et
+/// 2 Premium. Cette table est la source du classement payé ; le score, lui, est recalculé la nuit.
+model Emplacement {
+  id           String     @id @default(cuid())
+  entrepriseId String @map("entreprise_id")
+  entreprise   Entreprise @relation(fields: [entrepriseId], references: [id], onDelete: Cascade)
+  metierId String @map("metier_id")
+  metier       Metier     @relation(fields: [metierId], references: [id], onDelete: Cascade)
+  communeId String @map("commune_id")
+  commune      Commune    @relation(fields: [communeId], references: [code], onDelete: Cascade)
+
+  formule Formule
+  debuteLe DateTime @default(now()) @map("debute_le")
+  finitLe DateTime? @map("finit_le")
+
+  /// Nombre d'affichages servis, qui fait tourner les Premium de façon équitable.
+  compteurAffichages Int @default(0) @map("compteur_affichages")
+
+  @@unique([entrepriseId, metierId, communeId])
+  @@index([metierId, communeId, formule])
+  @@map("emplacements")
+}
+
+/// L'exclusivité d'un métier sur une zone. Un seul titulaire à la fois, renouvelable en priorité.
+model Exclusivite {
+  id        String  @id @default(cuid())
+  metierId String @map("metier_id")
+  metier    Metier  @relation(fields: [metierId], references: [id], onDelete: Cascade)
+  communeId String @map("commune_id")
+  commune   Commune @relation(fields: [communeId], references: [code], onDelete: Cascade)
+
+  entrepriseId String @map("entreprise_id")
+  entreprise   Entreprise @relation(fields: [entrepriseId], references: [id], onDelete: Cascade)
+
+  debuteLe DateTime @default(now()) @map("debute_le")
+  finitLe DateTime @map("finit_le")
+  renouvelleeLe DateTime? @map("renouvellee_le")
+
+  /// Vrai tant que l'exclusivité court ; le worker la bascule à l'échéance.
+  /// Une seule exclusivité active par métier × commune : la contrainte est un index partiel,
+  /// posé par prisma/sql/postgis.sql, parce que Prisma ne sait pas l'exprimer. `now()` n'étant
+  /// pas immuable, l'index porte sur ce drapeau et non sur la date de fin.
+  active Boolean @default(true) @map("active")
+
+  @@unique([metierId, communeId, entrepriseId])
+  @@index([metierId, communeId])
+  @@index([finitLe])
+  @@map("exclusivites")
+}
+
+model ListeAttente {
+  id           String     @id @default(cuid())
+  entrepriseId String @map("entreprise_id")
+  entreprise   Entreprise @relation(fields: [entrepriseId], references: [id], onDelete: Cascade)
+
+  metierId String @map("metier_id")
+  communeId String @map("commune_id")
+  formule   Formule
+  rang      Int
+
+  creeLe DateTime  @default(now()) @map("cree_le")
+  servieLe DateTime? @map("servie_le")
+
+  @@unique([entrepriseId, metierId, communeId, formule])
+  @@index([metierId, communeId, formule, rang])
+  @@map("listes_attente")
+}
+
+/// Le compteur mensuel d'un pro : seules les demandes acceptées sont décomptées, et le compteur
+/// repart à zéro le 1er de chaque mois, sans report.
+model QuotaMensuel {
+  id           String     @id @default(cuid())
+  entrepriseId String @map("entreprise_id")
+  entreprise   Entreprise @relation(fields: [entrepriseId], references: [id], onDelete: Cascade)
+
+  /// Mois civil au format AAAA-MM.
+  mois String
+
+  formule            Formule
+  demandesIncluses Int @map("demandes_incluses")
+  demandesAcceptees Int     @default(0) @map("demandes_acceptees")
+  demandesRecreditees Int    @default(0) @map("demandes_recreditees")
+  urgencesAcceptees Int     @default(0) @map("urgences_acceptees")
+  depenseHT Decimal @default(0) @db.Decimal(10, 2) @map("depense_ht")
+  alerteEnvoyeeLe DateTime? @map("alerte_envoyee_le")
+
+  @@unique([entrepriseId, mois])
+  @@index([mois])
+  @@map("quotas_mensuels")
+}
+
+/// La garantie Exclusif : moins de 5 demandes sur 3 mois, fiche complète, 80 % de réponse.
+/// Calculée automatiquement, accordée en un clic par Arcel : la plateforme propose, elle
+/// n'offre pas toute seule un mois d'abonnement.
+model Garantie {
+  id           String     @id @default(cuid())
+  entrepriseId String @map("entreprise_id")
+  entreprise   Entreprise @relation(fields: [entrepriseId], references: [id], onDelete: Cascade)
+
+  /// Les trois mois civils de la période, au format AAAA-MM.
+  moisDebut String @map("mois_debut")
+  moisFin String @map("mois_fin")
+
+  demandesSurLaPeriode Int @map("demandes_sur_la_periode")
+  tauxReponse Float @map("taux_reponse")
+  ficheComplete Boolean @map("fiche_complete")
+  eligible             Boolean
+  motifRefus String? @map("motif_refus")
+
+  accordeeLe DateTime? @map("accordee_le")
+  accordeePar String? @map("accordee_par")
+  factureLeRenomId String? @map("facture_le_renom_id")
+
+  creeLe DateTime @default(now()) @map("cree_le")
+
+  @@unique([entrepriseId, moisDebut])
+  @@index([eligible, accordeeLe])
+  @@map("garanties")
+}
+
+/// Les factures de l'abonnement Le Renom, distinctes des factures que le pro émet pour ses
+/// propres clients.
+model FactureLeRenom {
+  id           String     @id @default(cuid())
+  abonnementId String @map("abonnement_id")
+  abonnement   Abonnement @relation(fields: [abonnementId], references: [id], onDelete: Cascade)
+
+  numero     String   @unique
+  montantHT Decimal  @db.Decimal(10, 2) @map("montant_ht")
+  tauxTva Decimal  @default(20) @db.Decimal(4, 2) @map("taux_tva")
+  montantTTC Decimal  @db.Decimal(10, 2) @map("montant_ttc")
+  emiseLe DateTime @default(now()) @map("emise_le")
+  payeeLe DateTime? @map("payee_le")
+  stripeFactureId String? @unique @map("stripe_facture_id")
+  pdfUrl String? @map("pdf_url")
+
+  @@index([abonnementId])
+  @@map("factures_le_renom")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Demandes de devis
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum TypeDemande {
+  directe
+  partagee
+  urgente
+}
+
+enum StatutDemande {
+  /// Déposée mais pas encore vérifiée par SMS.
+  brouillon
+  en_distribution
+  en_attente_de_relance
+  complete
+  sans_preneur
+  en_pause
+  suspecte
+  directe_quota_atteint
+  /// Ville non ouverte : la demande attend l'ouverture, le client est prévenu.
+  en_attente_ouverture
+  annulee
+  gagnee
+  perimee
+}
+
+model Demande {
+  id        String @id @default(cuid())
+  reference String @unique
+
+  type   TypeDemande
+  statut StatutDemande @default(brouillon)
+
+  metierId String? @map("metier_id")
+  metier       Metier?     @relation(fields: [metierId], references: [id], onDelete: SetNull)
+  prestationId String? @map("prestation_id")
+  prestation   Prestation? @relation(fields: [prestationId], references: [id], onDelete: SetNull)
+  /// Indice de confiance du classement automatique. En dessous de 0,70 la demande passe par
+  /// la file « À classer » du back-office.
+  confianceClassement Float? @map("confiance_classement")
+  classeeParAdmin Boolean @default(false) @map("classee_par_admin")
+
+  communeId String @map("commune_id")
+  commune   Commune @relation(fields: [communeId], references: [code], onDelete: Restrict)
+  adresse   String?
+  codePostal String? @map("code_postal")
+  latitude  Float?
+  longitude Float?
+  quartier  String?
+
+  description String  @db.Text
+  /// Réponses aux 3 questions adaptées à l'univers.
+  reponses    Json?
+  urgence     NiveauUrgence @default(normale)
+  delaiSouhaite String? @map("delai_souhaite")
+  budgetMin Decimal? @db.Decimal(10, 2) @map("budget_min")
+  budgetMax Decimal? @db.Decimal(10, 2) @map("budget_max")
+
+  clientPrenom String @map("client_prenom")
+  clientNom String? @map("client_nom")
+  clientEmail String @map("client_email")
+  clientTelephone String @map("client_telephone")
+  telephoneVerifieLe DateTime? @map("telephone_verifie_le")
+
+  /// Le texte exact du consentement, conservé avec la demande : c'est lui qui fera foi.
+  consentementTexte String  @db.Text @map("consentement_texte")
+  consentementDonneLe DateTime @map("consentement_donne_le")
+
+  origine   String?
+  appareil  String?
+  adresseIp String? @map("adresse_ip")
+
+  /// Nombre de pros visé : 3 pour une partagée, 1 pour une urgente ou une directe.
+  objectifPros Int @default(3) @map("objectif_pros")
+
+  photos        PhotoDemande[]
+  distributions Distribution[]
+  suivis        SuiviDemande[]
+  appels        AppelSuivi[]
+  contestations Contestation[]
+  avis          Avis[]
+  devis         Devis[]
+  rendezVous    RendezVous[]
+  messages      MessageSortant[]
+  liens         LienAction[]
+  notes         NoteInterne[]
+
+  deposeeLe DateTime  @default(now()) @map("deposee_le")
+  perimeeLe DateTime? @map("perimee_le")
+  clotureeLe DateTime? @map("cloturee_le")
+  modifieeLe DateTime  @updatedAt @map("modifiee_le")
+
+  @@index([statut, deposeeLe])
+  @@index([communeId, metierId])
+  @@index([clientTelephone])
+  @@map("demandes")
+}
+
+enum NiveauUrgence {
+  normale
+  rapide
+  /// Intervention sous 2 heures. Réservée aux formules payantes.
+  urgente
+}
+
+model PhotoDemande {
+  id        String  @id @default(cuid())
+  demandeId String @map("demande_id")
+  demande   Demande @relation(fields: [demandeId], references: [id], onDelete: Cascade)
+
+  url      String
+  /// Version sans données de localisation, montrée avant l'acceptation.
+  urlFloutee String? @map("url_floutee")
+  exifRetire Boolean @default(true) @map("exif_retire")
+  rang     Int     @default(0)
+
+  creeLe DateTime @default(now()) @map("cree_le")
+
+  @@index([demandeId])
+  @@map("photos_demande")
+}
+
+/// Une proposition faite à un pro. C'est la table qui porte la preuve : qui, à quel rang,
+/// pourquoi, quand envoyée, quand ouverte, quand répondue, à quel prix, par qui.
+model Distribution {
+  id        String  @id @default(cuid())
+  demandeId String @map("demande_id")
+  demande   Demande @relation(fields: [demandeId], references: [id], onDelete: Cascade)
+
+  entrepriseId String @map("entreprise_id")
+  entreprise   Entreprise @relation(fields: [entrepriseId], references: [id], onDelete: Cascade)
+  agenceId String? @map("agence_id")
+  agence       Agence?    @relation(fields: [agenceId], references: [id], onDelete: SetNull)
+
+  rang       Int
+  tour       Int
+  raisonRang RaisonRang @map("raison_rang")
+  statut     StatutDistribution @default(envoyee)
+
+  envoyeeLe DateTime  @default(now()) @map("envoyee_le")
+  echeanceLe DateTime @map("echeance_le")
+  ouverteLe DateTime? @map("ouverte_le")
+  repondueLe DateTime? @map("repondue_le")
+
+  motifRefus MotifRefus? @map("motif_refus")
+  reproposeeLe DateTime? @map("reproposee_le")
+
+  /// Prix réellement facturé, en euros HT. 0 € quand la demande est prise sur le forfait.
+  montantHT Decimal @default(0) @db.Decimal(10, 2) @map("montant_ht")
+  consommeForfait Boolean @default(false) @map("consomme_forfait")
+  recredite       Boolean @default(false)
+
+  /// Envoi manuel par un administrateur, et qui.
+  manuel  Boolean @default(false)
+  auteur  String?
+
+  distanceKm Float? @map("distance_km")
+
+  @@unique([demandeId, entrepriseId])
+  @@index([entrepriseId, envoyeeLe])
+  @@index([statut, echeanceLe])
+  @@map("distributions")
+}
+
+enum RaisonRang {
+  exclusif_de_la_zone
+  premium_le_moins_servi
+  score_et_proximite
+  choix_du_client
+  envoi_manuel
+  re_proposition
+}
+
+enum StatutDistribution {
+  envoyee
+  ouverte
+  acceptee
+  refusee
+  expiree
+  retiree
+}
+
+enum MotifRefus {
+  indisponible
+  trop_loin
+  pas_mon_metier
+  budget_trop_bas
+}
+
+/// Les étapes du suivi d'une demande acceptée, du premier appel à l'avis.
+model SuiviDemande {
+  id        String  @id @default(cuid())
+  demandeId String @map("demande_id")
+  demande   Demande @relation(fields: [demandeId], references: [id], onDelete: Cascade)
+
+  entrepriseId String @map("entreprise_id")
+  etape        EtapeSuivi
+  commentaire  String?
+  /// Écart d'informations signalé par le pro (surface, accès, budget irréaliste).
+  ecartSignale Boolean @default(false) @map("ecart_signale")
+
+  creeLe DateTime @default(now()) @map("cree_le")
+
+  @@index([demandeId, entrepriseId])
+  @@map("suivis_demande")
+}
+
+enum EtapeSuivi {
+  acceptee
+  client_joint
+  rendez_vous
+  devis_envoye
+  devis_signe
+  travaux_realises
+  perdue
+}
+
+model AppelSuivi {
+  id        String  @id @default(cuid())
+  demandeId String @map("demande_id")
+  demande   Demande @relation(fields: [demandeId], references: [id], onDelete: Cascade)
+
+  entrepriseId String @map("entreprise_id")
+  /// Durée en secondes. La conversation n'est jamais enregistrée.
+  dureeSecondes Int? @map("duree_secondes")
+  repondu       Boolean @default(false)
+  smsEnvoye Boolean @default(false) @map("sms_envoye")
+
+  appeleLe DateTime @default(now()) @map("appele_le")
+
+  @@index([demandeId, entrepriseId])
+  @@map("appels_suivi")
+}
+
+model Contestation {
+  id        String  @id @default(cuid())
+  demandeId String @map("demande_id")
+  demande   Demande @relation(fields: [demandeId], references: [id], onDelete: Cascade)
+
+  entrepriseId String @map("entreprise_id")
+  entreprise   Entreprise @relation(fields: [entrepriseId], references: [id], onDelete: Cascade)
+
+  motif       MotifContestation
+  explication String            @db.Text
+  statut      StatutContestation @default(en_attente)
+
+  /// Le pro a 7 jours pour contester, Le Renom 48 heures pour trancher.
+  deposeeLe DateTime  @default(now()) @map("deposee_le")
+  echeanceLe DateTime @map("echeance_le")
+  trancheeLe DateTime? @map("tranchee_le")
+  tranchePar String? @map("tranche_par")
+  motifDecision String? @map("motif_decision")
+
+  recredit Recredit?
+
+  @@index([statut, echeanceLe])
+  @@index([entrepriseId])
+  @@map("contestations")
+}
+
+enum MotifContestation {
+  coordonnees_fausses
+  client_injoignable
+  hors_zone
+  hors_metier
+  doublon
+  demande_fantaisiste
+}
+
+enum StatutContestation {
+  en_attente
+  acceptee
+  refusee
+}
+
+model Recredit {
+  id             String       @id @default(cuid())
+  contestationId String       @unique @map("contestation_id")
+  contestation   Contestation @relation(fields: [contestationId], references: [id], onDelete: Cascade)
+
+  montantHT Decimal @db.Decimal(10, 2) @map("montant_ht")
+  /// Le recrédit rend l'unité au forfait du mois en cours.
+  rendAuForfait Boolean @default(true) @map("rend_au_forfait")
+  accordePar String @map("accorde_par")
+  creeLe DateTime @default(now()) @map("cree_le")
+
+  @@map("recredits")
+}
+
+model NoteInterne {
+  id        String  @id @default(cuid())
+  demandeId String @map("demande_id")
+  demande   Demande @relation(fields: [demandeId], references: [id], onDelete: Cascade)
+
+  auteur  String
+  contenu String   @db.Text
+  creeLe DateTime @default(now()) @map("cree_le")
+
+  @@index([demandeId])
+  @@map("notes_internes")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Agenda
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Creneau {
+  id           String     @id @default(cuid())
+  entrepriseId String @map("entreprise_id")
+  entreprise   Entreprise @relation(fields: [entrepriseId], references: [id], onDelete: Cascade)
+  agenceId String? @map("agence_id")
+  agence       Agence?    @relation(fields: [agenceId], references: [id], onDelete: SetNull)
+
+  type   TypeCreneau
+  debutLe DateTime @map("debut_le")
+  finLe DateTime @map("fin_le")
+
+  /// Un créneau proposé au client reste bloqué jusqu'à sa réponse, avec une relance à 24 h.
+  propose     Boolean   @default(false)
+  relanceeLe DateTime? @map("relancee_le")
+  expireLe DateTime? @map("expire_le")
+
+  rendezVous RendezVous?
+
+  creeLe DateTime @default(now()) @map("cree_le")
+  modifieLe DateTime @updatedAt @map("modifie_le")
+
+  @@index([entrepriseId, debutLe])
+  @@map("creneaux")
+}
+
+enum TypeCreneau {
+  visite
+  intervention
+  propose
+  blocage
+}
+
+model RendezVous {
+  id        String   @id @default(cuid())
+  creneauId String   @unique @map("creneau_id")
+  creneau   Creneau  @relation(fields: [creneauId], references: [id], onDelete: Cascade)
+  demandeId String? @map("demande_id")
+  demande   Demande? @relation(fields: [demandeId], references: [id], onDelete: SetNull)
+
+  statut          StatutRendezVous @default(propose)
+  confirmeLe DateTime? @map("confirme_le")
+  annuleLe DateTime? @map("annule_le")
+  clientAbsent Boolean          @default(false) @map("client_absent")
+  rappelVeilleLe DateTime? @map("rappel_veille_le")
+  rappel2hLe DateTime? @map("rappel2h_le")
+
+  creeLe DateTime @default(now()) @map("cree_le")
+  modifieLe DateTime @updatedAt @map("modifie_le")
+
+  @@index([demandeId])
+  @@map("rendez_vous")
+}
+
+enum StatutRendezVous {
+  propose
+  confirme
+  honore
+  annule
+  client_absent
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Devis et factures du professionnel
+// ─────────────────────────────────────────────────────────────────────────────
+
+model ClientPro {
+  id           String     @id @default(cuid())
+  entrepriseId String @map("entreprise_id")
+  entreprise   Entreprise @relation(fields: [entrepriseId], references: [id], onDelete: Cascade)
+
+  nom        String
+  email      String?
+  telephone  String?
+  adresse    String?
+  codePostal String? @map("code_postal")
+  ville      String?
+
+  devis    Devis[]
+  factures Facture[]
+
+  creeLe DateTime @default(now()) @map("cree_le")
+  modifieLe DateTime @updatedAt @map("modifie_le")
+
+  @@index([entrepriseId])
+  @@map("clients_pro")
+}
+
+model Devis {
+  id           String     @id @default(cuid())
+  entrepriseId String @map("entreprise_id")
+  entreprise   Entreprise @relation(fields: [entrepriseId], references: [id], onDelete: Cascade)
+  clientId String? @map("client_id")
+  client       ClientPro? @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  demandeId String? @map("demande_id")
+  demande      Demande?   @relation(fields: [demandeId], references: [id], onDelete: SetNull)
+
+  /// Attribué à l'envoi, pas à la création : un brouillon abandonné ne laisse pas de trou.
+  numero String? @unique
+  statut StatutDevis @default(brouillon)
+  type   TypeDevis   @default(estimatif)
+
+  remisePourcent Decimal @default(0) @db.Decimal(5, 2) @map("remise_pourcent")
+  acomptePourcent Int     @default(0) @map("acompte_pourcent")
+  validiteJours Int     @default(30) @map("validite_jours")
+
+  /// Mentions obligatoires du devis de dépannage à domicile.
+  fraisDeplacementTTC Decimal? @db.Decimal(10, 2) @map("frais_deplacement_ttc")
+  devisPayant Boolean  @default(false) @map("devis_payant")
+  piecesRemplaceesGardees Boolean @default(true) @map("pieces_remplacees_gardees")
+  mentionRetractation Boolean  @default(false) @map("mention_retractation")
+
+  totalHT Decimal @default(0) @db.Decimal(12, 2) @map("total_ht")
+  totalTVA Decimal @default(0) @db.Decimal(12, 2) @map("total_tva")
+  totalTTC Decimal @default(0) @db.Decimal(12, 2) @map("total_ttc")
+
+  envoyeLe DateTime? @map("envoye_le")
+  relanceLe DateTime? @map("relance_le")
+  signeLe DateTime? @map("signe_le")
+  refuseLe DateTime? @map("refuse_le")
+  /// Code SMS de signature, et le numéro qui l'a validé.
+  signeParTelephone String? @map("signe_par_telephone")
+  version    Int @default(1)
+  pdfUrl String? @map("pdf_url")
+
+  lignes   DevisLigne[]
+  factures Facture[]
+
+  creeLe DateTime @default(now()) @map("cree_le")
+  modifieLe DateTime @updatedAt @map("modifie_le")
+
+  @@index([entrepriseId, statut])
+  @@map("devis")
+}
+
+enum StatutDevis {
+  brouillon
+  envoye
+  signe
+  refuse
+  expire
+}
+
+enum TypeDevis {
+  /// Sans visite préalable : « estimatif, sous réserve de visite ».
+  estimatif
+  definitif
+}
+
+model DevisLigne {
+  id      String @id @default(cuid())
+  devisId String @map("devis_id")
+  devis   Devis  @relation(fields: [devisId], references: [id], onDelete: Cascade)
+
+  type        TypeLigne @default(prestation)
+  designation String
+  detail      String?
+  unite       Unite?
+  quantite    Decimal?  @db.Decimal(10, 3)
+  prixUnitaireHT Decimal? @db.Decimal(10, 2) @map("prix_unitaire_ht")
+  tauxTva Decimal?  @db.Decimal(4, 2) @map("taux_tva")
+  rang        Int
+
+  @@index([devisId])
+  @@map("devis_lignes")
+}
+
+enum TypeLigne {
+  prestation
+  section
+  texte
+}
+
+model Facture {
+  id           String     @id @default(cuid())
+  entrepriseId String @map("entreprise_id")
+  entreprise   Entreprise @relation(fields: [entrepriseId], references: [id], onDelete: Cascade)
+  clientId String? @map("client_id")
+  client       ClientPro? @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  devisId String? @map("devis_id")
+  devis        Devis?     @relation(fields: [devisId], references: [id], onDelete: SetNull)
+
+  /// Attribué à l'émission, pour une numérotation continue sans trou ni doublon.
+  numero String?     @unique
+  type   TypeFacture @default(solde)
+  statut StatutFacture @default(prete)
+
+  remisePourcent Decimal @default(0) @db.Decimal(5, 2) @map("remise_pourcent")
+  acompteDejaFactureTTC Decimal @default(0) @db.Decimal(12, 2) @map("acompte_deja_facture_ttc")
+
+  totalHT Decimal @default(0) @db.Decimal(12, 2) @map("total_ht")
+  totalTVA Decimal @default(0) @db.Decimal(12, 2) @map("total_tva")
+  totalTTC Decimal @default(0) @db.Decimal(12, 2) @map("total_ttc")
+  montantAPayerTTC Decimal @default(0) @db.Decimal(12, 2) @map("montant_a_payer_ttc")
+
+  /// Le RIB en vigueur à l'émission est figé ici : un changement ultérieur ne modifie pas
+  /// les factures déjà émises.
+  ribId String? @map("rib_id")
+  rib   Rib?    @relation(fields: [ribId], references: [id], onDelete: SetNull)
+
+  emiseLe DateTime? @map("emise_le")
+  echeanceLe DateTime? @map("echeance_le")
+  payeeLe DateTime? @map("payee_le")
+  pdfUrl String? @map("pdf_url")
+  /// Facture électronique : le XML Factur-X est produit à l'émission.
+  facturXUrl String? @map("facturx_url")
+
+  lignes    FactureLigne[]
+  avoirs    Avoir[]
+  paiements Paiement[]
+
+  creeLe DateTime @default(now()) @map("cree_le")
+  modifieLe DateTime @updatedAt @map("modifie_le")
+
+  @@index([entrepriseId, statut])
+  @@map("factures")
+}
+
+enum TypeFacture {
+  acompte
+  solde
+  libre
+}
+
+enum StatutFacture {
+  /// Préparée automatiquement à la signature du devis, en attente de vérification par le pro.
+  prete
+  /// Émise : ni modifiable ni supprimable. Une erreur se corrige par un avoir.
+  emise
+  payee
+  annulee_par_avoir
+}
+
+model FactureLigne {
+  id        String  @id @default(cuid())
+  factureId String @map("facture_id")
+  facture   Facture @relation(fields: [factureId], references: [id], onDelete: Cascade)
+
+  type        TypeLigne @default(prestation)
+  designation String
+  detail      String?
+  unite       Unite?
+  quantite    Decimal?  @db.Decimal(10, 3)
+  prixUnitaireHT Decimal? @db.Decimal(10, 2) @map("prix_unitaire_ht")
+  tauxTva Decimal?  @db.Decimal(4, 2) @map("taux_tva")
+  rang        Int
+
+  @@index([factureId])
+  @@map("factures_lignes")
+}
+
+model Avoir {
+  id        String  @id @default(cuid())
+  factureId String @map("facture_id")
+  facture   Facture @relation(fields: [factureId], references: [id], onDelete: Restrict)
+
+  numero     String   @unique
+  motif      String   @db.Text
+  montantTTC Decimal  @db.Decimal(12, 2) @map("montant_ttc")
+  emisLe DateTime @default(now()) @map("emis_le")
+  pdfUrl String? @map("pdf_url")
+
+  @@index([factureId])
+  @@map("avoirs")
+}
+
+model Paiement {
+  id        String  @id @default(cuid())
+  factureId String @map("facture_id")
+  facture   Facture @relation(fields: [factureId], references: [id], onDelete: Cascade)
+
+  montantTTC Decimal      @db.Decimal(12, 2) @map("montant_ttc")
+  moyen      MoyenPaiement
+  reference  String?
+  recuLe DateTime     @default(now()) @map("recu_le")
+
+  @@index([factureId])
+  @@map("paiements")
+}
+
+enum MoyenPaiement {
+  carte
+  virement
+  cheque
+  especes
+}
+
+/// Les coordonnées bancaires du pro, historisées. Tout ajout ou changement est confirmé par
+/// code SMS et signalé par e-mail : c'est la parade à la fraude au changement de RIB.
+model Rib {
+  id           String     @id @default(cuid())
+  entrepriseId String @map("entreprise_id")
+  entreprise   Entreprise @relation(fields: [entrepriseId], references: [id], onDelete: Cascade)
+
+  titulaire String
+  iban      String
+  bic       String
+  banque    String?
+
+  confirmeParSmsLe DateTime? @map("confirme_par_sms_le")
+  actif            Boolean   @default(false)
+  remplaceLe DateTime? @map("remplace_le")
+
+  factures Facture[]
+
+  creeLe DateTime @default(now()) @map("cree_le")
+
+  @@index([entrepriseId, actif])
+  @@map("ribs")
+}
+
+model ParametresDocuments {
+  id           String     @id @default(cuid())
+  entrepriseId String     @unique @map("entreprise_id")
+  entreprise   Entreprise @relation(fields: [entrepriseId], references: [id], onDelete: Cascade)
+
+  logoMode String  @default("monogramme") @map("logo_mode")
+  logoUrl String? @map("logo_url")
+  couleur        String  @default("#16181D")
+  styleTitres String  @default("classique") @map("style_titres")
+  piedDePage String? @db.Text @map("pied_de_page")
+  conditionsGenerales String? @db.Text @map("conditions_generales")
+
+  prefixeDevis String @default("DV") @map("prefixe_devis")
+  prefixeFacture String @default("FA") @map("prefixe_facture")
+  prefixeAvoir String @default("AV") @map("prefixe_avoir")
+
+  modifieLe DateTime @updatedAt @map("modifie_le")
+
+  @@map("parametres_documents")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Avis et modération
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Un avis est toujours lié à une demande réelle et à des travaux déclarés réalisés.
+/// C'est ce qui permet d'afficher « avis vérifié » sans mentir, et ce que l'article
+/// L111-7-2 du code de la consommation attend d'une plateforme.
+model Avis {
+  id           String     @id @default(cuid())
+  entrepriseId String @map("entreprise_id")
+  entreprise   Entreprise @relation(fields: [entrepriseId], references: [id], onDelete: Cascade)
+  demandeId String     @unique @map("demande_id")
+  demande      Demande    @relation(fields: [demandeId], references: [id], onDelete: Restrict)
+
+  note       Int
+  /// Notes par critère : qualité, délai, propreté, rapport qualité-prix.
+  criteres   Json?
+  commentaire String? @db.Text
+
+  auteurPrenom String @map("auteur_prenom")
+  statut       StatutAvis @default(en_attente)
+  motifRefus String? @map("motif_refus")
+  modereLe DateTime? @map("modere_le")
+  moderePar String? @map("modere_par")
+  publieLe DateTime? @map("publie_le")
+
+  reponse      ReponseAvis?
+  signalements SignalementAvis[]
+
+  creeLe DateTime @default(now()) @map("cree_le")
+
+  @@index([entrepriseId, statut])
+  @@map("avis")
+}
+
+enum StatutAvis {
+  en_attente
+  publie
+  refuse
+  signale
+}
+
+model ReponseAvis {
+  id     String @id @default(cuid())
+  avisId String @unique @map("avis_id")
+  avis   Avis   @relation(fields: [avisId], references: [id], onDelete: Cascade)
+
+  contenu  String   @db.Text
+  publieLe DateTime @default(now()) @map("publie_le")
+
+  @@map("reponses_avis")
+}
+
+model SignalementAvis {
+  id     String @id @default(cuid())
+  avisId String @map("avis_id")
+  avis   Avis   @relation(fields: [avisId], references: [id], onDelete: Cascade)
+
+  auteur      String
+  motif       String
+  explication String?   @db.Text
+  traiteLe DateTime? @map("traite_le")
+  decision    String?
+
+  creeLe DateTime @default(now()) @map("cree_le")
+
+  @@index([avisId])
+  @@map("signalements_avis")
+}
+
+/// Signalement de contenu illicite au titre du DSA : fiche, photo, texte, publication Studio.
+model SignalementDsa {
+  id String @id @default(cuid())
+
+  typeContenu String @map("type_contenu")
+  contenuId String @map("contenu_id")
+  motif       String
+  explication String  @db.Text
+  auteurEmail String? @map("auteur_email")
+
+  statut      StatutSignalement @default(en_attente)
+  decision    String?
+  motivation  String?           @db.Text
+  traiteLe DateTime? @map("traite_le")
+  traitePar String? @map("traite_par")
+  recours     String?           @db.Text
+  recoursLe DateTime? @map("recours_le")
+
+  creeLe DateTime @default(now()) @map("cree_le")
+
+  @@index([statut, creeLe])
+  @@map("signalements_dsa")
+}
+
+enum StatutSignalement {
+  en_attente
+  retire
+  conserve
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Communication avec le client : ni compte, ni tableau de bord
+// ─────────────────────────────────────────────────────────────────────────────
+
+model MessageSortant {
+  id        String   @id @default(cuid())
+  demandeId String? @map("demande_id")
+  demande   Demande? @relation(fields: [demandeId], references: [id], onDelete: SetNull)
+
+  canal       CanalMessage
+  modele      String
+  destinataire String
+  sujet       String?
+  corps       String       @db.Text
+  variables   Json?
+
+  statut      StatutMessage @default(en_attente)
+  envoyeLe DateTime? @map("envoye_le")
+  livreLe DateTime? @map("livre_le")
+  erreur      String?
+  fournisseurId String? @map("fournisseur_id")
+
+  creeLe DateTime @default(now()) @map("cree_le")
+
+  @@index([demandeId])
+  @@index([statut, creeLe])
+  @@map("messages_sortants")
+}
+
+enum CanalMessage {
+  sms
+  email
+  push
+}
+
+enum StatutMessage {
+  en_attente
+  envoye
+  livre
+  echec
+}
+
+/// Le lien d'une page d'une seule action, envoyé au client par SMS ou par e-mail.
+/// Un jeton, une action, une expiration : le client n'a ni compte ni mot de passe.
+model LienAction {
+  id        String   @id @default(cuid())
+  demandeId String? @map("demande_id")
+  demande   Demande? @relation(fields: [demandeId], references: [id], onDelete: Cascade)
+
+  jeton      String      @unique
+  action     ActionLien
+  /// L'identifiant de l'objet visé : un devis à signer, un rendez-vous à choisir…
+  cibleId String? @map("cible_id")
+
+  expireLe DateTime @map("expire_le")
+  utiliseLe DateTime? @map("utilise_le")
+  adresseIp String? @map("adresse_ip")
+
+  creeLe DateTime @default(now()) @map("cree_le")
+
+  @@index([demandeId])
+  @@index([expireLe])
+  @@map("liens_action")
+}
+
+enum ActionLien {
+  modifier_demande
+  annuler_demande
+  voir_pros
+  choisir_creneau
+  envoyer_photos
+  signer_devis
+  payer_facture
+  deposer_avis
+  confirmer_ouverture
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Back-office
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Admin {
+  id    String @id @default(cuid())
+  email String @unique
+  nom   String
+  motDePasseHash String @map("mot_de_passe_hash")
+  role  RoleAdmin @default(support)
+
+  /// La double authentification est obligatoire sur le back-office.
+  totpSecret String? @map("totp_secret")
+  totpActiveLe DateTime? @map("totp_active_le")
+
+  derniereConnexion DateTime? @map("derniere_connexion")
+  actif             Boolean   @default(true)
+
+  journaux JournalAudit[]
+
+  creeLe DateTime @default(now()) @map("cree_le")
+  modifieLe DateTime @updatedAt @map("modifie_le")
+
+  @@map("admins")
+}
+
+enum RoleAdmin {
+  administrateur
+  moderateur
+  support
+  commercial
+  comptabilite
+}
+
+/// Journal d'audit non modifiable : qui, quoi, quand, avant, après.
+/// Aucune mise à jour, aucune suppression : une correction est une nouvelle ligne.
+model JournalAudit {
+  id      String  @id @default(cuid())
+  adminId String? @map("admin_id")
+  admin   Admin?  @relation(fields: [adminId], references: [id], onDelete: SetNull)
+
+  action      String
+  typeObjet String @map("type_objet")
+  objetId String? @map("objet_id")
+  avant       Json?
+  apres       Json?
+  adresseIp String? @map("adresse_ip")
+  /// Session « ouvrir le compte d'un pro » : 15 minutes, bandeau visible, tracée.
+  usurpationDe String? @map("usurpation_de")
+
+  creeLe DateTime @default(now()) @map("cree_le")
+
+  @@index([typeObjet, objetId])
+  @@index([adminId, creeLe])
+  @@map("journal_audit")
+}
+
+model Alerte {
+  id String @id @default(cuid())
+
+  type        TypeAlerte
+  gravite     GraviteAlerte @default(moyenne)
+  titre       String
+  explication String        @db.Text
+  objetId String? @map("objet_id")
+
+  traiteeLe DateTime? @map("traitee_le")
+  traiteePar String? @map("traitee_par")
+
+  creeLe DateTime @default(now()) @map("cree_le")
+
+  @@index([traiteeLe, creeLe])
+  @@map("alertes")
+}
+
+enum TypeAlerte {
+  demande_sans_preneur
+  urgence_non_acceptee
+  exclusif_peu_reactif
+  pro_trois_expirations
+  pic_demandes_meme_appareil
+  taux_contestation_eleve
+  exclusivite_expire
+  connexion_admin_inhabituelle
+  impaye
+  envoi_rapport_echoue
+}
+
+enum GraviteAlerte {
+  basse
+  moyenne
+  haute
+}
+
+model TacheAValider {
+  id String @id @default(cuid())
+
+  type        String
+  objetId String @map("objet_id")
+  explication String?   @db.Text
+  valideeLe DateTime? @map("validee_le")
+  valideePar String? @map("validee_par")
+  refuseeLe DateTime? @map("refusee_le")
+  motifRefus String? @map("motif_refus")
+
+  creeLe DateTime @default(now()) @map("cree_le")
+
+  @@index([valideeLe, refuseeLe])
+  @@map("taches_a_valider")
+}
+
+/// Chaque règle réglable depuis le back-office, et son historique.
+/// Un paramètre ne se modifie jamais sur place : on clôt la version en cours et on en ouvre
+/// une nouvelle, de sorte qu'une facture ancienne reste explicable avec les règles de son temps.
+model Parametre {
+  id     String @id @default(cuid())
+  cle    String
+  valeur Json
+
+  debuteLe DateTime  @default(now()) @map("debute_le")
+  finitLe DateTime? @map("finit_le")
+  modifiePar String? @map("modifie_par")
+  motif      String?
+
+  @@index([cle, debuteLe])
+  @@map("parametres")
+}
+
+model DemandeRgpd {
+  id String @id @default(cuid())
+
+  type        TypeDemandeRgpd
+  email       String
+  telephone   String?
+  explication String?   @db.Text
+
+  statut    StatutDemandeRgpd @default(en_attente)
+  /// Une demande RGPD se traite sous un mois.
+  echeanceLe DateTime @map("echeance_le")
+  traiteeLe DateTime? @map("traitee_le")
+  traiteePar String? @map("traitee_par")
+  reponse    String?   @db.Text
+
+  creeLe DateTime @default(now()) @map("cree_le")
+
+  @@index([statut, echeanceLe])
+  @@map("demandes_rgpd")
+}
+
+enum TypeDemandeRgpd {
+  acces
+  rectification
+  suppression
+  opposition
+  portabilite
+}
+
+enum StatutDemandeRgpd {
+  en_attente
+  traitee
+  refusee
+}
+
+model CampagnePub {
+  id String @id @default(cuid())
+
+  annonceur   String
+  format      String
+  /// Pages ciblées : métiers, communes, types de page.
+  ciblage     Json
+  debuteLe DateTime @map("debute_le")
+  finitLe DateTime @map("finit_le")
+  budgetHT Decimal  @db.Decimal(10, 2) @map("budget_ht")
+  plafondAffichagesParVisiteur Int? @map("plafond_affichages_par_visiteur")
+
+  creationUrl String? @map("creation_url")
+  valideeLe DateTime? @map("validee_le")
+  valideePar String? @map("validee_par")
+  active      Boolean   @default(false)
+
+  creeLe DateTime @default(now()) @map("cree_le")
+  modifieLe DateTime @updatedAt @map("modifie_le")
+
+  @@index([active, debuteLe])
+  @@map("campagnes_pub")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Mesure
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Affichage {
+  id           String     @id @default(cuid())
+  entrepriseId String @map("entreprise_id")
+  entreprise   Entreprise @relation(fields: [entrepriseId], references: [id], onDelete: Cascade)
+
+  metierId String? @map("metier_id")
+  communeId String? @map("commune_id")
+  rang      Int?
+  sponsorise Boolean @default(false)
+  /// Jour au format AAAA-MM-JJ : les affichages sont agrégés, pas stockés un par un.
+  jour      String
+  nombre    Int     @default(1)
+
+  @@unique([entrepriseId, metierId, communeId, sponsorise, jour])
+  @@index([jour])
+  @@map("affichages")
+}
+
+model Clic {
+  id           String     @id @default(cuid())
+  entrepriseId String @map("entreprise_id")
+  entreprise   Entreprise @relation(fields: [entrepriseId], references: [id], onDelete: Cascade)
+
+  type      TypeClic
+  metierId String? @map("metier_id")
+  communeId String? @map("commune_id")
+  jour      String
+  nombre    Int     @default(1)
+  /// Mise en avant au clic : 1 € par clic, facturé à l'entreprise.
+  factureHT Decimal @default(0) @db.Decimal(10, 2) @map("facture_ht")
+
+  @@unique([entrepriseId, type, metierId, communeId, jour])
+  @@index([jour])
+  @@map("clics")
+}
+
+enum TypeClic {
+  fiche
+  appel
+  site_web
+  whatsapp
+  devis
+  mise_en_avant
+}
+
+model Appel {
+  id           String     @id @default(cuid())
+  entrepriseId String @map("entreprise_id")
+  entreprise   Entreprise @relation(fields: [entrepriseId], references: [id], onDelete: Cascade)
+
+  /// Numéro de suivi appelé, jamais le numéro réel du pro.
+  numeroSuivi String? @map("numero_suivi")
+  dureeSecondes Int? @map("duree_secondes")
+  manque        Boolean  @default(false)
+  appeleLe DateTime @default(now()) @map("appele_le")
+
+  @@index([entrepriseId, appeleLe])
+  @@map("appels")
+}
+
+/// Le score de qualité, recalculé chaque nuit et poussé dans le moteur de recherche.
+/// Les composantes sont conservées pour que le back-office puisse expliquer une variation.
+model ScoreQualite {
+  id           String     @id @default(cuid())
+  entrepriseId String @map("entreprise_id")
+  entreprise   Entreprise @relation(fields: [entrepriseId], references: [id], onDelete: Cascade)
+
+  score      Float
+  avis       Float
+  activite   Float
+  pertinence Float
+  reactivite Float
+  fraicheur  Float
+
+  /// Jour du calcul, au format AAAA-MM-JJ.
+  jour String
+
+  calculeLe DateTime @default(now()) @map("calcule_le")
+
+  @@unique([entrepriseId, jour])
+  @@index([jour])
+  @@map("scores_qualite")
+}

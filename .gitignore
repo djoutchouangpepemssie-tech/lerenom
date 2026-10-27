@@ -25,3 +25,9 @@ data/cache/
 
 .DS_Store
 Thumbs.db
+
+# Client Prisma généré : produit par `pnpm --filter @lerenom/db generer`.
+packages/db/src/genere/
+
+# Généré par Next.js à chaque build
+next-env.d.ts
