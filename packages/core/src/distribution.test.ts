@@ -13,9 +13,9 @@ import {
   rayonElargi,
   solliciter,
   statutDemande,
-} from './distribution.js';
-import type { EtatDistribution, ProCandidat, ProRetenu } from './distribution.js';
-import { PARAMETRES_PAR_DEFAUT, avecParametres } from './parametres.js';
+} from './distribution';
+import type { EtatDistribution, ProCandidat, ProRetenu } from './distribution';
+import { PARAMETRES_PAR_DEFAUT, avecParametres } from './parametres';
 
 const P = PARAMETRES_PAR_DEFAUT;
 

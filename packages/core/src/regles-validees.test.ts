@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { FORMULES, RANG_FORMULE, REGLES_VALIDEES, prixAnnuelHT } from './regles-validees.js';
-import { PARAMETRES_PAR_DEFAUT, avecParametres, sommePoidsScore } from './parametres.js';
+import { FORMULES, RANG_FORMULE, REGLES_VALIDEES, prixAnnuelHT } from './regles-validees';
+import { PARAMETRES_PAR_DEFAUT, avecParametres, sommePoidsScore } from './parametres';
 
 /**
  * Ces tests ne vérifient pas un calcul : ils gardent les décisions d'Arcel.

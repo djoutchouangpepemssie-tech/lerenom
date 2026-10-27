@@ -1,0 +1,283 @@
+/*
+ * Le design system de Le Renom.
+ *
+ * Les jetons sont déclarés une seule fois ici, en variables CSS exposées à Tailwind par @theme.
+ * Aucune couleur, aucun rayon, aucune durée n'est écrit en dur dans un composant : si l'identité
+ * évolue, elle évolue dans ce fichier.
+ */
+
+@import 'tailwindcss';
+
+@theme {
+  /* --- Couleurs d'identité ------------------------------------------------ */
+  --color-encre: #16181d;
+  --color-nuit: #0f1115;
+  --color-or: #c9a24d;
+  --color-or-clair: #e2c27a;
+  --color-or-fonce: #8a6a1f;
+  --color-creme: #f6f4ee;
+  --color-carte: #ffffff;
+  --color-bordure: #e7e3d8;
+
+  /* États. Chaque couleur de texte est accompagnée de son fond, pour garantir le contraste AA. */
+  --color-succes: #2f6b47;
+  --color-succes-fond: #eaf5ee;
+  --color-alerte: #8a5b0b;
+  --color-alerte-fond: #fbf3e1;
+  --color-erreur: #a3321f;
+  --color-erreur-fond: #fbedea;
+
+  /* Nuances d'encre, pour les textes secondaires. */
+  --color-encre-70: #4a4d55;
+  --color-encre-55: #6b6e77;
+  --color-encre-40: #8e9199;
+
+  /* --- Typographie -------------------------------------------------------- */
+  --font-titre: var(--police-titre), 'Iowan Old Style', Georgia, serif;
+  --font-texte: var(--police-texte), -apple-system, 'Segoe UI', sans-serif;
+
+  /* --- Mise en page ------------------------------------------------------- */
+  /* Conteneur de 1240 px et gouttière de 20 px sur téléphone (cahier des charges §18). */
+  --spacing-conteneur: 1240px;
+  --spacing-gouttiere: 20px;
+
+  /* Points de rupture imposés : 1080 px et 760 px. */
+  --breakpoint-bureau: 1080px;
+  --breakpoint-tablette: 760px;
+
+  --radius-douce: 10px;
+  --radius-carte: 16px;
+  --radius-panneau: 24px;
+
+  /* Ombres chaudes, jamais grises : l'ombre reprend la couleur de l'encre. */
+  --shadow-posee: 0 1px 2px rgb(22 24 29 / 0.04), 0 2px 8px rgb(22 24 29 / 0.04);
+  --shadow-levee: 0 2px 4px rgb(22 24 29 / 0.05), 0 12px 32px rgb(22 24 29 / 0.09);
+  --shadow-or: 0 2px 20px rgb(201 162 77 / 0.28);
+
+  /* Transitions de 200 à 300 ms (cahier des charges §18). */
+  --duree-courte: 180ms;
+  --duree-moyenne: 240ms;
+  --duree-longue: 320ms;
+  --courbe: cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+/* ------------------------------------------------------------------------- */
+/* Socle                                                                      */
+/* ------------------------------------------------------------------------- */
+
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    /* Aucun défilement horizontal de la page, à aucune largeur. */
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    margin: 0;
+    background-color: var(--color-creme);
+    color: var(--color-encre);
+    font-family: var(--font-texte);
+    font-size: 1rem;
+    line-height: 1.6;
+    font-feature-settings: 'kern' 1;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    overflow-x: hidden;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-titre);
+    font-weight: 400;
+    line-height: 1.12;
+    letter-spacing: -0.015em;
+    margin: 0;
+    /* Les titres en serif ont besoin d'une césure propre sur téléphone. */
+    text-wrap: balance;
+  }
+
+  p {
+    margin: 0;
+    text-wrap: pretty;
+  }
+
+  /* Le focus est toujours visible, et toujours lisible sur fond clair comme sombre. */
+  :focus-visible {
+    outline: 2px solid var(--color-or);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+    color: inherit;
+  }
+
+  /* Les images ne débordent jamais de leur conteneur. */
+  img,
+  svg,
+  video {
+    max-width: 100%;
+    height: auto;
+  }
+}
+
+/* ------------------------------------------------------------------------- */
+/* Animations                                                                 */
+/* ------------------------------------------------------------------------- */
+
+@keyframes lr-apparition {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes lr-flottement {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes lr-chute-epingle {
+  0% {
+    opacity: 0;
+    transform: translateY(-22px) scale(0.86);
+  }
+  65% {
+    opacity: 1;
+    transform: translateY(2px) scale(1.04);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes lr-pulsation {
+  0% {
+    box-shadow: 0 0 0 0 rgb(201 162 77 / 0.45);
+  }
+  70% {
+    box-shadow: 0 0 0 14px rgb(201 162 77 / 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgb(201 162 77 / 0);
+  }
+}
+
+/* Reflet or qui traverse les emblèmes Exclusif. */
+@keyframes lr-reflet-or {
+  0% {
+    background-position: -180% 0;
+  }
+  100% {
+    background-position: 280% 0;
+  }
+}
+
+/* Bandeau défilant des métiers. Le contenu est dupliqué pour une boucle sans saut. */
+@keyframes lr-defilement {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* Fenêtres qui s'allument dans les toits de Paris. */
+@keyframes lr-fenetre {
+  0%,
+  44% {
+    opacity: 0.08;
+  }
+  52%,
+  94% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.08;
+  }
+}
+
+/* Fumée des cheminées. */
+@keyframes lr-fumee {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.7);
+  }
+  25% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(10px, -46px) scale(1.9);
+  }
+}
+
+@keyframes lr-remplissage {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@utility animation-apparition {
+  animation: lr-apparition var(--duree-longue) var(--courbe) both;
+}
+
+@utility animation-flottement {
+  animation: lr-flottement 5s ease-in-out infinite;
+}
+
+@utility animation-epingle {
+  animation: lr-chute-epingle 520ms var(--courbe) both;
+}
+
+@utility animation-pulsation {
+  animation: lr-pulsation 2.4s ease-out infinite;
+}
+
+/*
+ * Respect de `prefers-reduced-motion`, sans exception.
+ *
+ * On coupe les animations décoratives et les transitions, mais on garde les opacités finales :
+ * un contenu animé à l'apparition doit rester visible, pas disparaître.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  html {
+    scroll-behavior: auto;
+  }
+}

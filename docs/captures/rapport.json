@@ -1,0 +1,22 @@
+[
+  {
+    "page": "Design system",
+    "largeur": 390,
+    "fichier": "design-system-390.png",
+    "defilementHorizontal": false,
+    "largeurDocument": 390,
+    "largeurFenetre": 390,
+    "debordements": [],
+    "erreursConsole": []
+  },
+  {
+    "page": "Design system",
+    "largeur": 1440,
+    "fichier": "design-system-1440.png",
+    "defilementHorizontal": false,
+    "largeurDocument": 1440,
+    "largeurFenetre": 1440,
+    "debordements": [],
+    "erreursConsole": []
+  }
+]

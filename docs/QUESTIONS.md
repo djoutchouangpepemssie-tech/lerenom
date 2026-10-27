@@ -47,7 +47,7 @@ question de confiance.
 
 ## Q2 🟠 — Sans Exclusif sur une zone, deux Premium prennent-ils les places 1 et 2 ?
 
-*(§22.1 du cahier des charges)*
+_(§22.1 du cahier des charges)_
 
 **Choix par défaut appliqué : oui.** En l'absence de titulaire d'exclusivité sur le couple
 métier × zone, les deux emplacements Premium occupent les places 1 et 2, toujours étiquetés
@@ -62,7 +62,7 @@ dans `packages/core`, aucune migration.
 
 ## Q3 🟠 — Le périmètre exact d'une exclusivité
 
-*(§22.2 : commune entière, arrondissement à Paris, ou quartier dans les grandes villes ?)*
+_(§22.2 : commune entière, arrondissement à Paris, ou quartier dans les grandes villes ?)_
 
 **Divergence relevée entre les documents.** L'étude de faisabilité parle systématiquement de
 « métier × quartier » (« Place n° 1 unique pour son métier dans son quartier », « un seul Exclusif
@@ -84,7 +84,7 @@ périmètre exactement comme il est vendu.
 
 ## Q4 🟠 — Quand un client signe le devis d'un pro, les autres pros perdent-ils l'accès à ses coordonnées ?
 
-*(§22.3)*
+_(§22.3)_
 
 **Choix par défaut appliqué : oui, l'accès est fermé.** Dès qu'une demande est déclarée gagnée par
 un pro, les autres pros qui l'avaient acceptée sont prévenus (« cette demande a trouvé son
@@ -103,7 +103,7 @@ qu'il a déjà exporté : Le Renom ne peut pas l'en empêcher, seulement le lui 
 
 ## Q5 🔴 — Recrédit et demandes non payées : à confirmer dans les CGV
 
-*(§22.4)*
+_(§22.4)_
 
 **Règle appliquée, à faire confirmer mot pour mot par l'avocat.**
 
@@ -123,7 +123,7 @@ qu'il a déjà exporté : Le Renom ne peut pas l'en empêcher, seulement le lui 
 
 ## Q6 🟢 — Délai de contestation : 7 jours ou 48 heures ?
 
-*(§22.5 — divergence entre deux passages de l'étude)*
+_(§22.5 — divergence entre deux passages de l'étude)_
 
 **Choix par défaut appliqué, conforme au défaut proposé : 7 jours pour contester, 48 heures pour
 trancher.** Les deux délais sont des paramètres de la table `parametres`, historisés, modifiables
@@ -134,7 +134,7 @@ et la file du back-office affiche le délai restant à Arcel.
 
 ## Q7 🟠 — Faut-il remonter le prix de la demande hors forfait Premium de 12 € à 15 € ?
 
-*(§22.7)*
+_(§22.7)_
 
 **Choix par défaut appliqué : non, on garde 12 €**, parce que c'est une valeur **[VALIDÉ]** (règle
 n° 2) et qu'une valeur validée ne se change pas sans l'accord d'Arcel.
@@ -155,14 +155,14 @@ déploiement.
 
 ## Q8 🟠 — Prix indicatifs des 479 prestations
 
-*(§22.6)* Voir Q1. Les prix sont marqués `aValider` et le guide des prix le dit honnêtement.
+_(§22.6)_ Voir Q1. Les prix sont marqués `aValider` et le guide des prix le dit honnêtement.
 Seuls les prix parisiens issus de l'étude sont présentés comme des références.
 
 ---
 
 ## Q9 🟠 — Quels métiers et quelles villes ouvrir en premier aux demandes ?
 
-*(§22.8)*
+_(§22.8)_
 
 **Choix par défaut appliqué : exactement les statuts donnés par le cahier des charges**, et rien
 de plus. Ouvertes : Paris 9e, Paris 11e, Paris 20e, Montreuil, Vincennes. Bientôt : Paris 12e,
@@ -241,7 +241,7 @@ honnêtement dans les statistiques du pro (« clics sur Appeler », pas « appel
 
 ## Q14 🔴 — Avocat, marque, et textes légaux
 
-*(§22.9)*
+_(§22.9)_
 
 **État appliqué.** Les pages `/cgu`, `/cgv-pro`, `/confidentialite`, `/cookies`,
 `/mentions-legales`, `/charte-avis` et `/comment-nous-classons` sont rédigées et en ligne, mais

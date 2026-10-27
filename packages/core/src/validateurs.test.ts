@@ -7,7 +7,7 @@ import {
   normaliseMobileFrancais,
   sirenValide,
   siretValide,
-} from './validateurs.js';
+} from './validateurs';
 
 describe('siretValide', () => {
   it('accepte un SIRET dont la clé de Luhn est juste', () => {

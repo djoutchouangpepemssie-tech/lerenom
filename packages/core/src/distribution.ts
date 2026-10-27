@@ -12,11 +12,11 @@
  * expiration ne coûtent rien et ne décomptent rien. Une acceptation est définitive.
  */
 
-import { couvre, distanceKm, scoreProximite } from './geo.js';
-import type { Point } from './geo.js';
-import type { Parametres } from './parametres.js';
-import type { Formule } from './regles-validees.js';
-import type { TypeDemande } from './quotas.js';
+import { couvre, distanceKm, scoreProximite } from './geo';
+import type { Point } from './geo';
+import type { Parametres } from './parametres';
+import type { Formule } from './regles-validees';
+import type { TypeDemande } from './quotas';
 
 export type MotifRefus = 'indisponible' | 'trop-loin' | 'pas-mon-metier' | 'budget-trop-bas';
 

@@ -6,14 +6,14 @@
  * règle, écrivent le résultat et le journalisent. Elles ne décident pas.
  */
 
-export * from './regles-validees.js';
-export * from './parametres.js';
-export * from './geo.js';
-export * from './score.js';
-export * from './classement.js';
-export * from './zones.js';
-export * from './quotas.js';
-export * from './distribution.js';
-export * from './garantie.js';
-export * from './devis.js';
-export * from './validateurs.js';
+export * from './regles-validees';
+export * from './parametres';
+export * from './geo';
+export * from './score';
+export * from './classement';
+export * from './zones';
+export * from './quotas';
+export * from './distribution';
+export * from './garantie';
+export * from './devis';
+export * from './validateurs';

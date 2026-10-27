@@ -6,9 +6,9 @@ import {
   prioriteConservation,
   selectionValide,
   villesAutorisees,
-} from './zones.js';
-import type { VilleChoisie } from './zones.js';
-import { PARAMETRES_PAR_DEFAUT } from './parametres.js';
+} from './zones';
+import type { VilleChoisie } from './zones';
+import { PARAMETRES_PAR_DEFAUT } from './parametres';
 
 const P = PARAMETRES_PAR_DEFAUT;
 

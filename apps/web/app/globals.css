@@ -1,0 +1,13 @@
+/*
+ * La feuille de style de l'application.
+ *
+ * Elle n'ajoute rien à l'identité : elle importe le design system et déclare la source des
+ * sources de contenu Tailwind, pour que les classes utilisées dans `packages/ui` soient bien
+ * générées.
+ */
+
+@import '@lerenom/ui/styles.css';
+
+@source '../app';
+@source '../lib';
+@source '../../../packages/ui/src';

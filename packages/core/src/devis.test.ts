@@ -11,8 +11,8 @@ import {
   prepareFactureAcompte,
   prepareFactureSolde,
   prochainNumero,
-} from './devis.js';
-import type { DocumentChiffrable, LigneDocument, MentionsDevis } from './devis.js';
+} from './devis';
+import type { DocumentChiffrable, LigneDocument, MentionsDevis } from './devis';
 
 function ligne(partiel: Partial<LigneDocument> & { id: string }): LigneDocument {
   return {

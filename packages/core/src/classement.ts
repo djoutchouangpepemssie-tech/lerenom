@@ -10,8 +10,8 @@
  * retombe dans le classement naturel, à son rang réel.
  */
 
-import type { Parametres } from './parametres.js';
-import type { Formule } from './regles-validees.js';
+import type { Parametres } from './parametres';
+import type { Formule } from './regles-validees';
 
 export interface CandidatClassement {
   readonly entrepriseId: string;

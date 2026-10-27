@@ -5,8 +5,8 @@
  * recherche. Aucune page de résultats ne le calcule au moment de l'affichage.
  */
 
-import type { Parametres, PoidsScore } from './parametres.js';
-import { sommePoidsScore } from './parametres.js';
+import type { Parametres, PoidsScore } from './parametres';
+import { sommePoidsScore } from './parametres';
 
 /** Les composantes du score, chacune déjà ramenée entre 0 et 1. */
 export interface ComposantesScore {
