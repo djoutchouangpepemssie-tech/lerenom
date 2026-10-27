@@ -1,0 +1,6147 @@
+{
+ "source": {
+  "nature": "estimation",
+  "zone": "Île-de-France",
+  "devise": "EUR",
+  "mention": "Fourchettes indicatives TTC, données à titre de repère et non validées. Seul un devis détaillé engage le professionnel. À faire valider par Arcel (docs/QUESTIONS.md, Q1 et Q8).",
+  "tva": {
+   "5.5": "Travaux d'amélioration de la performance énergétique et travaux induits.",
+   "10": "Travaux d'entretien et d'amélioration d'un logement de plus de deux ans.",
+   "20": "Prestations de services, véhicules, événementiel, logement de moins de deux ans."
+  }
+ },
+ "metiers": [
+  {
+   "slug": "plombier",
+   "nom": "Plombier",
+   "univers": "plomberie-et-chauffage",
+   "tauxTva": 10,
+   "bandes": {
+    "forfait": {
+     "minTTC": 90,
+     "maxTTC": 350
+    },
+    "unite": {
+     "minTTC": 110,
+     "maxTTC": 420
+    }
+   },
+   "prestations": [
+    {
+     "slug": "plombier--recherche-de-fuite",
+     "nom": "Recherche de fuite",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 90,
+     "maxTTC": 350,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "plombier--reparation-de-fuite-d-eau",
+     "nom": "Réparation de fuite d'eau",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 90,
+     "maxTTC": 350,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "plombier--remplacement-de-robinet",
+     "nom": "Remplacement de robinet",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 110,
+     "maxTTC": 420,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "plombier--installation-de-wc",
+     "nom": "Installation de WC",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 110,
+     "maxTTC": 420,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "plombier--remplacement-de-chasse-d-eau",
+     "nom": "Remplacement de chasse d'eau",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 110,
+     "maxTTC": 420,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "plombier--debouchage-d-evier-ou-de-lavabo",
+     "nom": "Débouchage d'évier ou de lavabo",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 90,
+     "maxTTC": 350,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "plombier--remplacement-de-flexible-et-raccords",
+     "nom": "Remplacement de flexible et raccords",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 110,
+     "maxTTC": 420,
+     "source": "estimation",
+     "aValider": true
+    }
+   ]
+  },
+  {
+   "slug": "chauffagiste",
+   "nom": "Chauffagiste",
+   "univers": "plomberie-et-chauffage",
+   "tauxTva": 10,
+   "bandes": {
+    "forfait": {
+     "minTTC": 110,
+     "maxTTC": 420
+    },
+    "unite": {
+     "minTTC": 180,
+     "maxTTC": 4500
+    }
+   },
+   "prestations": [
+    {
+     "slug": "chauffagiste--entretien-annuel-de-chaudiere-gaz",
+     "nom": "Entretien annuel de chaudière gaz",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 110,
+     "maxTTC": 420,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "chauffagiste--depannage-de-chaudiere",
+     "nom": "Dépannage de chaudière",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 110,
+     "maxTTC": 420,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "chauffagiste--remplacement-de-chaudiere",
+     "nom": "Remplacement de chaudière",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 180,
+     "maxTTC": 4500,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "chauffagiste--pose-de-radiateur",
+     "nom": "Pose de radiateur",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 180,
+     "maxTTC": 4500,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "chauffagiste--desembouage-du-circuit-de-chauffage",
+     "nom": "Désembouage du circuit de chauffage",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 110,
+     "maxTTC": 420,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "chauffagiste--purge-et-equilibrage-des-radiateurs",
+     "nom": "Purge et équilibrage des radiateurs",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 110,
+     "maxTTC": 420,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "chauffagiste--remplacement-de-thermostat",
+     "nom": "Remplacement de thermostat",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 180,
+     "maxTTC": 4500,
+     "source": "estimation",
+     "aValider": true
+    }
+   ]
+  },
+  {
+   "slug": "installateur-sanitaire",
+   "nom": "Installateur sanitaire",
+   "univers": "plomberie-et-chauffage",
+   "tauxTva": 10,
+   "bandes": {
+    "forfait": {
+     "minTTC": 450,
+     "maxTTC": 6500
+    },
+    "unite": {
+     "minTTC": 250,
+     "maxTTC": 1800
+    }
+   },
+   "prestations": [
+    {
+     "slug": "installateur-sanitaire--installation-de-douche-a-l-italienne",
+     "nom": "Installation de douche à l'italienne",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 450,
+     "maxTTC": 6500,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "installateur-sanitaire--remplacement-de-baignoire-par-une-douche",
+     "nom": "Remplacement de baignoire par une douche",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 450,
+     "maxTTC": 6500,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "installateur-sanitaire--pose-de-meuble-vasque",
+     "nom": "Pose de meuble vasque",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 250,
+     "maxTTC": 1800,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "installateur-sanitaire--renovation-complete-de-salle-de-bain",
+     "nom": "Rénovation complète de salle de bain",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 450,
+     "maxTTC": 6500,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "installateur-sanitaire--installation-de-chauffe-eau",
+     "nom": "Installation de chauffe-eau",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 250,
+     "maxTTC": 1800,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "installateur-sanitaire--detartrage-de-chauffe-eau",
+     "nom": "Détartrage de chauffe-eau",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 450,
+     "maxTTC": 6500,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "installateur-sanitaire--pose-de-paroi-de-douche",
+     "nom": "Pose de paroi de douche",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 250,
+     "maxTTC": 1800,
+     "source": "estimation",
+     "aValider": true
+    }
+   ]
+  },
+  {
+   "slug": "debouchage-et-assainissement",
+   "nom": "Débouchage et assainissement",
+   "univers": "plomberie-et-chauffage",
+   "tauxTva": 10,
+   "bandes": {
+    "forfait": {
+     "minTTC": 140,
+     "maxTTC": 650
+    }
+   },
+   "prestations": [
+    {
+     "slug": "debouchage-et-assainissement--debouchage-de-canalisation",
+     "nom": "Débouchage de canalisation",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 140,
+     "maxTTC": 650,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "debouchage-et-assainissement--hydrocurage-haute-pression",
+     "nom": "Hydrocurage haute pression",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 140,
+     "maxTTC": 650,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "debouchage-et-assainissement--inspection-video-de-canalisation",
+     "nom": "Inspection vidéo de canalisation",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 140,
+     "maxTTC": 650,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "debouchage-et-assainissement--vidange-de-fosse-septique",
+     "nom": "Vidange de fosse septique",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 140,
+     "maxTTC": 650,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "debouchage-et-assainissement--pompage-d-eaux-usees",
+     "nom": "Pompage d'eaux usées",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 140,
+     "maxTTC": 650,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "debouchage-et-assainissement--debouchage-de-wc",
+     "nom": "Débouchage de WC",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 140,
+     "maxTTC": 650,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "debouchage-et-assainissement--degraissage-de-bac-a-graisse",
+     "nom": "Dégraissage de bac à graisse",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 140,
+     "maxTTC": 650,
+     "source": "estimation",
+     "aValider": true
+    }
+   ]
+  },
+  {
+   "slug": "electricien",
+   "nom": "Électricien",
+   "univers": "electricite-et-domotique",
+   "tauxTva": 10,
+   "bandes": {
+    "forfait": {
+     "minTTC": 110,
+     "maxTTC": 1900
+    },
+    "unite": {
+     "minTTC": 90,
+     "maxTTC": 1600
+    }
+   },
+   "prestations": [
+    {
+     "slug": "electricien--depannage-electrique",
+     "nom": "Dépannage électrique",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 110,
+     "maxTTC": 1900,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "electricien--remplacement-de-tableau-electrique",
+     "nom": "Remplacement de tableau électrique",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 90,
+     "maxTTC": 1600,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "electricien--ajout-de-prise-electrique",
+     "nom": "Ajout de prise électrique",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 90,
+     "maxTTC": 1600,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "electricien--mise-aux-normes-d-une-installation",
+     "nom": "Mise aux normes d'une installation",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 110,
+     "maxTTC": 1900,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "electricien--pose-de-luminaire",
+     "nom": "Pose de luminaire",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 90,
+     "maxTTC": 1600,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "electricien--remplacement-d-interrupteur",
+     "nom": "Remplacement d'interrupteur",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 90,
+     "maxTTC": 1600,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "electricien--diagnostic-electrique-obligatoire",
+     "nom": "Diagnostic électrique obligatoire",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 110,
+     "maxTTC": 1900,
+     "source": "estimation",
+     "aValider": true
+    }
+   ]
+  },
+  {
+   "slug": "domoticien",
+   "nom": "Domoticien",
+   "univers": "electricite-et-domotique",
+   "tauxTva": 10,
+   "bandes": {
+    "forfait": {
+     "minTTC": 280,
+     "maxTTC": 2200
+    },
+    "heure": {
+     "minTTC": 55,
+     "maxTTC": 90
+    },
+    "unite": {
+     "minTTC": 320,
+     "maxTTC": 1400
+    }
+   },
+   "prestations": [
+    {
+     "slug": "domoticien--installation-d-un-eclairage-connecte",
+     "nom": "Installation d'un éclairage connecté",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 280,
+     "maxTTC": 2200,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "domoticien--motorisation-de-volets-roulants",
+     "nom": "Motorisation de volets roulants",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 320,
+     "maxTTC": 1400,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "domoticien--installation-de-thermostat-connecte",
+     "nom": "Installation de thermostat connecté",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 320,
+     "maxTTC": 1400,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "domoticien--pose-d-interphone-ou-de-visiophone",
+     "nom": "Pose d'interphone ou de visiophone",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 320,
+     "maxTTC": 1400,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "domoticien--installation-d-un-portail-automatique",
+     "nom": "Installation d'un portail automatique",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 320,
+     "maxTTC": 1400,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "domoticien--configuration-d-une-centrale-domotique",
+     "nom": "Configuration d'une centrale domotique",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 280,
+     "maxTTC": 2200,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "domoticien--programmation-de-scenarios-et-automatismes",
+     "nom": "Programmation de scénarios et automatismes",
+     "unite": "heure",
+     "libelleUnite": "de l'heure",
+     "minTTC": 55,
+     "maxTTC": 90,
+     "source": "estimation",
+     "aValider": true
+    }
+   ]
+  },
+  {
+   "slug": "installateur-de-borne-de-recharge",
+   "nom": "Installateur de borne de recharge",
+   "univers": "electricite-et-domotique",
+   "tauxTva": 10,
+   "bandes": {
+    "forfait": {
+     "minTTC": 180,
+     "maxTTC": 900
+    },
+    "unite": {
+     "minTTC": 900,
+     "maxTTC": 2200
+    }
+   },
+   "prestations": [
+    {
+     "slug": "installateur-de-borne-de-recharge--installation-de-borne-de-recharge",
+     "nom": "Installation de borne de recharge",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 900,
+     "maxTTC": 2200,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "installateur-de-borne-de-recharge--pose-d-une-prise-renforcee",
+     "nom": "Pose d'une prise renforcée",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 900,
+     "maxTTC": 2200,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "installateur-de-borne-de-recharge--mise-en-conformite-du-tableau-pour-une-borne",
+     "nom": "Mise en conformité du tableau pour une borne",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 180,
+     "maxTTC": 900,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "installateur-de-borne-de-recharge--depannage-de-borne-de-recharge",
+     "nom": "Dépannage de borne de recharge",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 180,
+     "maxTTC": 900,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "installateur-de-borne-de-recharge--etude-d-installation-et-visite-technique",
+     "nom": "Étude d'installation et visite technique",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 180,
+     "maxTTC": 900,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "installateur-de-borne-de-recharge--raccordement-et-declaration-aupres-du-gestionnaire",
+     "nom": "Raccordement et déclaration auprès du gestionnaire",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 180,
+     "maxTTC": 900,
+     "source": "estimation",
+     "aValider": true
+    }
+   ]
+  },
+  {
+   "slug": "depannage-electrique-d-urgence",
+   "nom": "Dépannage électrique d'urgence",
+   "univers": "electricite-et-domotique",
+   "tauxTva": 10,
+   "bandes": {
+    "forfait": {
+     "minTTC": 120,
+     "maxTTC": 480
+    },
+    "unite": {
+     "minTTC": 120,
+     "maxTTC": 320
+    }
+   },
+   "prestations": [
+    {
+     "slug": "depannage-electrique-d-urgence--recherche-de-panne-electrique",
+     "nom": "Recherche de panne électrique",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 120,
+     "maxTTC": 480,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "depannage-electrique-d-urgence--remise-en-service-apres-coupure",
+     "nom": "Remise en service après coupure",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 120,
+     "maxTTC": 480,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "depannage-electrique-d-urgence--reparation-de-court-circuit",
+     "nom": "Réparation de court-circuit",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 120,
+     "maxTTC": 480,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "depannage-electrique-d-urgence--securisation-d-une-installation-dangereuse",
+     "nom": "Sécurisation d'une installation dangereuse",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 120,
+     "maxTTC": 480,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "depannage-electrique-d-urgence--remplacement-de-disjoncteur",
+     "nom": "Remplacement de disjoncteur",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 120,
+     "maxTTC": 320,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "depannage-electrique-d-urgence--depannage-de-chauffe-eau-electrique",
+     "nom": "Dépannage de chauffe-eau électrique",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 120,
+     "maxTTC": 480,
+     "source": "estimation",
+     "aValider": true
+    }
+   ]
+  },
+  {
+   "slug": "serrurier",
+   "nom": "Serrurier",
+   "univers": "serrurerie-et-securite",
+   "tauxTva": 10,
+   "bandes": {
+    "forfait": {
+     "minTTC": 90,
+     "maxTTC": 420
+    },
+    "unite": {
+     "minTTC": 120,
+     "maxTTC": 650
+    }
+   },
+   "prestations": [
+    {
+     "slug": "serrurier--ouverture-de-porte-claquee",
+     "nom": "Ouverture de porte claquée",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 90,
+     "maxTTC": 420,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "serrurier--remplacement-de-cylindre",
+     "nom": "Remplacement de cylindre",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 120,
+     "maxTTC": 650,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "serrurier--changement-de-serrure",
+     "nom": "Changement de serrure",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 120,
+     "maxTTC": 650,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "serrurier--reparation-de-serrure",
+     "nom": "Réparation de serrure",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 90,
+     "maxTTC": 420,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "serrurier--pose-de-verrou-supplementaire",
+     "nom": "Pose de verrou supplémentaire",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 120,
+     "maxTTC": 650,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "serrurier--ouverture-apres-effraction-et-securisation",
+     "nom": "Ouverture après effraction et sécurisation",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 90,
+     "maxTTC": 420,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "serrurier--reproduction-de-cle-de-securite",
+     "nom": "Reproduction de clé de sécurité",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 120,
+     "maxTTC": 650,
+     "source": "estimation",
+     "aValider": true
+    }
+   ]
+  },
+  {
+   "slug": "installateur-d-alarme",
+   "nom": "Installateur d'alarme",
+   "univers": "serrurerie-et-securite",
+   "tauxTva": 10,
+   "bandes": {
+    "forfait": {
+     "minTTC": 250,
+     "maxTTC": 2400
+    },
+    "unite": {
+     "minTTC": 120,
+     "maxTTC": 480
+    }
+   },
+   "prestations": [
+    {
+     "slug": "installateur-d-alarme--installation-d-une-alarme-sans-fil",
+     "nom": "Installation d'une alarme sans fil",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 250,
+     "maxTTC": 2400,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "installateur-d-alarme--pose-de-cameras-de-surveillance",
+     "nom": "Pose de caméras de surveillance",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 120,
+     "maxTTC": 480,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "installateur-d-alarme--raccordement-a-la-telesurveillance",
+     "nom": "Raccordement à la télésurveillance",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 250,
+     "maxTTC": 2400,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "installateur-d-alarme--installation-de-detecteurs-d-ouverture",
+     "nom": "Installation de détecteurs d'ouverture",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 120,
+     "maxTTC": 480,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "installateur-d-alarme--pose-de-detecteur-de-fumee",
+     "nom": "Pose de détecteur de fumée",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 120,
+     "maxTTC": 480,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "installateur-d-alarme--maintenance-annuelle-d-un-systeme-d-alarme",
+     "nom": "Maintenance annuelle d'un système d'alarme",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 250,
+     "maxTTC": 2400,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "installateur-d-alarme--depannage-d-alarme",
+     "nom": "Dépannage d'alarme",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 250,
+     "maxTTC": 2400,
+     "source": "estimation",
+     "aValider": true
+    }
+   ]
+  },
+  {
+   "slug": "vitrier",
+   "nom": "Vitrier",
+   "univers": "serrurerie-et-securite",
+   "tauxTva": 10,
+   "bandes": {
+    "forfait": {
+     "minTTC": 180,
+     "maxTTC": 700
+    },
+    "m2": {
+     "minTTC": 120,
+     "maxTTC": 420
+    },
+    "ml": {
+     "minTTC": 25,
+     "maxTTC": 70
+    },
+    "unite": {
+     "minTTC": 150,
+     "maxTTC": 600
+    }
+   },
+   "prestations": [
+    {
+     "slug": "vitrier--remplacement-de-vitre-cassee",
+     "nom": "Remplacement de vitre cassée",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 150,
+     "maxTTC": 600,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "vitrier--pose-de-double-vitrage",
+     "nom": "Pose de double vitrage",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 120,
+     "maxTTC": 420,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "vitrier--securisation-d-urgence-d-une-vitrine",
+     "nom": "Sécurisation d'urgence d'une vitrine",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 180,
+     "maxTTC": 700,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "vitrier--remplacement-de-survitrage",
+     "nom": "Remplacement de survitrage",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 120,
+     "maxTTC": 420,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "vitrier--pose-de-miroir-sur-mesure",
+     "nom": "Pose de miroir sur mesure",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 120,
+     "maxTTC": 420,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "vitrier--remplacement-de-joint-de-vitrage",
+     "nom": "Remplacement de joint de vitrage",
+     "unite": "ml",
+     "libelleUnite": "le mètre linéaire",
+     "minTTC": 25,
+     "maxTTC": 70,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "vitrier--pose-de-film-de-securite-ou-occultant",
+     "nom": "Pose de film de sécurité ou occultant",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 120,
+     "maxTTC": 420,
+     "source": "estimation",
+     "aValider": true
+    }
+   ]
+  },
+  {
+   "slug": "installateur-de-porte-blindee",
+   "nom": "Installateur de porte blindée",
+   "univers": "serrurerie-et-securite",
+   "tauxTva": 10,
+   "bandes": {
+    "forfait": {
+     "minTTC": 450,
+     "maxTTC": 3500
+    },
+    "unite": {
+     "minTTC": 900,
+     "maxTTC": 4500
+    }
+   },
+   "prestations": [
+    {
+     "slug": "installateur-de-porte-blindee--pose-de-porte-blindee",
+     "nom": "Pose de porte blindée",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 900,
+     "maxTTC": 4500,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "installateur-de-porte-blindee--blindage-d-une-porte-existante",
+     "nom": "Blindage d'une porte existante",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 450,
+     "maxTTC": 3500,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "installateur-de-porte-blindee--pose-de-serrure-multipoints-certifiee-a2p",
+     "nom": "Pose de serrure multipoints certifiée A2P",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 900,
+     "maxTTC": 4500,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "installateur-de-porte-blindee--renforcement-de-huisserie",
+     "nom": "Renforcement de huisserie",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 450,
+     "maxTTC": 3500,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "installateur-de-porte-blindee--pose-de-barre-de-seuil-et-corniere-anti-pince",
+     "nom": "Pose de barre de seuil et cornière anti-pince",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 900,
+     "maxTTC": 4500,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "installateur-de-porte-blindee--entretien-et-reglage-de-porte-blindee",
+     "nom": "Entretien et réglage de porte blindée",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 450,
+     "maxTTC": 3500,
+     "source": "estimation",
+     "aValider": true
+    }
+   ]
+  },
+  {
+   "slug": "peintre-en-batiment",
+   "nom": "Peintre en bâtiment",
+   "univers": "renovation-et-second-uvre",
+   "tauxTva": 10,
+   "bandes": {
+    "forfait": {
+     "minTTC": 350,
+     "maxTTC": 2200
+    },
+    "m2": {
+     "minTTC": 22,
+     "maxTTC": 48
+    },
+    "ml": {
+     "minTTC": 14,
+     "maxTTC": 32
+    }
+   },
+   "prestations": [
+    {
+     "slug": "peintre-en-batiment--peinture-d-une-piece",
+     "nom": "Peinture d'une pièce",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 22,
+     "maxTTC": 48,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "peintre-en-batiment--peinture-de-plafond",
+     "nom": "Peinture de plafond",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 22,
+     "maxTTC": 48,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "peintre-en-batiment--pose-de-papier-peint",
+     "nom": "Pose de papier peint",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 22,
+     "maxTTC": 48,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "peintre-en-batiment--enduit-et-rebouchage-avant-peinture",
+     "nom": "Enduit et rebouchage avant peinture",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 22,
+     "maxTTC": 48,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "peintre-en-batiment--peinture-de-boiseries-et-menuiseries",
+     "nom": "Peinture de boiseries et menuiseries",
+     "unite": "ml",
+     "libelleUnite": "le mètre linéaire",
+     "minTTC": 14,
+     "maxTTC": 32,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "peintre-en-batiment--peinture-de-cage-d-escalier",
+     "nom": "Peinture de cage d'escalier",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 350,
+     "maxTTC": 2200,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "peintre-en-batiment--peinture-de-facade-interieure-de-commerce",
+     "nom": "Peinture de façade intérieure de commerce",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 22,
+     "maxTTC": 48,
+     "source": "estimation",
+     "aValider": true
+    }
+   ]
+  },
+  {
+   "slug": "plaquiste",
+   "nom": "Plaquiste",
+   "univers": "renovation-et-second-uvre",
+   "tauxTva": 10,
+   "bandes": {
+    "forfait": {
+     "minTTC": 180,
+     "maxTTC": 900
+    },
+    "m2": {
+     "minTTC": 45,
+     "maxTTC": 95
+    },
+    "unite": {
+     "minTTC": 90,
+     "maxTTC": 260
+    }
+   },
+   "prestations": [
+    {
+     "slug": "plaquiste--pose-de-cloison-en-plaques-de-platre",
+     "nom": "Pose de cloison en plaques de plâtre",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 45,
+     "maxTTC": 95,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "plaquiste--creation-de-faux-plafond",
+     "nom": "Création de faux plafond",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 45,
+     "maxTTC": 95,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "plaquiste--doublage-et-isolation-de-mur",
+     "nom": "Doublage et isolation de mur",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 45,
+     "maxTTC": 95,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "plaquiste--pose-de-plaques-hydrofuges-en-piece-humide",
+     "nom": "Pose de plaques hydrofuges en pièce humide",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 45,
+     "maxTTC": 95,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "plaquiste--creation-de-niche-ou-de-coffrage",
+     "nom": "Création de niche ou de coffrage",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 90,
+     "maxTTC": 260,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "plaquiste--reparation-de-plaque-de-platre",
+     "nom": "Réparation de plaque de plâtre",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 180,
+     "maxTTC": 900,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "plaquiste--pose-de-trappe-de-visite",
+     "nom": "Pose de trappe de visite",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 90,
+     "maxTTC": 260,
+     "source": "estimation",
+     "aValider": true
+    }
+   ]
+  },
+  {
+   "slug": "carreleur",
+   "nom": "Carreleur",
+   "univers": "renovation-et-second-uvre",
+   "tauxTva": 10,
+   "bandes": {
+    "m2": {
+     "minTTC": 45,
+     "maxTTC": 110
+    },
+    "ml": {
+     "minTTC": 18,
+     "maxTTC": 45
+    }
+   },
+   "prestations": [
+    {
+     "slug": "carreleur--pose-de-carrelage-au-sol",
+     "nom": "Pose de carrelage au sol",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 45,
+     "maxTTC": 110,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "carreleur--pose-de-faience-murale",
+     "nom": "Pose de faïence murale",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 45,
+     "maxTTC": 110,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "carreleur--depose-d-ancien-carrelage",
+     "nom": "Dépose d'ancien carrelage",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 45,
+     "maxTTC": 110,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "carreleur--refection-des-joints-de-carrelage",
+     "nom": "Réfection des joints de carrelage",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 45,
+     "maxTTC": 110,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "carreleur--pose-de-credence-de-cuisine",
+     "nom": "Pose de crédence de cuisine",
+     "unite": "ml",
+     "libelleUnite": "le mètre linéaire",
+     "minTTC": 18,
+     "maxTTC": 45,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "carreleur--pose-de-plinthes",
+     "nom": "Pose de plinthes",
+     "unite": "ml",
+     "libelleUnite": "le mètre linéaire",
+     "minTTC": 18,
+     "maxTTC": 45,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "carreleur--ragreage-avant-pose",
+     "nom": "Ragréage avant pose",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 45,
+     "maxTTC": 110,
+     "source": "estimation",
+     "aValider": true
+    }
+   ]
+  },
+  {
+   "slug": "menuisier",
+   "nom": "Menuisier",
+   "univers": "renovation-et-second-uvre",
+   "tauxTva": 10,
+   "bandes": {
+    "forfait": {
+     "minTTC": 450,
+     "maxTTC": 4500
+    },
+    "m2": {
+     "minTTC": 55,
+     "maxTTC": 140
+    },
+    "ml": {
+     "minTTC": 350,
+     "maxTTC": 1400
+    },
+    "unite": {
+     "minTTC": 280,
+     "maxTTC": 1600
+    }
+   },
+   "prestations": [
+    {
+     "slug": "menuisier--pose-de-porte-interieure",
+     "nom": "Pose de porte intérieure",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 280,
+     "maxTTC": 1600,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "menuisier--remplacement-de-fenetre",
+     "nom": "Remplacement de fenêtre",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 280,
+     "maxTTC": 1600,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "menuisier--creation-de-placard-sur-mesure",
+     "nom": "Création de placard sur mesure",
+     "unite": "ml",
+     "libelleUnite": "le mètre linéaire",
+     "minTTC": 350,
+     "maxTTC": 1400,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "menuisier--pose-de-parquet",
+     "nom": "Pose de parquet",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 55,
+     "maxTTC": 140,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "menuisier--fabrication-de-meuble-sur-mesure",
+     "nom": "Fabrication de meuble sur mesure",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 450,
+     "maxTTC": 4500,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "menuisier--reparation-de-volet-en-bois",
+     "nom": "Réparation de volet en bois",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 280,
+     "maxTTC": 1600,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "menuisier--pose-d-escalier",
+     "nom": "Pose d'escalier",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 280,
+     "maxTTC": 1600,
+     "source": "estimation",
+     "aValider": true
+    }
+   ]
+  },
+  {
+   "slug": "poseur-de-sols-souples",
+   "nom": "Poseur de sols souples",
+   "univers": "renovation-et-second-uvre",
+   "tauxTva": 10,
+   "bandes": {
+    "m2": {
+     "minTTC": 28,
+     "maxTTC": 75
+    },
+    "unite": {
+     "minTTC": 12,
+     "maxTTC": 35
+    }
+   },
+   "prestations": [
+    {
+     "slug": "poseur-de-sols-souples--pose-de-sol-vinyle",
+     "nom": "Pose de sol vinyle",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 28,
+     "maxTTC": 75,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "poseur-de-sols-souples--pose-de-moquette",
+     "nom": "Pose de moquette",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 28,
+     "maxTTC": 75,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "poseur-de-sols-souples--depose-d-ancien-revetement-de-sol",
+     "nom": "Dépose d'ancien revêtement de sol",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 28,
+     "maxTTC": 75,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "poseur-de-sols-souples--ragreage-de-sol",
+     "nom": "Ragréage de sol",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 28,
+     "maxTTC": 75,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "poseur-de-sols-souples--pose-de-sol-stratifie",
+     "nom": "Pose de sol stratifié",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 28,
+     "maxTTC": 75,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "poseur-de-sols-souples--pose-de-barres-de-seuil",
+     "nom": "Pose de barres de seuil",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 12,
+     "maxTTC": 35,
+     "source": "estimation",
+     "aValider": true
+    }
+   ]
+  },
+  {
+   "slug": "macon",
+   "nom": "Maçon",
+   "univers": "maconnerie-toiture-et-facade",
+   "tauxTva": 10,
+   "bandes": {
+    "forfait": {
+     "minTTC": 900,
+     "maxTTC": 6500
+    },
+    "m2": {
+     "minTTC": 85,
+     "maxTTC": 190
+    },
+    "ml": {
+     "minTTC": 70,
+     "maxTTC": 220
+    },
+    "unite": {
+     "minTTC": 280,
+     "maxTTC": 900
+    }
+   },
+   "prestations": [
+    {
+     "slug": "macon--creation-d-ouverture-dans-un-mur",
+     "nom": "Création d'ouverture dans un mur",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 900,
+     "maxTTC": 6500,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "macon--montage-de-mur-en-parpaings",
+     "nom": "Montage de mur en parpaings",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 85,
+     "maxTTC": 190,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "macon--coulage-de-dalle-beton",
+     "nom": "Coulage de dalle béton",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 85,
+     "maxTTC": 190,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "macon--reprise-de-fissure",
+     "nom": "Reprise de fissure",
+     "unite": "ml",
+     "libelleUnite": "le mètre linéaire",
+     "minTTC": 70,
+     "maxTTC": 220,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "macon--creation-de-terrasse-en-beton",
+     "nom": "Création de terrasse en béton",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 85,
+     "maxTTC": 190,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "macon--pose-de-linteau",
+     "nom": "Pose de linteau",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 280,
+     "maxTTC": 900,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "macon--demolition-de-cloison-porteuse",
+     "nom": "Démolition de cloison porteuse",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 900,
+     "maxTTC": 6500,
+     "source": "estimation",
+     "aValider": true
+    }
+   ]
+  },
+  {
+   "slug": "couvreur",
+   "nom": "Couvreur",
+   "univers": "maconnerie-toiture-et-facade",
+   "tauxTva": 10,
+   "bandes": {
+    "forfait": {
+     "minTTC": 280,
+     "maxTTC": 1800
+    },
+    "m2": {
+     "minTTC": 35,
+     "maxTTC": 180
+    },
+    "ml": {
+     "minTTC": 45,
+     "maxTTC": 110
+    },
+    "unite": {
+     "minTTC": 420,
+     "maxTTC": 1400
+    }
+   },
+   "prestations": [
+    {
+     "slug": "couvreur--reparation-de-fuite-de-toiture",
+     "nom": "Réparation de fuite de toiture",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 280,
+     "maxTTC": 1800,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "couvreur--remplacement-de-tuiles",
+     "nom": "Remplacement de tuiles",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 420,
+     "maxTTC": 1400,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "couvreur--demoussage-et-traitement-de-toiture",
+     "nom": "Démoussage et traitement de toiture",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 35,
+     "maxTTC": 180,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "couvreur--refection-complete-de-toiture",
+     "nom": "Réfection complète de toiture",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 35,
+     "maxTTC": 180,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "couvreur--pose-de-gouttieres",
+     "nom": "Pose de gouttières",
+     "unite": "ml",
+     "libelleUnite": "le mètre linéaire",
+     "minTTC": 45,
+     "maxTTC": 110,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "couvreur--nettoyage-de-gouttieres",
+     "nom": "Nettoyage de gouttières",
+     "unite": "ml",
+     "libelleUnite": "le mètre linéaire",
+     "minTTC": 45,
+     "maxTTC": 110,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "couvreur--pose-de-velux",
+     "nom": "Pose de velux",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 420,
+     "maxTTC": 1400,
+     "source": "estimation",
+     "aValider": true
+    }
+   ]
+  },
+  {
+   "slug": "facadier",
+   "nom": "Façadier",
+   "univers": "maconnerie-toiture-et-facade",
+   "tauxTva": 10,
+   "bandes": {
+    "m2": {
+     "minTTC": 35,
+     "maxTTC": 160
+    },
+    "ml": {
+     "minTTC": 45,
+     "maxTTC": 140
+    }
+   },
+   "prestations": [
+    {
+     "slug": "facadier--ravalement-de-facade",
+     "nom": "Ravalement de façade",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 35,
+     "maxTTC": 160,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "facadier--nettoyage-de-facade",
+     "nom": "Nettoyage de façade",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 35,
+     "maxTTC": 160,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "facadier--application-d-enduit-de-facade",
+     "nom": "Application d'enduit de façade",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 35,
+     "maxTTC": 160,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "facadier--traitement-hydrofuge-de-facade",
+     "nom": "Traitement hydrofuge de façade",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 35,
+     "maxTTC": 160,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "facadier--reprise-de-fissures-en-facade",
+     "nom": "Reprise de fissures en façade",
+     "unite": "ml",
+     "libelleUnite": "le mètre linéaire",
+     "minTTC": 45,
+     "maxTTC": 140,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "facadier--peinture-de-facade",
+     "nom": "Peinture de façade",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 35,
+     "maxTTC": 160,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "facadier--isolation-thermique-par-l-exterieur",
+     "nom": "Isolation thermique par l'extérieur",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 35,
+     "maxTTC": 160,
+     "source": "estimation",
+     "aValider": true
+    }
+   ]
+  },
+  {
+   "slug": "charpentier",
+   "nom": "Charpentier",
+   "univers": "maconnerie-toiture-et-facade",
+   "tauxTva": 10,
+   "bandes": {
+    "forfait": {
+     "minTTC": 650,
+     "maxTTC": 5500
+    },
+    "m2": {
+     "minTTC": 28,
+     "maxTTC": 180
+    },
+    "unite": {
+     "minTTC": 350,
+     "maxTTC": 1600
+    }
+   },
+   "prestations": [
+    {
+     "slug": "charpentier--traitement-de-charpente",
+     "nom": "Traitement de charpente",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 28,
+     "maxTTC": 180,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "charpentier--reparation-de-charpente",
+     "nom": "Réparation de charpente",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 650,
+     "maxTTC": 5500,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "charpentier--pose-de-charpente-traditionnelle",
+     "nom": "Pose de charpente traditionnelle",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 28,
+     "maxTTC": 180,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "charpentier--creation-de-mezzanine",
+     "nom": "Création de mezzanine",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 650,
+     "maxTTC": 5500,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "charpentier--renforcement-de-poutre",
+     "nom": "Renforcement de poutre",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 350,
+     "maxTTC": 1600,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "charpentier--pose-d-ossature-bois",
+     "nom": "Pose d'ossature bois",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 28,
+     "maxTTC": 180,
+     "source": "estimation",
+     "aValider": true
+    }
+   ]
+  },
+  {
+   "slug": "etancheur",
+   "nom": "Étancheur",
+   "univers": "maconnerie-toiture-et-facade",
+   "tauxTva": 10,
+   "bandes": {
+    "forfait": {
+     "minTTC": 350,
+     "maxTTC": 2400
+    },
+    "m2": {
+     "minTTC": 55,
+     "maxTTC": 160
+    },
+    "ml": {
+     "minTTC": 60,
+     "maxTTC": 180
+    }
+   },
+   "prestations": [
+    {
+     "slug": "etancheur--etancheite-de-toit-terrasse",
+     "nom": "Étanchéité de toit-terrasse",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 55,
+     "maxTTC": 160,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "etancheur--recherche-d-infiltration",
+     "nom": "Recherche d'infiltration",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 350,
+     "maxTTC": 2400,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "etancheur--reparation-d-etancheite",
+     "nom": "Réparation d'étanchéité",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 350,
+     "maxTTC": 2400,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "etancheur--pose-de-membrane-bitumineuse",
+     "nom": "Pose de membrane bitumineuse",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 55,
+     "maxTTC": 160,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "etancheur--etancheite-de-balcon",
+     "nom": "Étanchéité de balcon",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 55,
+     "maxTTC": 160,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "etancheur--traitement-de-remontees-capillaires",
+     "nom": "Traitement de remontées capillaires",
+     "unite": "ml",
+     "libelleUnite": "le mètre linéaire",
+     "minTTC": 60,
+     "maxTTC": 180,
+     "source": "estimation",
+     "aValider": true
+    }
+   ]
+  },
+  {
+   "slug": "installateur-de-pompe-a-chaleur",
+   "nom": "Installateur de pompe à chaleur",
+   "univers": "energie-et-confort",
+   "tauxTva": 5.5,
+   "bandes": {
+    "forfait": {
+     "minTTC": 180,
+     "maxTTC": 1200
+    },
+    "unite": {
+     "minTTC": 8000,
+     "maxTTC": 18000
+    }
+   },
+   "prestations": [
+    {
+     "slug": "installateur-de-pompe-a-chaleur--installation-de-pompe-a-chaleur-air-eau",
+     "nom": "Installation de pompe à chaleur air-eau",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 8000,
+     "maxTTC": 18000,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "installateur-de-pompe-a-chaleur--installation-de-pompe-a-chaleur-air-air",
+     "nom": "Installation de pompe à chaleur air-air",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 8000,
+     "maxTTC": 18000,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "installateur-de-pompe-a-chaleur--entretien-annuel-de-pompe-a-chaleur",
+     "nom": "Entretien annuel de pompe à chaleur",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 180,
+     "maxTTC": 1200,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "installateur-de-pompe-a-chaleur--depannage-de-pompe-a-chaleur",
+     "nom": "Dépannage de pompe à chaleur",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 180,
+     "maxTTC": 1200,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "installateur-de-pompe-a-chaleur--etude-thermique-prealable",
+     "nom": "Étude thermique préalable",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 180,
+     "maxTTC": 1200,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "installateur-de-pompe-a-chaleur--depose-d-ancienne-chaudiere-fioul",
+     "nom": "Dépose d'ancienne chaudière fioul",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 180,
+     "maxTTC": 1200,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "installateur-de-pompe-a-chaleur--montage-du-dossier-d-aides-a-la-renovation",
+     "nom": "Montage du dossier d'aides à la rénovation",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 180,
+     "maxTTC": 1200,
+     "source": "estimation",
+     "aValider": true
+    }
+   ]
+  },
+  {
+   "slug": "installateur-de-panneaux-solaires",
+   "nom": "Installateur de panneaux solaires",
+   "univers": "energie-et-confort",
+   "tauxTva": 5.5,
+   "bandes": {
+    "forfait": {
+     "minTTC": 450,
+     "maxTTC": 14000
+    },
+    "m2": {
+     "minTTC": 12,
+     "maxTTC": 35
+    },
+    "unite": {
+     "minTTC": 3500,
+     "maxTTC": 9000
+    }
+   },
+   "prestations": [
+    {
+     "slug": "installateur-de-panneaux-solaires--installation-de-panneaux-photovoltaiques",
+     "nom": "Installation de panneaux photovoltaïques",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 450,
+     "maxTTC": 14000,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "installateur-de-panneaux-solaires--installation-de-chauffe-eau-solaire",
+     "nom": "Installation de chauffe-eau solaire",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 3500,
+     "maxTTC": 9000,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "installateur-de-panneaux-solaires--nettoyage-de-panneaux-solaires",
+     "nom": "Nettoyage de panneaux solaires",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 12,
+     "maxTTC": 35,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "installateur-de-panneaux-solaires--depannage-d-installation-photovoltaique",
+     "nom": "Dépannage d'installation photovoltaïque",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 450,
+     "maxTTC": 14000,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "installateur-de-panneaux-solaires--etude-de-production-et-dimensionnement",
+     "nom": "Étude de production et dimensionnement",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 450,
+     "maxTTC": 14000,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "installateur-de-panneaux-solaires--pose-de-batterie-de-stockage",
+     "nom": "Pose de batterie de stockage",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 3500,
+     "maxTTC": 9000,
+     "source": "estimation",
+     "aValider": true
+    }
+   ]
+  },
+  {
+   "slug": "climaticien",
+   "nom": "Climaticien",
+   "univers": "energie-et-confort",
+   "tauxTva": 10,
+   "bandes": {
+    "forfait": {
+     "minTTC": 120,
+     "maxTTC": 650
+    },
+    "unite": {
+     "minTTC": 1400,
+     "maxTTC": 4500
+    }
+   },
+   "prestations": [
+    {
+     "slug": "climaticien--installation-de-climatisation-reversible",
+     "nom": "Installation de climatisation réversible",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 1400,
+     "maxTTC": 4500,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "climaticien--entretien-de-climatisation",
+     "nom": "Entretien de climatisation",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 120,
+     "maxTTC": 650,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "climaticien--recharge-de-fluide-frigorigene",
+     "nom": "Recharge de fluide frigorigène",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 120,
+     "maxTTC": 650,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "climaticien--depannage-de-climatisation",
+     "nom": "Dépannage de climatisation",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 120,
+     "maxTTC": 650,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "climaticien--installation-de-vmc",
+     "nom": "Installation de VMC",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 1400,
+     "maxTTC": 4500,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "climaticien--nettoyage-et-desinfection-de-vmc",
+     "nom": "Nettoyage et désinfection de VMC",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 120,
+     "maxTTC": 650,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "climaticien--depose-d-ancienne-climatisation",
+     "nom": "Dépose d'ancienne climatisation",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 120,
+     "maxTTC": 650,
+     "source": "estimation",
+     "aValider": true
+    }
+   ]
+  },
+  {
+   "slug": "specialiste-de-l-isolation",
+   "nom": "Spécialiste de l'isolation",
+   "univers": "energie-et-confort",
+   "tauxTva": 5.5,
+   "bandes": {
+    "forfait": {
+     "minTTC": 550,
+     "maxTTC": 1400
+    },
+    "m2": {
+     "minTTC": 25,
+     "maxTTC": 110
+    },
+    "ml": {
+     "minTTC": 18,
+     "maxTTC": 55
+    }
+   },
+   "prestations": [
+    {
+     "slug": "specialiste-de-l-isolation--isolation-des-combles-perdus",
+     "nom": "Isolation des combles perdus",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 25,
+     "maxTTC": 110,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "specialiste-de-l-isolation--isolation-des-murs-par-l-interieur",
+     "nom": "Isolation des murs par l'intérieur",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 25,
+     "maxTTC": 110,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "specialiste-de-l-isolation--isolation-de-plancher-bas",
+     "nom": "Isolation de plancher bas",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 25,
+     "maxTTC": 110,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "specialiste-de-l-isolation--calfeutrage-de-menuiseries",
+     "nom": "Calfeutrage de menuiseries",
+     "unite": "ml",
+     "libelleUnite": "le mètre linéaire",
+     "minTTC": 18,
+     "maxTTC": 55,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "specialiste-de-l-isolation--isolation-phonique-d-une-piece",
+     "nom": "Isolation phonique d'une pièce",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 25,
+     "maxTTC": 110,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "specialiste-de-l-isolation--audit-energetique-du-logement",
+     "nom": "Audit énergétique du logement",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 550,
+     "maxTTC": 1400,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "specialiste-de-l-isolation--isolation-de-sous-sol-ou-de-cave",
+     "nom": "Isolation de sous-sol ou de cave",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 25,
+     "maxTTC": 110,
+     "source": "estimation",
+     "aValider": true
+    }
+   ]
+  },
+  {
+   "slug": "menage-a-domicile",
+   "nom": "Ménage à domicile",
+   "univers": "menage-et-entretien-de-la-maison",
+   "tauxTva": 20,
+   "bandes": {
+    "forfait": {
+     "minTTC": 120,
+     "maxTTC": 450
+    },
+    "heure": {
+     "minTTC": 24,
+     "maxTTC": 38
+    },
+    "m2": {
+     "minTTC": 4,
+     "maxTTC": 12
+    }
+   },
+   "prestations": [
+    {
+     "slug": "menage-a-domicile--menage-regulier-hebdomadaire",
+     "nom": "Ménage régulier hebdomadaire",
+     "unite": "heure",
+     "libelleUnite": "de l'heure",
+     "minTTC": 24,
+     "maxTTC": 38,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "menage-a-domicile--menage-ponctuel",
+     "nom": "Ménage ponctuel",
+     "unite": "heure",
+     "libelleUnite": "de l'heure",
+     "minTTC": 24,
+     "maxTTC": 38,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "menage-a-domicile--grand-menage-de-printemps",
+     "nom": "Grand ménage de printemps",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 120,
+     "maxTTC": 450,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "menage-a-domicile--nettoyage-de-cuisine-en-profondeur",
+     "nom": "Nettoyage de cuisine en profondeur",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 120,
+     "maxTTC": 450,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "menage-a-domicile--nettoyage-de-salle-de-bain-en-profondeur",
+     "nom": "Nettoyage de salle de bain en profondeur",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 120,
+     "maxTTC": 450,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "menage-a-domicile--nettoyage-apres-travaux",
+     "nom": "Nettoyage après travaux",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 4,
+     "maxTTC": 12,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "menage-a-domicile--entretien-de-residence-secondaire",
+     "nom": "Entretien de résidence secondaire",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 120,
+     "maxTTC": 450,
+     "source": "estimation",
+     "aValider": true
+    }
+   ]
+  },
+  {
+   "slug": "repassage-et-linge",
+   "nom": "Repassage et linge",
+   "univers": "menage-et-entretien-de-la-maison",
+   "tauxTva": 20,
+   "bandes": {
+    "forfait": {
+     "minTTC": 45,
+     "maxTTC": 180
+    },
+    "heure": {
+     "minTTC": 22,
+     "maxTTC": 35
+    },
+    "unite": {
+     "minTTC": 6,
+     "maxTTC": 28
+    }
+   },
+   "prestations": [
+    {
+     "slug": "repassage-et-linge--repassage-a-domicile",
+     "nom": "Repassage à domicile",
+     "unite": "heure",
+     "libelleUnite": "de l'heure",
+     "minTTC": 22,
+     "maxTTC": 35,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "repassage-et-linge--repassage-en-depot",
+     "nom": "Repassage en dépôt",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 45,
+     "maxTTC": 180,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "repassage-et-linge--lavage-et-repassage-du-linge",
+     "nom": "Lavage et repassage du linge",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 45,
+     "maxTTC": 180,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "repassage-et-linge--entretien-du-linge-de-maison",
+     "nom": "Entretien du linge de maison",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 45,
+     "maxTTC": 180,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "repassage-et-linge--retouche-et-couture-simple",
+     "nom": "Retouche et couture simple",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 6,
+     "maxTTC": 28,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "repassage-et-linge--nettoyage-de-vetements-delicats",
+     "nom": "Nettoyage de vêtements délicats",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 6,
+     "maxTTC": 28,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "repassage-et-linge--collecte-et-livraison-du-linge",
+     "nom": "Collecte et livraison du linge",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 6,
+     "maxTTC": 28,
+     "source": "estimation",
+     "aValider": true
+    }
+   ]
+  },
+  {
+   "slug": "nettoyage-de-vitres",
+   "nom": "Nettoyage de vitres",
+   "univers": "menage-et-entretien-de-la-maison",
+   "tauxTva": 20,
+   "bandes": {
+    "forfait": {
+     "minTTC": 90,
+     "maxTTC": 320
+    },
+    "m2": {
+     "minTTC": 6,
+     "maxTTC": 18
+    },
+    "unite": {
+     "minTTC": 12,
+     "maxTTC": 45
+    }
+   },
+   "prestations": [
+    {
+     "slug": "nettoyage-de-vitres--nettoyage-de-vitres-d-un-logement",
+     "nom": "Nettoyage de vitres d'un logement",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 90,
+     "maxTTC": 320,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "nettoyage-de-vitres--nettoyage-de-baies-vitrees",
+     "nom": "Nettoyage de baies vitrées",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 6,
+     "maxTTC": 18,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "nettoyage-de-vitres--nettoyage-de-veranda",
+     "nom": "Nettoyage de véranda",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 6,
+     "maxTTC": 18,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "nettoyage-de-vitres--nettoyage-de-vitrine-de-commerce",
+     "nom": "Nettoyage de vitrine de commerce",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 90,
+     "maxTTC": 320,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "nettoyage-de-vitres--nettoyage-de-vitres-en-hauteur",
+     "nom": "Nettoyage de vitres en hauteur",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 6,
+     "maxTTC": 18,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "nettoyage-de-vitres--nettoyage-de-volets-et-encadrements",
+     "nom": "Nettoyage de volets et encadrements",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 12,
+     "maxTTC": 45,
+     "source": "estimation",
+     "aValider": true
+    }
+   ]
+  },
+  {
+   "slug": "remise-en-etat-de-logement",
+   "nom": "Remise en état de logement",
+   "univers": "menage-et-entretien-de-la-maison",
+   "tauxTva": 20,
+   "bandes": {
+    "forfait": {
+     "minTTC": 180,
+     "maxTTC": 900
+    },
+    "m2": {
+     "minTTC": 8,
+     "maxTTC": 22
+    }
+   },
+   "prestations": [
+    {
+     "slug": "remise-en-etat-de-logement--remise-en-etat-avant-etat-des-lieux",
+     "nom": "Remise en état avant état des lieux",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 8,
+     "maxTTC": 22,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "remise-en-etat-de-logement--nettoyage-de-logement-insalubre",
+     "nom": "Nettoyage de logement insalubre",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 180,
+     "maxTTC": 900,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "remise-en-etat-de-logement--nettoyage-apres-demenagement",
+     "nom": "Nettoyage après déménagement",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 8,
+     "maxTTC": 22,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "remise-en-etat-de-logement--desodorisation-et-traitement-des-odeurs",
+     "nom": "Désodorisation et traitement des odeurs",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 180,
+     "maxTTC": 900,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "remise-en-etat-de-logement--nettoyage-de-cave-ou-de-garage",
+     "nom": "Nettoyage de cave ou de garage",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 8,
+     "maxTTC": 22,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "remise-en-etat-de-logement--nettoyage-de-logement-de-location-saisonniere",
+     "nom": "Nettoyage de logement de location saisonnière",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 180,
+     "maxTTC": 900,
+     "source": "estimation",
+     "aValider": true
+    }
+   ]
+  },
+  {
+   "slug": "nettoyage-de-canape-et-fauteuil",
+   "nom": "Nettoyage de canapé et fauteuil",
+   "univers": "canapes-matelas-tapis-et-textiles",
+   "tauxTva": 20,
+   "bandes": {
+    "forfait": {
+     "minTTC": 45,
+     "maxTTC": 150
+    },
+    "unite": {
+     "minTTC": 70,
+     "maxTTC": 280
+    }
+   },
+   "prestations": [
+    {
+     "slug": "nettoyage-de-canape-et-fauteuil--nettoyage-de-canape-en-tissu",
+     "nom": "Nettoyage de canapé en tissu",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 70,
+     "maxTTC": 280,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "nettoyage-de-canape-et-fauteuil--nettoyage-de-canape-en-cuir",
+     "nom": "Nettoyage de canapé en cuir",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 70,
+     "maxTTC": 280,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "nettoyage-de-canape-et-fauteuil--nettoyage-de-fauteuil",
+     "nom": "Nettoyage de fauteuil",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 70,
+     "maxTTC": 280,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "nettoyage-de-canape-et-fauteuil--detachage-localise",
+     "nom": "Détachage localisé",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 45,
+     "maxTTC": 150,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "nettoyage-de-canape-et-fauteuil--nettoyage-de-chaises-et-assises",
+     "nom": "Nettoyage de chaises et assises",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 70,
+     "maxTTC": 280,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "nettoyage-de-canape-et-fauteuil--traitement-anti-acariens",
+     "nom": "Traitement anti-acariens",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 70,
+     "maxTTC": 280,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "nettoyage-de-canape-et-fauteuil--protection-anti-taches-apres-nettoyage",
+     "nom": "Protection anti-taches après nettoyage",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 70,
+     "maxTTC": 280,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "nettoyage-de-canape-et-fauteuil--nettoyage-de-banquette-ou-meridienne",
+     "nom": "Nettoyage de banquette ou méridienne",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 70,
+     "maxTTC": 280,
+     "source": "estimation",
+     "aValider": true
+    }
+   ]
+  },
+  {
+   "slug": "nettoyage-de-matelas",
+   "nom": "Nettoyage de matelas",
+   "univers": "canapes-matelas-tapis-et-textiles",
+   "tauxTva": 20,
+   "bandes": {
+    "forfait": {
+     "minTTC": 45,
+     "maxTTC": 140
+    },
+    "unite": {
+     "minTTC": 60,
+     "maxTTC": 180
+    }
+   },
+   "prestations": [
+    {
+     "slug": "nettoyage-de-matelas--nettoyage-de-matelas-une-place",
+     "nom": "Nettoyage de matelas une place",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 60,
+     "maxTTC": 180,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "nettoyage-de-matelas--nettoyage-de-matelas-deux-places",
+     "nom": "Nettoyage de matelas deux places",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 60,
+     "maxTTC": 180,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "nettoyage-de-matelas--traitement-anti-acariens-du-matelas",
+     "nom": "Traitement anti-acariens du matelas",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 60,
+     "maxTTC": 180,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "nettoyage-de-matelas--detachage-de-matelas",
+     "nom": "Détachage de matelas",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 45,
+     "maxTTC": 140,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "nettoyage-de-matelas--nettoyage-de-sommier",
+     "nom": "Nettoyage de sommier",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 60,
+     "maxTTC": 180,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "nettoyage-de-matelas--desinfection-de-literie",
+     "nom": "Désinfection de literie",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 60,
+     "maxTTC": 180,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "nettoyage-de-matelas--nettoyage-d-oreillers-et-couettes",
+     "nom": "Nettoyage d'oreillers et couettes",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 60,
+     "maxTTC": 180,
+     "source": "estimation",
+     "aValider": true
+    }
+   ]
+  },
+  {
+   "slug": "nettoyage-de-tapis-moquettes-et-rideaux",
+   "nom": "Nettoyage de tapis, moquettes et rideaux",
+   "univers": "canapes-matelas-tapis-et-textiles",
+   "tauxTva": 20,
+   "bandes": {
+    "m2": {
+     "minTTC": 12,
+     "maxTTC": 45
+    },
+    "unite": {
+     "minTTC": 35,
+     "maxTTC": 120
+    }
+   },
+   "prestations": [
+    {
+     "slug": "nettoyage-de-tapis-moquettes-et-rideaux--nettoyage-de-tapis",
+     "nom": "Nettoyage de tapis",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 12,
+     "maxTTC": 45,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "nettoyage-de-tapis-moquettes-et-rideaux--shampouinage-de-moquette",
+     "nom": "Shampouinage de moquette",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 12,
+     "maxTTC": 45,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "nettoyage-de-tapis-moquettes-et-rideaux--nettoyage-de-tapis-d-orient",
+     "nom": "Nettoyage de tapis d'Orient",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 12,
+     "maxTTC": 45,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "nettoyage-de-tapis-moquettes-et-rideaux--nettoyage-de-rideaux-sur-place",
+     "nom": "Nettoyage de rideaux sur place",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 12,
+     "maxTTC": 45,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "nettoyage-de-tapis-moquettes-et-rideaux--depose-et-repose-de-rideaux",
+     "nom": "Dépose et repose de rideaux",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 35,
+     "maxTTC": 120,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "nettoyage-de-tapis-moquettes-et-rideaux--nettoyage-de-voilages",
+     "nom": "Nettoyage de voilages",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 12,
+     "maxTTC": 45,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "nettoyage-de-tapis-moquettes-et-rideaux--traitement-anti-mites-des-textiles",
+     "nom": "Traitement anti-mites des textiles",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 12,
+     "maxTTC": 45,
+     "source": "estimation",
+     "aValider": true
+    }
+   ]
+  },
+  {
+   "slug": "nettoyage-de-bureaux",
+   "nom": "Nettoyage de bureaux",
+   "univers": "nettoyage-professionnel",
+   "tauxTva": 20,
+   "bandes": {
+    "forfait": {
+     "minTTC": 90,
+     "maxTTC": 450
+    },
+    "m2": {
+     "minTTC": 2,
+     "maxTTC": 7
+    }
+   },
+   "prestations": [
+    {
+     "slug": "nettoyage-de-bureaux--nettoyage-quotidien-de-bureaux",
+     "nom": "Nettoyage quotidien de bureaux",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 2,
+     "maxTTC": 7,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "nettoyage-de-bureaux--nettoyage-hebdomadaire-de-locaux",
+     "nom": "Nettoyage hebdomadaire de locaux",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 2,
+     "maxTTC": 7,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "nettoyage-de-bureaux--nettoyage-de-sanitaires-d-entreprise",
+     "nom": "Nettoyage de sanitaires d'entreprise",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 90,
+     "maxTTC": 450,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "nettoyage-de-bureaux--nettoyage-de-salles-de-reunion",
+     "nom": "Nettoyage de salles de réunion",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 90,
+     "maxTTC": 450,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "nettoyage-de-bureaux--entretien-des-espaces-d-accueil",
+     "nom": "Entretien des espaces d'accueil",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 90,
+     "maxTTC": 450,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "nettoyage-de-bureaux--nettoyage-de-cuisine-et-espace-repas",
+     "nom": "Nettoyage de cuisine et espace repas",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 90,
+     "maxTTC": 450,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "nettoyage-de-bureaux--approvisionnement-en-consommables",
+     "nom": "Approvisionnement en consommables",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 90,
+     "maxTTC": 450,
+     "source": "estimation",
+     "aValider": true
+    }
+   ]
+  },
+  {
+   "slug": "nettoyage-de-copropriete",
+   "nom": "Nettoyage de copropriété",
+   "univers": "nettoyage-professionnel",
+   "tauxTva": 20,
+   "bandes": {
+    "forfait": {
+     "minTTC": 150,
+     "maxTTC": 900
+    },
+    "m2": {
+     "minTTC": 2,
+     "maxTTC": 6
+    }
+   },
+   "prestations": [
+    {
+     "slug": "nettoyage-de-copropriete--entretien-des-parties-communes",
+     "nom": "Entretien des parties communes",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 150,
+     "maxTTC": 900,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "nettoyage-de-copropriete--nettoyage-de-hall-d-immeuble",
+     "nom": "Nettoyage de hall d'immeuble",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 150,
+     "maxTTC": 900,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "nettoyage-de-copropriete--nettoyage-de-cage-d-escalier",
+     "nom": "Nettoyage de cage d'escalier",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 150,
+     "maxTTC": 900,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "nettoyage-de-copropriete--sortie-et-rentree-des-conteneurs",
+     "nom": "Sortie et rentrée des conteneurs",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 150,
+     "maxTTC": 900,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "nettoyage-de-copropriete--nettoyage-du-local-poubelles",
+     "nom": "Nettoyage du local poubelles",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 150,
+     "maxTTC": 900,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "nettoyage-de-copropriete--nettoyage-de-parking-souterrain",
+     "nom": "Nettoyage de parking souterrain",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 2,
+     "maxTTC": 6,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "nettoyage-de-copropriete--nettoyage-d-ascenseur",
+     "nom": "Nettoyage d'ascenseur",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 150,
+     "maxTTC": 900,
+     "source": "estimation",
+     "aValider": true
+    }
+   ]
+  },
+  {
+   "slug": "nettoyage-de-fin-de-chantier",
+   "nom": "Nettoyage de fin de chantier",
+   "univers": "nettoyage-professionnel",
+   "tauxTva": 20,
+   "bandes": {
+    "forfait": {
+     "minTTC": 180,
+     "maxTTC": 750
+    },
+    "m2": {
+     "minTTC": 6,
+     "maxTTC": 18
+    }
+   },
+   "prestations": [
+    {
+     "slug": "nettoyage-de-fin-de-chantier--nettoyage-de-fin-de-chantier",
+     "nom": "Nettoyage de fin de chantier",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 6,
+     "maxTTC": 18,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "nettoyage-de-fin-de-chantier--depoussierage-complet-apres-travaux",
+     "nom": "Dépoussiérage complet après travaux",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 6,
+     "maxTTC": 18,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "nettoyage-de-fin-de-chantier--decollage-de-traces-de-peinture-et-colle",
+     "nom": "Décollage de traces de peinture et colle",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 180,
+     "maxTTC": 750,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "nettoyage-de-fin-de-chantier--nettoyage-de-vitres-apres-chantier",
+     "nom": "Nettoyage de vitres après chantier",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 6,
+     "maxTTC": 18,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "nettoyage-de-fin-de-chantier--evacuation-des-gravats-legers",
+     "nom": "Évacuation des gravats légers",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 180,
+     "maxTTC": 750,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "nettoyage-de-fin-de-chantier--nettoyage-avant-livraison-de-logement-neuf",
+     "nom": "Nettoyage avant livraison de logement neuf",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 6,
+     "maxTTC": 18,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "nettoyage-de-fin-de-chantier--lustrage-et-protection-des-sols-neufs",
+     "nom": "Lustrage et protection des sols neufs",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 6,
+     "maxTTC": 18,
+     "source": "estimation",
+     "aValider": true
+    }
+   ]
+  },
+  {
+   "slug": "nettoyage-industriel-et-specialise",
+   "nom": "Nettoyage industriel et spécialisé",
+   "univers": "nettoyage-professionnel",
+   "tauxTva": 20,
+   "bandes": {
+    "forfait": {
+     "minTTC": 250,
+     "maxTTC": 1500
+    },
+    "m2": {
+     "minTTC": 3,
+     "maxTTC": 14
+    }
+   },
+   "prestations": [
+    {
+     "slug": "nettoyage-industriel-et-specialise--nettoyage-d-atelier-ou-d-entrepot",
+     "nom": "Nettoyage d'atelier ou d'entrepôt",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 3,
+     "maxTTC": 14,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "nettoyage-industriel-et-specialise--nettoyage-haute-pression-de-sols-industriels",
+     "nom": "Nettoyage haute pression de sols industriels",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 3,
+     "maxTTC": 14,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "nettoyage-industriel-et-specialise--degraissage-de-hotte-professionnelle",
+     "nom": "Dégraissage de hotte professionnelle",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 250,
+     "maxTTC": 1500,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "nettoyage-industriel-et-specialise--nettoyage-de-machines-et-equipements",
+     "nom": "Nettoyage de machines et équipements",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 250,
+     "maxTTC": 1500,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "nettoyage-industriel-et-specialise--decapage-et-metallisation-de-sol",
+     "nom": "Décapage et métallisation de sol",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 3,
+     "maxTTC": 14,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "nettoyage-industriel-et-specialise--nettoyage-de-silos-et-cuves",
+     "nom": "Nettoyage de silos et cuves",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 250,
+     "maxTTC": 1500,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "nettoyage-industriel-et-specialise--nettoyage-de-laboratoire-ou-salle-blanche",
+     "nom": "Nettoyage de laboratoire ou salle blanche",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 3,
+     "maxTTC": 14,
+     "source": "estimation",
+     "aValider": true
+    }
+   ]
+  },
+  {
+   "slug": "jardinier",
+   "nom": "Jardinier",
+   "univers": "jardin-et-espaces-verts",
+   "tauxTva": 20,
+   "bandes": {
+    "forfait": {
+     "minTTC": 90,
+     "maxTTC": 420
+    },
+    "heure": {
+     "minTTC": 28,
+     "maxTTC": 48
+    },
+    "m2": {
+     "minTTC": 1,
+     "maxTTC": 6
+    },
+    "ml": {
+     "minTTC": 5,
+     "maxTTC": 18
+    }
+   },
+   "prestations": [
+    {
+     "slug": "jardinier--tonte-de-pelouse",
+     "nom": "Tonte de pelouse",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 1,
+     "maxTTC": 6,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "jardinier--taille-de-haie",
+     "nom": "Taille de haie",
+     "unite": "ml",
+     "libelleUnite": "le mètre linéaire",
+     "minTTC": 5,
+     "maxTTC": 18,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "jardinier--entretien-regulier-de-jardin",
+     "nom": "Entretien régulier de jardin",
+     "unite": "heure",
+     "libelleUnite": "de l'heure",
+     "minTTC": 28,
+     "maxTTC": 48,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "jardinier--desherbage",
+     "nom": "Désherbage",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 1,
+     "maxTTC": 6,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "jardinier--ramassage-de-feuilles",
+     "nom": "Ramassage de feuilles",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 90,
+     "maxTTC": 420,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "jardinier--debroussaillage",
+     "nom": "Débroussaillage",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 1,
+     "maxTTC": 6,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "jardinier--scarification-et-semis-de-gazon",
+     "nom": "Scarification et semis de gazon",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 1,
+     "maxTTC": 6,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "jardinier--plantation-de-massifs",
+     "nom": "Plantation de massifs",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 90,
+     "maxTTC": 420,
+     "source": "estimation",
+     "aValider": true
+    }
+   ]
+  },
+  {
+   "slug": "elagueur",
+   "nom": "Élagueur",
+   "univers": "jardin-et-espaces-verts",
+   "tauxTva": 20,
+   "bandes": {
+    "forfait": {
+     "minTTC": 180,
+     "maxTTC": 900
+    },
+    "unite": {
+     "minTTC": 150,
+     "maxTTC": 1400
+    }
+   },
+   "prestations": [
+    {
+     "slug": "elagueur--elagage-d-arbre",
+     "nom": "Élagage d'arbre",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 150,
+     "maxTTC": 1400,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "elagueur--abattage-d-arbre",
+     "nom": "Abattage d'arbre",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 150,
+     "maxTTC": 1400,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "elagueur--dessouchage",
+     "nom": "Dessouchage",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 150,
+     "maxTTC": 1400,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "elagueur--taille-d-arbre-fruitier",
+     "nom": "Taille d'arbre fruitier",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 150,
+     "maxTTC": 1400,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "elagueur--demontage-d-arbre-en-milieu-contraint",
+     "nom": "Démontage d'arbre en milieu contraint",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 150,
+     "maxTTC": 1400,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "elagueur--evacuation-des-branches-et-broyage",
+     "nom": "Évacuation des branches et broyage",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 180,
+     "maxTTC": 900,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "elagueur--diagnostic-sanitaire-d-un-arbre",
+     "nom": "Diagnostic sanitaire d'un arbre",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 180,
+     "maxTTC": 900,
+     "source": "estimation",
+     "aValider": true
+    }
+   ]
+  },
+  {
+   "slug": "paysagiste",
+   "nom": "Paysagiste",
+   "univers": "jardin-et-espaces-verts",
+   "tauxTva": 20,
+   "bandes": {
+    "forfait": {
+     "minTTC": 900,
+     "maxTTC": 9000
+    },
+    "m2": {
+     "minTTC": 45,
+     "maxTTC": 180
+    },
+    "ml": {
+     "minTTC": 60,
+     "maxTTC": 220
+    }
+   },
+   "prestations": [
+    {
+     "slug": "paysagiste--creation-de-jardin",
+     "nom": "Création de jardin",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 900,
+     "maxTTC": 9000,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "paysagiste--pose-de-cloture",
+     "nom": "Pose de clôture",
+     "unite": "ml",
+     "libelleUnite": "le mètre linéaire",
+     "minTTC": 60,
+     "maxTTC": 220,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "paysagiste--creation-de-terrasse-en-bois",
+     "nom": "Création de terrasse en bois",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 45,
+     "maxTTC": 180,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "paysagiste--pose-de-gazon-en-rouleau",
+     "nom": "Pose de gazon en rouleau",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 45,
+     "maxTTC": 180,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "paysagiste--installation-d-un-arrosage-automatique",
+     "nom": "Installation d'un arrosage automatique",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 900,
+     "maxTTC": 9000,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "paysagiste--creation-d-allee-et-de-bordures",
+     "nom": "Création d'allée et de bordures",
+     "unite": "ml",
+     "libelleUnite": "le mètre linéaire",
+     "minTTC": 60,
+     "maxTTC": 220,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "paysagiste--amenagement-de-balcon-ou-de-terrasse-urbaine",
+     "nom": "Aménagement de balcon ou de terrasse urbaine",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 900,
+     "maxTTC": 9000,
+     "source": "estimation",
+     "aValider": true
+    }
+   ]
+  },
+  {
+   "slug": "entretien-de-piscine",
+   "nom": "Entretien de piscine",
+   "univers": "jardin-et-espaces-verts",
+   "tauxTva": 20,
+   "bandes": {
+    "forfait": {
+     "minTTC": 90,
+     "maxTTC": 650
+    }
+   },
+   "prestations": [
+    {
+     "slug": "entretien-de-piscine--entretien-regulier-de-piscine",
+     "nom": "Entretien régulier de piscine",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 90,
+     "maxTTC": 650,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "entretien-de-piscine--hivernage-de-piscine",
+     "nom": "Hivernage de piscine",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 90,
+     "maxTTC": 650,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "entretien-de-piscine--remise-en-service-au-printemps",
+     "nom": "Remise en service au printemps",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 90,
+     "maxTTC": 650,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "entretien-de-piscine--analyse-et-traitement-de-l-eau",
+     "nom": "Analyse et traitement de l'eau",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 90,
+     "maxTTC": 650,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "entretien-de-piscine--nettoyage-de-filtre-et-de-pompe",
+     "nom": "Nettoyage de filtre et de pompe",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 90,
+     "maxTTC": 650,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "entretien-de-piscine--recherche-de-fuite-de-bassin",
+     "nom": "Recherche de fuite de bassin",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 90,
+     "maxTTC": 650,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "entretien-de-piscine--entretien-de-spa-ou-de-jacuzzi",
+     "nom": "Entretien de spa ou de jacuzzi",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 90,
+     "maxTTC": 650,
+     "source": "estimation",
+     "aValider": true
+    }
+   ]
+  },
+  {
+   "slug": "homme-ou-femme-toutes-mains",
+   "nom": "Homme ou femme toutes mains",
+   "univers": "bricolage-et-petits-travaux",
+   "tauxTva": 20,
+   "bandes": {
+    "heure": {
+     "minTTC": 38,
+     "maxTTC": 65
+    },
+    "ml": {
+     "minTTC": 15,
+     "maxTTC": 45
+    },
+    "unite": {
+     "minTTC": 25,
+     "maxTTC": 120
+    }
+   },
+   "prestations": [
+    {
+     "slug": "homme-ou-femme-toutes-mains--petits-travaux-a-l-heure",
+     "nom": "Petits travaux à l'heure",
+     "unite": "heure",
+     "libelleUnite": "de l'heure",
+     "minTTC": 38,
+     "maxTTC": 65,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "homme-ou-femme-toutes-mains--fixation-de-meuble-au-mur",
+     "nom": "Fixation de meuble au mur",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 25,
+     "maxTTC": 120,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "homme-ou-femme-toutes-mains--pose-d-etageres",
+     "nom": "Pose d'étagères",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 25,
+     "maxTTC": 120,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "homme-ou-femme-toutes-mains--pose-de-tringles-a-rideaux",
+     "nom": "Pose de tringles à rideaux",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 25,
+     "maxTTC": 120,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "homme-ou-femme-toutes-mains--remplacement-de-joint-de-salle-de-bain",
+     "nom": "Remplacement de joint de salle de bain",
+     "unite": "ml",
+     "libelleUnite": "le mètre linéaire",
+     "minTTC": 15,
+     "maxTTC": 45,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "homme-ou-femme-toutes-mains--pose-de-cadres-et-de-miroirs",
+     "nom": "Pose de cadres et de miroirs",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 25,
+     "maxTTC": 120,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "homme-ou-femme-toutes-mains--reglage-de-porte-ou-de-fenetre",
+     "nom": "Réglage de porte ou de fenêtre",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 25,
+     "maxTTC": 120,
+     "source": "estimation",
+     "aValider": true
+    }
+   ]
+  },
+  {
+   "slug": "montage-de-meubles",
+   "nom": "Montage de meubles",
+   "univers": "bricolage-et-petits-travaux",
+   "tauxTva": 20,
+   "bandes": {
+    "ml": {
+     "minTTC": 90,
+     "maxTTC": 260
+    },
+    "unite": {
+     "minTTC": 45,
+     "maxTTC": 220
+    }
+   },
+   "prestations": [
+    {
+     "slug": "montage-de-meubles--montage-de-meuble-en-kit",
+     "nom": "Montage de meuble en kit",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 45,
+     "maxTTC": 220,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "montage-de-meubles--montage-de-lit",
+     "nom": "Montage de lit",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 45,
+     "maxTTC": 220,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "montage-de-meubles--montage-de-dressing-ou-d-armoire",
+     "nom": "Montage de dressing ou d'armoire",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 45,
+     "maxTTC": 220,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "montage-de-meubles--montage-de-cuisine-equipee",
+     "nom": "Montage de cuisine équipée",
+     "unite": "ml",
+     "libelleUnite": "le mètre linéaire",
+     "minTTC": 90,
+     "maxTTC": 260,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "montage-de-meubles--demontage-de-meuble",
+     "nom": "Démontage de meuble",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 45,
+     "maxTTC": 220,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "montage-de-meubles--montage-de-mobilier-de-jardin",
+     "nom": "Montage de mobilier de jardin",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 45,
+     "maxTTC": 220,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "montage-de-meubles--montage-de-bureau-et-de-mobilier-professionnel",
+     "nom": "Montage de bureau et de mobilier professionnel",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 45,
+     "maxTTC": 220,
+     "source": "estimation",
+     "aValider": true
+    }
+   ]
+  },
+  {
+   "slug": "petites-reparations",
+   "nom": "Petites réparations",
+   "univers": "bricolage-et-petits-travaux",
+   "tauxTva": 20,
+   "bandes": {
+    "forfait": {
+     "minTTC": 70,
+     "maxTTC": 280
+    },
+    "ml": {
+     "minTTC": 15,
+     "maxTTC": 45
+    },
+    "unite": {
+     "minTTC": 45,
+     "maxTTC": 180
+    }
+   },
+   "prestations": [
+    {
+     "slug": "petites-reparations--reparation-de-volet-roulant",
+     "nom": "Réparation de volet roulant",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 45,
+     "maxTTC": 180,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "petites-reparations--reparation-de-porte-de-placard",
+     "nom": "Réparation de porte de placard",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 45,
+     "maxTTC": 180,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "petites-reparations--remplacement-de-poignee-ou-de-charniere",
+     "nom": "Remplacement de poignée ou de charnière",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 45,
+     "maxTTC": 180,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "petites-reparations--reparation-de-store-interieur",
+     "nom": "Réparation de store intérieur",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 45,
+     "maxTTC": 180,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "petites-reparations--reprise-de-peinture-localisee",
+     "nom": "Reprise de peinture localisée",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 70,
+     "maxTTC": 280,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "petites-reparations--rebouchage-de-trous-et-fissures",
+     "nom": "Rebouchage de trous et fissures",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 70,
+     "maxTTC": 280,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "petites-reparations--remplacement-de-silicone-de-cuisine",
+     "nom": "Remplacement de silicone de cuisine",
+     "unite": "ml",
+     "libelleUnite": "le mètre linéaire",
+     "minTTC": 15,
+     "maxTTC": 45,
+     "source": "estimation",
+     "aValider": true
+    }
+   ]
+  },
+  {
+   "slug": "demenageur",
+   "nom": "Déménageur",
+   "univers": "demenagement-et-transport",
+   "tauxTva": 20,
+   "bandes": {
+    "forfait": {
+     "minTTC": 450,
+     "maxTTC": 3500
+    },
+    "unite": {
+     "minTTC": 250,
+     "maxTTC": 900
+    }
+   },
+   "prestations": [
+    {
+     "slug": "demenageur--demenagement-d-un-studio",
+     "nom": "Déménagement d'un studio",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 450,
+     "maxTTC": 3500,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "demenageur--demenagement-d-un-t2-ou-t3",
+     "nom": "Déménagement d'un T2 ou T3",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 450,
+     "maxTTC": 3500,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "demenageur--demenagement-d-une-maison",
+     "nom": "Déménagement d'une maison",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 450,
+     "maxTTC": 3500,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "demenageur--emballage-et-deballage",
+     "nom": "Emballage et déballage",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 450,
+     "maxTTC": 3500,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "demenageur--location-de-monte-meubles",
+     "nom": "Location de monte-meubles",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 450,
+     "maxTTC": 3500,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "demenageur--demenagement-de-piano-ou-d-objet-lourd",
+     "nom": "Déménagement de piano ou d'objet lourd",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 250,
+     "maxTTC": 900,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "demenageur--demenagement-d-entreprise",
+     "nom": "Déménagement d'entreprise",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 450,
+     "maxTTC": 3500,
+     "source": "estimation",
+     "aValider": true
+    }
+   ]
+  },
+  {
+   "slug": "garde-meuble-et-stockage",
+   "nom": "Garde-meuble et stockage",
+   "univers": "demenagement-et-transport",
+   "tauxTva": 20,
+   "bandes": {
+    "forfait": {
+     "minTTC": 45,
+     "maxTTC": 350
+    }
+   },
+   "prestations": [
+    {
+     "slug": "garde-meuble-et-stockage--stockage-en-box-mensuel",
+     "nom": "Stockage en box mensuel",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 45,
+     "maxTTC": 350,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "garde-meuble-et-stockage--enlevement-et-mise-en-garde-meuble",
+     "nom": "Enlèvement et mise en garde-meuble",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 45,
+     "maxTTC": 350,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "garde-meuble-et-stockage--stockage-de-courte-duree",
+     "nom": "Stockage de courte durée",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 45,
+     "maxTTC": 350,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "garde-meuble-et-stockage--inventaire-et-mise-sous-housse",
+     "nom": "Inventaire et mise sous housse",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 45,
+     "maxTTC": 350,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "garde-meuble-et-stockage--restitution-et-livraison-du-mobilier",
+     "nom": "Restitution et livraison du mobilier",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 45,
+     "maxTTC": 350,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "garde-meuble-et-stockage--stockage-d-archives-d-entreprise",
+     "nom": "Stockage d'archives d'entreprise",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 45,
+     "maxTTC": 350,
+     "source": "estimation",
+     "aValider": true
+    }
+   ]
+  },
+  {
+   "slug": "transport-et-livraison",
+   "nom": "Transport et livraison",
+   "univers": "demenagement-et-transport",
+   "tauxTva": 20,
+   "bandes": {
+    "forfait": {
+     "minTTC": 60,
+     "maxTTC": 350
+    },
+    "heure": {
+     "minTTC": 45,
+     "maxTTC": 90
+    },
+    "unite": {
+     "minTTC": 45,
+     "maxTTC": 180
+    }
+   },
+   "prestations": [
+    {
+     "slug": "transport-et-livraison--transport-d-un-objet-volumineux",
+     "nom": "Transport d'un objet volumineux",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 60,
+     "maxTTC": 350,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "transport-et-livraison--livraison-de-meuble-a-domicile",
+     "nom": "Livraison de meuble à domicile",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 45,
+     "maxTTC": 180,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "transport-et-livraison--course-urgente-en-ile-de-france",
+     "nom": "Course urgente en Île-de-France",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 60,
+     "maxTTC": 350,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "transport-et-livraison--transport-avec-deux-personnes",
+     "nom": "Transport avec deux personnes",
+     "unite": "heure",
+     "libelleUnite": "de l'heure",
+     "minTTC": 45,
+     "maxTTC": 90,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "transport-et-livraison--livraison-avec-montage",
+     "nom": "Livraison avec montage",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 60,
+     "maxTTC": 350,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "transport-et-livraison--transport-de-materiaux-de-chantier",
+     "nom": "Transport de matériaux de chantier",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 60,
+     "maxTTC": 350,
+     "source": "estimation",
+     "aValider": true
+    }
+   ]
+  },
+  {
+   "slug": "debarras-et-evacuation",
+   "nom": "Débarras et évacuation",
+   "univers": "demenagement-et-transport",
+   "tauxTva": 20,
+   "bandes": {
+    "forfait": {
+     "minTTC": 250,
+     "maxTTC": 1800
+    },
+    "m2": {
+     "minTTC": 18,
+     "maxTTC": 55
+    }
+   },
+   "prestations": [
+    {
+     "slug": "debarras-et-evacuation--debarras-d-appartement",
+     "nom": "Débarras d'appartement",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 250,
+     "maxTTC": 1800,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "debarras-et-evacuation--debarras-de-cave-ou-de-grenier",
+     "nom": "Débarras de cave ou de grenier",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 18,
+     "maxTTC": 55,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "debarras-et-evacuation--evacuation-d-encombrants",
+     "nom": "Évacuation d'encombrants",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 250,
+     "maxTTC": 1800,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "debarras-et-evacuation--debarras-apres-succession",
+     "nom": "Débarras après succession",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 250,
+     "maxTTC": 1800,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "debarras-et-evacuation--evacuation-de-gravats",
+     "nom": "Évacuation de gravats",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 250,
+     "maxTTC": 1800,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "debarras-et-evacuation--debarras-de-local-professionnel",
+     "nom": "Débarras de local professionnel",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 250,
+     "maxTTC": 1800,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "debarras-et-evacuation--tri-et-valorisation-des-objets",
+     "nom": "Tri et valorisation des objets",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 250,
+     "maxTTC": 1800,
+     "source": "estimation",
+     "aValider": true
+    }
+   ]
+  },
+  {
+   "slug": "deratisation",
+   "nom": "Dératisation",
+   "univers": "nuisibles-et-hygiene",
+   "tauxTva": 10,
+   "bandes": {
+    "forfait": {
+     "minTTC": 120,
+     "maxTTC": 650
+    },
+    "m2": {
+     "minTTC": 2,
+     "maxTTC": 8
+    }
+   },
+   "prestations": [
+    {
+     "slug": "deratisation--deratisation-d-un-logement",
+     "nom": "Dératisation d'un logement",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 120,
+     "maxTTC": 650,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "deratisation--deratisation-de-local-professionnel",
+     "nom": "Dératisation de local professionnel",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 2,
+     "maxTTC": 8,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "deratisation--pose-de-pieges-et-d-appats-securises",
+     "nom": "Pose de pièges et d'appâts sécurisés",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 120,
+     "maxTTC": 650,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "deratisation--obturation-des-points-d-entree",
+     "nom": "Obturation des points d'entrée",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 120,
+     "maxTTC": 650,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "deratisation--contrat-de-surveillance-annuel",
+     "nom": "Contrat de surveillance annuel",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 120,
+     "maxTTC": 650,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "deratisation--deratisation-de-copropriete",
+     "nom": "Dératisation de copropriété",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 120,
+     "maxTTC": 650,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "deratisation--diagnostic-d-infestation",
+     "nom": "Diagnostic d'infestation",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 120,
+     "maxTTC": 650,
+     "source": "estimation",
+     "aValider": true
+    }
+   ]
+  },
+  {
+   "slug": "desinsectisation",
+   "nom": "Désinsectisation",
+   "univers": "nuisibles-et-hygiene",
+   "tauxTva": 10,
+   "bandes": {
+    "forfait": {
+     "minTTC": 150,
+     "maxTTC": 1200
+    },
+    "m2": {
+     "minTTC": 8,
+     "maxTTC": 35
+    },
+    "unite": {
+     "minTTC": 90,
+     "maxTTC": 280
+    }
+   },
+   "prestations": [
+    {
+     "slug": "desinsectisation--traitement-contre-les-punaises-de-lit",
+     "nom": "Traitement contre les punaises de lit",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 150,
+     "maxTTC": 1200,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "desinsectisation--traitement-contre-les-cafards",
+     "nom": "Traitement contre les cafards",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 150,
+     "maxTTC": 1200,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "desinsectisation--destruction-de-nid-de-guepes-ou-de-frelons",
+     "nom": "Destruction de nid de guêpes ou de frelons",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 90,
+     "maxTTC": 280,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "desinsectisation--traitement-contre-les-fourmis",
+     "nom": "Traitement contre les fourmis",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 150,
+     "maxTTC": 1200,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "desinsectisation--traitement-contre-les-puces",
+     "nom": "Traitement contre les puces",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 150,
+     "maxTTC": 1200,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "desinsectisation--traitement-thermique-d-une-piece",
+     "nom": "Traitement thermique d'une pièce",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 8,
+     "maxTTC": 35,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "desinsectisation--controle-de-suivi-apres-traitement",
+     "nom": "Contrôle de suivi après traitement",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 150,
+     "maxTTC": 1200,
+     "source": "estimation",
+     "aValider": true
+    }
+   ]
+  },
+  {
+   "slug": "desinfection-et-traitement-du-bois",
+   "nom": "Désinfection et traitement du bois",
+   "univers": "nuisibles-et-hygiene",
+   "tauxTva": 10,
+   "bandes": {
+    "forfait": {
+     "minTTC": 180,
+     "maxTTC": 900
+    },
+    "m2": {
+     "minTTC": 12,
+     "maxTTC": 65
+    }
+   },
+   "prestations": [
+    {
+     "slug": "desinfection-et-traitement-du-bois--desinfection-d-un-logement",
+     "nom": "Désinfection d'un logement",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 12,
+     "maxTTC": 65,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "desinfection-et-traitement-du-bois--traitement-des-termites",
+     "nom": "Traitement des termites",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 12,
+     "maxTTC": 65,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "desinfection-et-traitement-du-bois--traitement-de-la-merule",
+     "nom": "Traitement de la mérule",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 12,
+     "maxTTC": 65,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "desinfection-et-traitement-du-bois--traitement-curatif-des-bois-de-charpente",
+     "nom": "Traitement curatif des bois de charpente",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 12,
+     "maxTTC": 65,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "desinfection-et-traitement-du-bois--traitement-de-moisissures",
+     "nom": "Traitement de moisissures",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 12,
+     "maxTTC": 65,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "desinfection-et-traitement-du-bois--desinfection-apres-sinistre",
+     "nom": "Désinfection après sinistre",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 180,
+     "maxTTC": 900,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "desinfection-et-traitement-du-bois--diagnostic-termites-avant-vente",
+     "nom": "Diagnostic termites avant vente",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 180,
+     "maxTTC": 900,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "desinfection-et-traitement-du-bois--traitement-preventif-des-bois-neufs",
+     "nom": "Traitement préventif des bois neufs",
+     "unite": "m2",
+     "libelleUnite": "le mètre carré",
+     "minTTC": 12,
+     "maxTTC": 65,
+     "source": "estimation",
+     "aValider": true
+    }
+   ]
+  },
+  {
+   "slug": "reparateur-d-electromenager",
+   "nom": "Réparateur d'électroménager",
+   "univers": "electromenager-et-multimedia",
+   "tauxTva": 20,
+   "bandes": {
+    "forfait": {
+     "minTTC": 90,
+     "maxTTC": 320
+    },
+    "unite": {
+     "minTTC": 80,
+     "maxTTC": 280
+    }
+   },
+   "prestations": [
+    {
+     "slug": "reparateur-d-electromenager--depannage-de-lave-linge",
+     "nom": "Dépannage de lave-linge",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 90,
+     "maxTTC": 320,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "reparateur-d-electromenager--depannage-de-lave-vaisselle",
+     "nom": "Dépannage de lave-vaisselle",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 90,
+     "maxTTC": 320,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "reparateur-d-electromenager--depannage-de-refrigerateur",
+     "nom": "Dépannage de réfrigérateur",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 90,
+     "maxTTC": 320,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "reparateur-d-electromenager--depannage-de-four-ou-de-plaque",
+     "nom": "Dépannage de four ou de plaque",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 90,
+     "maxTTC": 320,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "reparateur-d-electromenager--installation-d-electromenager-encastrable",
+     "nom": "Installation d'électroménager encastrable",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 80,
+     "maxTTC": 280,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "reparateur-d-electromenager--detartrage-et-entretien-d-appareil",
+     "nom": "Détartrage et entretien d'appareil",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 90,
+     "maxTTC": 320,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "reparateur-d-electromenager--diagnostic-et-devis-de-reparation",
+     "nom": "Diagnostic et devis de réparation",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 90,
+     "maxTTC": 320,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "reparateur-d-electromenager--depannage-de-seche-linge",
+     "nom": "Dépannage de sèche-linge",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 90,
+     "maxTTC": 320,
+     "source": "estimation",
+     "aValider": true
+    }
+   ]
+  },
+  {
+   "slug": "installateur-tv-son-et-antenne",
+   "nom": "Installateur TV, son et antenne",
+   "univers": "electromenager-et-multimedia",
+   "tauxTva": 10,
+   "bandes": {
+    "forfait": {
+     "minTTC": 120,
+     "maxTTC": 650
+    },
+    "ml": {
+     "minTTC": 8,
+     "maxTTC": 25
+    },
+    "unite": {
+     "minTTC": 70,
+     "maxTTC": 350
+    }
+   },
+   "prestations": [
+    {
+     "slug": "installateur-tv-son-et-antenne--installation-d-antenne-tv",
+     "nom": "Installation d'antenne TV",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 120,
+     "maxTTC": 650,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "installateur-tv-son-et-antenne--fixation-murale-de-televiseur",
+     "nom": "Fixation murale de téléviseur",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 70,
+     "maxTTC": 350,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "installateur-tv-son-et-antenne--installation-de-home-cinema",
+     "nom": "Installation de home cinéma",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 120,
+     "maxTTC": 650,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "installateur-tv-son-et-antenne--recherche-de-panne-de-reception-tnt",
+     "nom": "Recherche de panne de réception TNT",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 120,
+     "maxTTC": 650,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "installateur-tv-son-et-antenne--pose-de-parabole-satellite",
+     "nom": "Pose de parabole satellite",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 70,
+     "maxTTC": 350,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "installateur-tv-son-et-antenne--installation-de-barre-de-son",
+     "nom": "Installation de barre de son",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 70,
+     "maxTTC": 350,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "installateur-tv-son-et-antenne--cablage-et-dissimulation-des-fils",
+     "nom": "Câblage et dissimulation des fils",
+     "unite": "ml",
+     "libelleUnite": "le mètre linéaire",
+     "minTTC": 8,
+     "maxTTC": 25,
+     "source": "estimation",
+     "aValider": true
+    }
+   ]
+  },
+  {
+   "slug": "depannage-informatique-et-reseau",
+   "nom": "Dépannage informatique et réseau",
+   "univers": "electromenager-et-multimedia",
+   "tauxTva": 20,
+   "bandes": {
+    "forfait": {
+     "minTTC": 70,
+     "maxTTC": 320
+    },
+    "heure": {
+     "minTTC": 45,
+     "maxTTC": 85
+    },
+    "ml": {
+     "minTTC": 8,
+     "maxTTC": 22
+    },
+    "unite": {
+     "minTTC": 60,
+     "maxTTC": 180
+    }
+   },
+   "prestations": [
+    {
+     "slug": "depannage-informatique-et-reseau--depannage-d-ordinateur-a-domicile",
+     "nom": "Dépannage d'ordinateur à domicile",
+     "unite": "heure",
+     "libelleUnite": "de l'heure",
+     "minTTC": 45,
+     "maxTTC": 85,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "depannage-informatique-et-reseau--installation-et-configuration-d-une-box",
+     "nom": "Installation et configuration d'une box",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 70,
+     "maxTTC": 320,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "depannage-informatique-et-reseau--amelioration-de-la-couverture-wifi",
+     "nom": "Amélioration de la couverture wifi",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 70,
+     "maxTTC": 320,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "depannage-informatique-et-reseau--suppression-de-virus-et-nettoyage",
+     "nom": "Suppression de virus et nettoyage",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 70,
+     "maxTTC": 320,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "depannage-informatique-et-reseau--sauvegarde-et-transfert-de-donnees",
+     "nom": "Sauvegarde et transfert de données",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 70,
+     "maxTTC": 320,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "depannage-informatique-et-reseau--installation-d-imprimante",
+     "nom": "Installation d'imprimante",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 60,
+     "maxTTC": 180,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "depannage-informatique-et-reseau--cablage-reseau-d-un-logement-ou-d-un-bureau",
+     "nom": "Câblage réseau d'un logement ou d'un bureau",
+     "unite": "ml",
+     "libelleUnite": "le mètre linéaire",
+     "minTTC": 8,
+     "maxTTC": 22,
+     "source": "estimation",
+     "aValider": true
+    }
+   ]
+  },
+  {
+   "slug": "nettoyage-de-voiture-a-domicile",
+   "nom": "Nettoyage de voiture à domicile",
+   "univers": "auto-moto-et-velo",
+   "tauxTva": 20,
+   "bandes": {
+    "unite": {
+     "minTTC": 45,
+     "maxTTC": 350
+    }
+   },
+   "prestations": [
+    {
+     "slug": "nettoyage-de-voiture-a-domicile--nettoyage-interieur-complet",
+     "nom": "Nettoyage intérieur complet",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 45,
+     "maxTTC": 350,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "nettoyage-de-voiture-a-domicile--nettoyage-exterieur-sans-eau",
+     "nom": "Nettoyage extérieur sans eau",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 45,
+     "maxTTC": 350,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "nettoyage-de-voiture-a-domicile--nettoyage-des-sieges-et-de-la-moquette",
+     "nom": "Nettoyage des sièges et de la moquette",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 45,
+     "maxTTC": 350,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "nettoyage-de-voiture-a-domicile--lustrage-et-renovation-de-carrosserie",
+     "nom": "Lustrage et rénovation de carrosserie",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 45,
+     "maxTTC": 350,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "nettoyage-de-voiture-a-domicile--traitement-ceramique-de-protection",
+     "nom": "Traitement céramique de protection",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 45,
+     "maxTTC": 350,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "nettoyage-de-voiture-a-domicile--nettoyage-de-vehicule-avant-revente",
+     "nom": "Nettoyage de véhicule avant revente",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 45,
+     "maxTTC": 350,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "nettoyage-de-voiture-a-domicile--desinfection-et-traitement-des-odeurs",
+     "nom": "Désinfection et traitement des odeurs",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 45,
+     "maxTTC": 350,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "nettoyage-de-voiture-a-domicile--nettoyage-de-flotte-d-entreprise",
+     "nom": "Nettoyage de flotte d'entreprise",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 45,
+     "maxTTC": 350,
+     "source": "estimation",
+     "aValider": true
+    }
+   ]
+  },
+  {
+   "slug": "mecanicien-a-domicile",
+   "nom": "Mécanicien à domicile",
+   "univers": "auto-moto-et-velo",
+   "tauxTva": 20,
+   "bandes": {
+    "forfait": {
+     "minTTC": 90,
+     "maxTTC": 900
+    },
+    "unite": {
+     "minTTC": 90,
+     "maxTTC": 280
+    }
+   },
+   "prestations": [
+    {
+     "slug": "mecanicien-a-domicile--vidange-et-remplacement-des-filtres",
+     "nom": "Vidange et remplacement des filtres",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 90,
+     "maxTTC": 900,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "mecanicien-a-domicile--remplacement-de-plaquettes-de-frein",
+     "nom": "Remplacement de plaquettes de frein",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 90,
+     "maxTTC": 900,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "mecanicien-a-domicile--remplacement-de-batterie",
+     "nom": "Remplacement de batterie",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 90,
+     "maxTTC": 280,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "mecanicien-a-domicile--diagnostic-electronique",
+     "nom": "Diagnostic électronique",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 90,
+     "maxTTC": 900,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "mecanicien-a-domicile--remplacement-de-courroie-de-distribution",
+     "nom": "Remplacement de courroie de distribution",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 90,
+     "maxTTC": 900,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "mecanicien-a-domicile--preparation-au-controle-technique",
+     "nom": "Préparation au contrôle technique",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 90,
+     "maxTTC": 900,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "mecanicien-a-domicile--remplacement-d-amortisseurs",
+     "nom": "Remplacement d'amortisseurs",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 90,
+     "maxTTC": 900,
+     "source": "estimation",
+     "aValider": true
+    }
+   ]
+  },
+  {
+   "slug": "carrosserie-et-pare-brise",
+   "nom": "Carrosserie et pare-brise",
+   "univers": "auto-moto-et-velo",
+   "tauxTva": 20,
+   "bandes": {
+    "forfait": {
+     "minTTC": 180,
+     "maxTTC": 1200
+    },
+    "unite": {
+     "minTTC": 90,
+     "maxTTC": 900
+    }
+   },
+   "prestations": [
+    {
+     "slug": "carrosserie-et-pare-brise--reparation-d-impact-de-pare-brise",
+     "nom": "Réparation d'impact de pare-brise",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 90,
+     "maxTTC": 900,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "carrosserie-et-pare-brise--remplacement-de-pare-brise",
+     "nom": "Remplacement de pare-brise",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 90,
+     "maxTTC": 900,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "carrosserie-et-pare-brise--debosselage-sans-peinture",
+     "nom": "Débosselage sans peinture",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 90,
+     "maxTTC": 900,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "carrosserie-et-pare-brise--reparation-de-rayure",
+     "nom": "Réparation de rayure",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 90,
+     "maxTTC": 900,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "carrosserie-et-pare-brise--remplacement-de-retroviseur",
+     "nom": "Remplacement de rétroviseur",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 90,
+     "maxTTC": 900,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "carrosserie-et-pare-brise--peinture-d-un-element-de-carrosserie",
+     "nom": "Peinture d'un élément de carrosserie",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 90,
+     "maxTTC": 900,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "carrosserie-et-pare-brise--remise-en-etat-esthetique-apres-sinistre",
+     "nom": "Remise en état esthétique après sinistre",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 180,
+     "maxTTC": 1200,
+     "source": "estimation",
+     "aValider": true
+    }
+   ]
+  },
+  {
+   "slug": "reparateur-de-velo-et-de-trottinette",
+   "nom": "Réparateur de vélo et de trottinette",
+   "univers": "auto-moto-et-velo",
+   "tauxTva": 20,
+   "bandes": {
+    "forfait": {
+     "minTTC": 35,
+     "maxTTC": 180
+    },
+    "unite": {
+     "minTTC": 15,
+     "maxTTC": 450
+    }
+   },
+   "prestations": [
+    {
+     "slug": "reparateur-de-velo-et-de-trottinette--reparation-de-crevaison",
+     "nom": "Réparation de crevaison",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 15,
+     "maxTTC": 450,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "reparateur-de-velo-et-de-trottinette--revision-complete-de-velo",
+     "nom": "Révision complète de vélo",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 15,
+     "maxTTC": 450,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "reparateur-de-velo-et-de-trottinette--reglage-des-freins-et-derailleurs",
+     "nom": "Réglage des freins et dérailleurs",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 35,
+     "maxTTC": 180,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "reparateur-de-velo-et-de-trottinette--remplacement-de-chaine-ou-de-cassette",
+     "nom": "Remplacement de chaîne ou de cassette",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 15,
+     "maxTTC": 450,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "reparateur-de-velo-et-de-trottinette--depannage-de-velo-a-assistance-electrique",
+     "nom": "Dépannage de vélo à assistance électrique",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 35,
+     "maxTTC": 180,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "reparateur-de-velo-et-de-trottinette--reparation-de-trottinette-electrique",
+     "nom": "Réparation de trottinette électrique",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 35,
+     "maxTTC": 180,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "reparateur-de-velo-et-de-trottinette--remplacement-de-batterie-de-vae",
+     "nom": "Remplacement de batterie de VAE",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 15,
+     "maxTTC": 450,
+     "source": "estimation",
+     "aValider": true
+    }
+   ]
+  },
+  {
+   "slug": "garde-d-enfants",
+   "nom": "Garde d'enfants",
+   "univers": "services-a-la-personne",
+   "tauxTva": 20,
+   "bandes": {
+    "heure": {
+     "minTTC": 14,
+     "maxTTC": 24
+    },
+    "jour": {
+     "minTTC": 90,
+     "maxTTC": 160
+    }
+   },
+   "prestations": [
+    {
+     "slug": "garde-d-enfants--garde-d-enfants-reguliere",
+     "nom": "Garde d'enfants régulière",
+     "unite": "heure",
+     "libelleUnite": "de l'heure",
+     "minTTC": 14,
+     "maxTTC": 24,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "garde-d-enfants--garde-d-enfants-ponctuelle",
+     "nom": "Garde d'enfants ponctuelle",
+     "unite": "heure",
+     "libelleUnite": "de l'heure",
+     "minTTC": 14,
+     "maxTTC": 24,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "garde-d-enfants--sortie-d-ecole-et-gouter",
+     "nom": "Sortie d'école et goûter",
+     "unite": "heure",
+     "libelleUnite": "de l'heure",
+     "minTTC": 14,
+     "maxTTC": 24,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "garde-d-enfants--garde-pendant-les-vacances-scolaires",
+     "nom": "Garde pendant les vacances scolaires",
+     "unite": "jour",
+     "libelleUnite": "la journée",
+     "minTTC": 90,
+     "maxTTC": 160,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "garde-d-enfants--garde-d-enfants-en-horaires-decales",
+     "nom": "Garde d'enfants en horaires décalés",
+     "unite": "heure",
+     "libelleUnite": "de l'heure",
+     "minTTC": 14,
+     "maxTTC": 24,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "garde-d-enfants--accompagnement-aux-activites",
+     "nom": "Accompagnement aux activités",
+     "unite": "heure",
+     "libelleUnite": "de l'heure",
+     "minTTC": 14,
+     "maxTTC": 24,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "garde-d-enfants--garde-partagee-entre-deux-familles",
+     "nom": "Garde partagée entre deux familles",
+     "unite": "heure",
+     "libelleUnite": "de l'heure",
+     "minTTC": 14,
+     "maxTTC": 24,
+     "source": "estimation",
+     "aValider": true
+    }
+   ]
+  },
+  {
+   "slug": "aide-aux-seniors",
+   "nom": "Aide aux seniors",
+   "univers": "services-a-la-personne",
+   "tauxTva": 20,
+   "bandes": {
+    "heure": {
+     "minTTC": 24,
+     "maxTTC": 38
+    },
+    "jour": {
+     "minTTC": 140,
+     "maxTTC": 260
+    }
+   },
+   "prestations": [
+    {
+     "slug": "aide-aux-seniors--aide-a-domicile-reguliere",
+     "nom": "Aide à domicile régulière",
+     "unite": "heure",
+     "libelleUnite": "de l'heure",
+     "minTTC": 24,
+     "maxTTC": 38,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "aide-aux-seniors--accompagnement-aux-courses",
+     "nom": "Accompagnement aux courses",
+     "unite": "heure",
+     "libelleUnite": "de l'heure",
+     "minTTC": 24,
+     "maxTTC": 38,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "aide-aux-seniors--preparation-des-repas",
+     "nom": "Préparation des repas",
+     "unite": "heure",
+     "libelleUnite": "de l'heure",
+     "minTTC": 24,
+     "maxTTC": 38,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "aide-aux-seniors--aide-a-la-toilette-et-a-l-habillage",
+     "nom": "Aide à la toilette et à l'habillage",
+     "unite": "heure",
+     "libelleUnite": "de l'heure",
+     "minTTC": 24,
+     "maxTTC": 38,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "aide-aux-seniors--accompagnement-aux-rendez-vous-medicaux",
+     "nom": "Accompagnement aux rendez-vous médicaux",
+     "unite": "heure",
+     "libelleUnite": "de l'heure",
+     "minTTC": 24,
+     "maxTTC": 38,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "aide-aux-seniors--presence-de-nuit",
+     "nom": "Présence de nuit",
+     "unite": "jour",
+     "libelleUnite": "la journée",
+     "minTTC": 140,
+     "maxTTC": 260,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "aide-aux-seniors--aide-administrative-et-courrier",
+     "nom": "Aide administrative et courrier",
+     "unite": "heure",
+     "libelleUnite": "de l'heure",
+     "minTTC": 24,
+     "maxTTC": 38,
+     "source": "estimation",
+     "aValider": true
+    }
+   ]
+  },
+  {
+   "slug": "soutien-scolaire",
+   "nom": "Soutien scolaire",
+   "univers": "services-a-la-personne",
+   "tauxTva": 20,
+   "bandes": {
+    "heure": {
+     "minTTC": 25,
+     "maxTTC": 55
+    },
+    "jour": {
+     "minTTC": 120,
+     "maxTTC": 280
+    }
+   },
+   "prestations": [
+    {
+     "slug": "soutien-scolaire--cours-particuliers-de-mathematiques",
+     "nom": "Cours particuliers de mathématiques",
+     "unite": "heure",
+     "libelleUnite": "de l'heure",
+     "minTTC": 25,
+     "maxTTC": 55,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "soutien-scolaire--cours-particuliers-de-francais",
+     "nom": "Cours particuliers de français",
+     "unite": "heure",
+     "libelleUnite": "de l'heure",
+     "minTTC": 25,
+     "maxTTC": 55,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "soutien-scolaire--preparation-au-baccalaureat",
+     "nom": "Préparation au baccalauréat",
+     "unite": "heure",
+     "libelleUnite": "de l'heure",
+     "minTTC": 25,
+     "maxTTC": 55,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "soutien-scolaire--preparation-au-brevet",
+     "nom": "Préparation au brevet",
+     "unite": "heure",
+     "libelleUnite": "de l'heure",
+     "minTTC": 25,
+     "maxTTC": 55,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "soutien-scolaire--aide-aux-devoirs",
+     "nom": "Aide aux devoirs",
+     "unite": "heure",
+     "libelleUnite": "de l'heure",
+     "minTTC": 25,
+     "maxTTC": 55,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "soutien-scolaire--cours-de-langue-vivante",
+     "nom": "Cours de langue vivante",
+     "unite": "heure",
+     "libelleUnite": "de l'heure",
+     "minTTC": 25,
+     "maxTTC": 55,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "soutien-scolaire--stage-intensif-pendant-les-vacances",
+     "nom": "Stage intensif pendant les vacances",
+     "unite": "jour",
+     "libelleUnite": "la journée",
+     "minTTC": 120,
+     "maxTTC": 280,
+     "source": "estimation",
+     "aValider": true
+    }
+   ]
+  },
+  {
+   "slug": "garde-d-animaux",
+   "nom": "Garde d'animaux",
+   "univers": "services-a-la-personne",
+   "tauxTva": 20,
+   "bandes": {
+    "forfait": {
+     "minTTC": 35,
+     "maxTTC": 150
+    },
+    "heure": {
+     "minTTC": 15,
+     "maxTTC": 30
+    },
+    "jour": {
+     "minTTC": 20,
+     "maxTTC": 55
+    },
+    "unite": {
+     "minTTC": 12,
+     "maxTTC": 45
+    }
+   },
+   "prestations": [
+    {
+     "slug": "garde-d-animaux--garde-d-animaux-a-domicile",
+     "nom": "Garde d'animaux à domicile",
+     "unite": "jour",
+     "libelleUnite": "la journée",
+     "minTTC": 20,
+     "maxTTC": 55,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "garde-d-animaux--promenade-de-chien",
+     "nom": "Promenade de chien",
+     "unite": "heure",
+     "libelleUnite": "de l'heure",
+     "minTTC": 15,
+     "maxTTC": 30,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "garde-d-animaux--visite-quotidienne-pour-un-chat",
+     "nom": "Visite quotidienne pour un chat",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 12,
+     "maxTTC": 45,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "garde-d-animaux--garde-pendant-les-vacances",
+     "nom": "Garde pendant les vacances",
+     "unite": "jour",
+     "libelleUnite": "la journée",
+     "minTTC": 20,
+     "maxTTC": 55,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "garde-d-animaux--transport-d-animal-chez-le-veterinaire",
+     "nom": "Transport d'animal chez le vétérinaire",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 35,
+     "maxTTC": 150,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "garde-d-animaux--toilettage-a-domicile",
+     "nom": "Toilettage à domicile",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 12,
+     "maxTTC": 45,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "garde-d-animaux--education-canine-a-domicile",
+     "nom": "Éducation canine à domicile",
+     "unite": "heure",
+     "libelleUnite": "de l'heure",
+     "minTTC": 15,
+     "maxTTC": 30,
+     "source": "estimation",
+     "aValider": true
+    }
+   ]
+  },
+  {
+   "slug": "coiffeur-a-domicile",
+   "nom": "Coiffeur à domicile",
+   "univers": "beaute-et-bien-etre-a-domicile",
+   "tauxTva": 20,
+   "bandes": {
+    "forfait": {
+     "minTTC": 90,
+     "maxTTC": 350
+    },
+    "unite": {
+     "minTTC": 25,
+     "maxTTC": 140
+    }
+   },
+   "prestations": [
+    {
+     "slug": "coiffeur-a-domicile--coupe-de-cheveux-femme",
+     "nom": "Coupe de cheveux femme",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 25,
+     "maxTTC": 140,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "coiffeur-a-domicile--coupe-de-cheveux-homme",
+     "nom": "Coupe de cheveux homme",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 25,
+     "maxTTC": 140,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "coiffeur-a-domicile--coloration",
+     "nom": "Coloration",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 25,
+     "maxTTC": 140,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "coiffeur-a-domicile--brushing-et-mise-en-pli",
+     "nom": "Brushing et mise en pli",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 25,
+     "maxTTC": 140,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "coiffeur-a-domicile--coiffure-de-mariage",
+     "nom": "Coiffure de mariage",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 90,
+     "maxTTC": 350,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "coiffeur-a-domicile--coupe-enfant",
+     "nom": "Coupe enfant",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 25,
+     "maxTTC": 140,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "coiffeur-a-domicile--soin-et-lissage",
+     "nom": "Soin et lissage",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 25,
+     "maxTTC": 140,
+     "source": "estimation",
+     "aValider": true
+    }
+   ]
+  },
+  {
+   "slug": "estheticienne-a-domicile",
+   "nom": "Esthéticienne à domicile",
+   "univers": "beaute-et-bien-etre-a-domicile",
+   "tauxTva": 20,
+   "bandes": {
+    "forfait": {
+     "minTTC": 70,
+     "maxTTC": 280
+    },
+    "unite": {
+     "minTTC": 25,
+     "maxTTC": 110
+    }
+   },
+   "prestations": [
+    {
+     "slug": "estheticienne-a-domicile--epilation-des-jambes",
+     "nom": "Épilation des jambes",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 25,
+     "maxTTC": 110,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "estheticienne-a-domicile--epilation-du-visage",
+     "nom": "Épilation du visage",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 25,
+     "maxTTC": 110,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "estheticienne-a-domicile--soin-du-visage",
+     "nom": "Soin du visage",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 25,
+     "maxTTC": 110,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "estheticienne-a-domicile--maquillage-pour-evenement",
+     "nom": "Maquillage pour événement",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 25,
+     "maxTTC": 110,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "estheticienne-a-domicile--soin-des-mains-et-des-pieds",
+     "nom": "Soin des mains et des pieds",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 25,
+     "maxTTC": 110,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "estheticienne-a-domicile--epilation-integrale",
+     "nom": "Épilation intégrale",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 70,
+     "maxTTC": 280,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "estheticienne-a-domicile--forfait-beaute-mariage",
+     "nom": "Forfait beauté mariage",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 70,
+     "maxTTC": 280,
+     "source": "estimation",
+     "aValider": true
+    }
+   ]
+  },
+  {
+   "slug": "masseur-bien-etre",
+   "nom": "Masseur bien-être",
+   "univers": "beaute-et-bien-etre-a-domicile",
+   "tauxTva": 20,
+   "bandes": {
+    "forfait": {
+     "minTTC": 45,
+     "maxTTC": 120
+    },
+    "heure": {
+     "minTTC": 60,
+     "maxTTC": 130
+    }
+   },
+   "prestations": [
+    {
+     "slug": "masseur-bien-etre--massage-relaxant",
+     "nom": "Massage relaxant",
+     "unite": "heure",
+     "libelleUnite": "de l'heure",
+     "minTTC": 60,
+     "maxTTC": 130,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "masseur-bien-etre--massage-sportif",
+     "nom": "Massage sportif",
+     "unite": "heure",
+     "libelleUnite": "de l'heure",
+     "minTTC": 60,
+     "maxTTC": 130,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "masseur-bien-etre--massage-du-dos",
+     "nom": "Massage du dos",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 45,
+     "maxTTC": 120,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "masseur-bien-etre--massage-aux-pierres-chaudes",
+     "nom": "Massage aux pierres chaudes",
+     "unite": "heure",
+     "libelleUnite": "de l'heure",
+     "minTTC": 60,
+     "maxTTC": 130,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "masseur-bien-etre--massage-prenatal",
+     "nom": "Massage prénatal",
+     "unite": "heure",
+     "libelleUnite": "de l'heure",
+     "minTTC": 60,
+     "maxTTC": 130,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "masseur-bien-etre--seance-de-reflexologie-plantaire",
+     "nom": "Séance de réflexologie plantaire",
+     "unite": "heure",
+     "libelleUnite": "de l'heure",
+     "minTTC": 60,
+     "maxTTC": 130,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "masseur-bien-etre--massage-en-entreprise",
+     "nom": "Massage en entreprise",
+     "unite": "heure",
+     "libelleUnite": "de l'heure",
+     "minTTC": 60,
+     "maxTTC": 130,
+     "source": "estimation",
+     "aValider": true
+    }
+   ]
+  },
+  {
+   "slug": "prothesiste-ongulaire",
+   "nom": "Prothésiste ongulaire",
+   "univers": "beaute-et-bien-etre-a-domicile",
+   "tauxTva": 20,
+   "bandes": {
+    "unite": {
+     "minTTC": 25,
+     "maxTTC": 90
+    }
+   },
+   "prestations": [
+    {
+     "slug": "prothesiste-ongulaire--pose-de-vernis-semi-permanent",
+     "nom": "Pose de vernis semi-permanent",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 25,
+     "maxTTC": 90,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "prothesiste-ongulaire--pose-d-ongles-en-gel",
+     "nom": "Pose d'ongles en gel",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 25,
+     "maxTTC": 90,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "prothesiste-ongulaire--remplissage-de-gel",
+     "nom": "Remplissage de gel",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 25,
+     "maxTTC": 90,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "prothesiste-ongulaire--manucure-simple",
+     "nom": "Manucure simple",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 25,
+     "maxTTC": 90,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "prothesiste-ongulaire--beaute-des-pieds",
+     "nom": "Beauté des pieds",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 25,
+     "maxTTC": 90,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "prothesiste-ongulaire--depose-de-protheses",
+     "nom": "Dépose de prothèses",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 25,
+     "maxTTC": 90,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "prothesiste-ongulaire--nail-art-et-decoration",
+     "nom": "Nail art et décoration",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 25,
+     "maxTTC": 90,
+     "source": "estimation",
+     "aValider": true
+    }
+   ]
+  },
+  {
+   "slug": "traiteur",
+   "nom": "Traiteur",
+   "univers": "evenements-et-receptions",
+   "tauxTva": 20,
+   "bandes": {
+    "forfait": {
+     "minTTC": 250,
+     "maxTTC": 1800
+    },
+    "heure": {
+     "minTTC": 28,
+     "maxTTC": 55
+    },
+    "unite": {
+     "minTTC": 18,
+     "maxTTC": 110
+    }
+   },
+   "prestations": [
+    {
+     "slug": "traiteur--cocktail-dinatoire",
+     "nom": "Cocktail dînatoire",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 18,
+     "maxTTC": 110,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "traiteur--buffet-froid",
+     "nom": "Buffet froid",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 18,
+     "maxTTC": 110,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "traiteur--repas-de-mariage",
+     "nom": "Repas de mariage",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 18,
+     "maxTTC": 110,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "traiteur--plateaux-repas-pour-entreprise",
+     "nom": "Plateaux-repas pour entreprise",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 18,
+     "maxTTC": 110,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "traiteur--service-en-salle",
+     "nom": "Service en salle",
+     "unite": "heure",
+     "libelleUnite": "de l'heure",
+     "minTTC": 28,
+     "maxTTC": 55,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "traiteur--location-de-vaisselle-et-de-nappage",
+     "nom": "Location de vaisselle et de nappage",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 250,
+     "maxTTC": 1800,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "traiteur--brunch-ou-petit-dejeuner-d-entreprise",
+     "nom": "Brunch ou petit-déjeuner d'entreprise",
+     "unite": "unite",
+     "libelleUnite": "l'unité",
+     "minTTC": 18,
+     "maxTTC": 110,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "traiteur--food-truck-pour-evenement",
+     "nom": "Food truck pour événement",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 250,
+     "maxTTC": 1800,
+     "source": "estimation",
+     "aValider": true
+    }
+   ]
+  },
+  {
+   "slug": "photographe-et-videaste",
+   "nom": "Photographe et vidéaste",
+   "univers": "evenements-et-receptions",
+   "tauxTva": 20,
+   "bandes": {
+    "forfait": {
+     "minTTC": 250,
+     "maxTTC": 2800
+    }
+   },
+   "prestations": [
+    {
+     "slug": "photographe-et-videaste--reportage-photo-de-mariage",
+     "nom": "Reportage photo de mariage",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 250,
+     "maxTTC": 2800,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "photographe-et-videaste--photographie-d-evenement-d-entreprise",
+     "nom": "Photographie d'événement d'entreprise",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 250,
+     "maxTTC": 2800,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "photographe-et-videaste--seance-photo-portrait",
+     "nom": "Séance photo portrait",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 250,
+     "maxTTC": 2800,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "photographe-et-videaste--video-de-mariage",
+     "nom": "Vidéo de mariage",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 250,
+     "maxTTC": 2800,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "photographe-et-videaste--photographie-immobiliere",
+     "nom": "Photographie immobilière",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 250,
+     "maxTTC": 2800,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "photographe-et-videaste--captation-video-d-evenement",
+     "nom": "Captation vidéo d'événement",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 250,
+     "maxTTC": 2800,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "photographe-et-videaste--retouche-et-tirage-photo",
+     "nom": "Retouche et tirage photo",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 250,
+     "maxTTC": 2800,
+     "source": "estimation",
+     "aValider": true
+    }
+   ]
+  },
+  {
+   "slug": "animation-sonorisation-et-decoration",
+   "nom": "Animation, sonorisation et décoration",
+   "univers": "evenements-et-receptions",
+   "tauxTva": 20,
+   "bandes": {
+    "forfait": {
+     "minTTC": 250,
+     "maxTTC": 2200
+    },
+    "heure": {
+     "minTTC": 45,
+     "maxTTC": 95
+    }
+   },
+   "prestations": [
+    {
+     "slug": "animation-sonorisation-et-decoration--prestation-dj-pour-soiree",
+     "nom": "Prestation DJ pour soirée",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 250,
+     "maxTTC": 2200,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "animation-sonorisation-et-decoration--sonorisation-et-eclairage-d-une-salle",
+     "nom": "Sonorisation et éclairage d'une salle",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 250,
+     "maxTTC": 2200,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "animation-sonorisation-et-decoration--decoration-florale-d-evenement",
+     "nom": "Décoration florale d'événement",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 250,
+     "maxTTC": 2200,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "animation-sonorisation-et-decoration--location-de-mobilier-d-evenement",
+     "nom": "Location de mobilier d'événement",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 250,
+     "maxTTC": 2200,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "animation-sonorisation-et-decoration--location-de-tente-ou-de-chapiteau",
+     "nom": "Location de tente ou de chapiteau",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 250,
+     "maxTTC": 2200,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "animation-sonorisation-et-decoration--animation-pour-anniversaire-d-enfant",
+     "nom": "Animation pour anniversaire d'enfant",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 250,
+     "maxTTC": 2200,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "animation-sonorisation-et-decoration--installation-d-un-photobooth",
+     "nom": "Installation d'un photobooth",
+     "unite": "forfait",
+     "libelleUnite": "le forfait",
+     "minTTC": 250,
+     "maxTTC": 2200,
+     "source": "estimation",
+     "aValider": true
+    },
+    {
+     "slug": "animation-sonorisation-et-decoration--montage-et-demontage-sur-site",
+     "nom": "Montage et démontage sur site",
+     "unite": "heure",
+     "libelleUnite": "de l'heure",
+     "minTTC": 45,
+     "maxTTC": 95,
+     "source": "estimation",
+     "aValider": true
+    }
+   ]
+  }
+ ]
+}
