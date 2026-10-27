@@ -110,6 +110,16 @@
     "erreursConsole": []
   },
   {
+    "page": "Résultats filtrés",
+    "largeur": 390,
+    "fichier": "resultats-filtres-390.png",
+    "defilementHorizontal": false,
+    "largeurDocument": 390,
+    "largeurFenetre": 390,
+    "debordements": [],
+    "erreursConsole": []
+  },
+  {
     "page": "Demande de devis",
     "largeur": 390,
     "fichier": "demande-390.png",
@@ -243,6 +253,16 @@
     "page": "Comment nous classons",
     "largeur": 1440,
     "fichier": "comment-nous-classons-1440.png",
+    "defilementHorizontal": false,
+    "largeurDocument": 1440,
+    "largeurFenetre": 1440,
+    "debordements": [],
+    "erreursConsole": []
+  },
+  {
+    "page": "Résultats filtrés",
+    "largeur": 1440,
+    "fichier": "resultats-filtres-1440.png",
     "defilementHorizontal": false,
     "largeurDocument": 1440,
     "largeurFenetre": 1440,

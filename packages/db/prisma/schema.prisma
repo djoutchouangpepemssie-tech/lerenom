@@ -255,6 +255,14 @@ model Entreprise {
   noteMoyenne Float? @map("note_moyenne")
   nombreAvis Int   @default(0) @map("nombre_avis")
 
+  /// Disponibilité déclarée par le pro. Elle conditionne son éligibilité à une demande :
+  /// un pro indisponible reste visible dans l'annuaire mais ne reçoit rien.
+  disponible Boolean @default(true) @map("disponible")
+  /// Accepte les interventions sous 2 heures. Réservé aux formules payantes.
+  interventionUrgente Boolean @default(false) @map("intervention_urgente")
+  /// Délai moyen de première réponse, en minutes, recalculé chaque nuit.
+  delaiReponseMinutes Int? @map("delai_reponse_minutes")
+
   fiche          Fiche?
   agences        Agence[]
   zones          ZonePro[]

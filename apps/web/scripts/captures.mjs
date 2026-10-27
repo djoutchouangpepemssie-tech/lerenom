@@ -42,6 +42,11 @@ const PAGES = [
     chemin: '/comment-nous-classons',
     titre: 'Comment nous classons',
   },
+  {
+    nom: 'resultats-filtres',
+    chemin: '/plombier/paris-11?partenaires=1&tri=note',
+    titre: 'Résultats filtrés',
+  },
   { nom: 'demande', chemin: '/demande', titre: 'Demande de devis' },
   { nom: 'pro-inscription', chemin: '/pro/inscription', titre: 'Inscription professionnelle' },
   { nom: 'design-system', chemin: '/design', titre: 'Design system' },

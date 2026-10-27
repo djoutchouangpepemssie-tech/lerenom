@@ -287,6 +287,9 @@ interface ProDemo {
   readonly delaiReponseMinutes: number;
   readonly description: string;
   readonly communes: string[];
+  readonly disponible?: boolean;
+  /// Prestations proposées, par slug, avec leur prix affiché en euros TTC.
+  readonly prestations?: readonly (readonly [string, number])[];
   /// Coordonnées de l'agence, laissées vides tant que le géocodage n'a pas tourné.
   readonly titulaireExclusivite?: boolean;
 }
@@ -304,6 +307,13 @@ const PLOMBIERS: readonly ProDemo[] = [
       "Entreprise familiale installée dans le 11e depuis 1998. Recherche de fuite, dépannage d'urgence et rénovation complète de salle de bain. Nous intervenons sous deux heures dans l'arrondissement.",
     communes: ['75111', '75112', '75120', '93048', '94080'],
     titulaireExclusivite: true,
+    prestations: [
+      ['plombier--recherche-de-fuite', 180],
+      ['plombier--reparation-de-fuite-d-eau', 220],
+      ['plombier--debouchage-d-evier-ou-de-lavabo', 140],
+      ['plombier--remplacement-de-robinet', 160],
+      ['plombier--installation-de-wc', 290],
+    ],
   },
   {
     siret: '80000000200016',
@@ -315,6 +325,12 @@ const PLOMBIERS: readonly ProDemo[] = [
     description:
       'Deux agences, à Paris 11e et à Montreuil. Plomberie générale, remplacement de chauffe-eau et installation sanitaire. Devis détaillé avant toute intervention.',
     communes: ['75111', '93048'],
+    prestations: [
+      ['plombier--recherche-de-fuite', 195],
+      ['plombier--reparation-de-fuite-d-eau', 240],
+      ['plombier--remplacement-de-robinet', 150],
+      ['plombier--remplacement-de-chasse-d-eau', 180],
+    ],
   },
   {
     siret: '80000000300015',
@@ -326,6 +342,11 @@ const PLOMBIERS: readonly ProDemo[] = [
     description:
       "Artisan plombier, spécialiste de la rénovation de salle de bain et de la douche à l'italienne. Travail soigné, chantiers laissés propres.",
     communes: ['75111', '75120'],
+    prestations: [
+      ['plombier--installation-de-wc', 310],
+      ['plombier--remplacement-de-robinet', 170],
+      ['plombier--remplacement-de-flexible-et-raccords', 90],
+    ],
   },
   {
     siret: '80000000400014',
@@ -337,17 +358,27 @@ const PLOMBIERS: readonly ProDemo[] = [
     description:
       "Dépannage et recherche de fuite sept jours sur sept. Détection sans destruction, intervention rapide dans l'est parisien.",
     communes: ['75111'],
+    prestations: [
+      ['plombier--recherche-de-fuite', 210],
+      ['plombier--reparation-de-fuite-d-eau', 260],
+      ['plombier--debouchage-d-evier-ou-de-lavabo', 160],
+    ],
   },
   {
     siret: '80000000500013',
     nom: 'Hydro Services',
     formule: 'essentiel',
+    disponible: false,
     note: 4.4,
     avis: 40,
     delaiReponseMinutes: 72,
     description:
       'Plomberie, débouchage et entretien de chaudière pour les particuliers et les copropriétés du 11e arrondissement.',
     communes: ['75111'],
+    prestations: [
+      ['plombier--debouchage-d-evier-ou-de-lavabo', 130],
+      ['plombier--remplacement-de-robinet', 140],
+    ],
   },
   {
     siret: '80000000600012',
@@ -359,6 +390,11 @@ const PLOMBIERS: readonly ProDemo[] = [
     description:
       'Petits travaux de plomberie, remplacement de robinetterie et réparation de fuites. Artisan indépendant.',
     communes: ['75111'],
+    prestations: [
+      ['plombier--remplacement-de-robinet', 120],
+      ['plombier--reparation-de-fuite-d-eau', 190],
+      ['plombier--remplacement-de-flexible-et-raccords', 75],
+    ],
   },
   {
     siret: '80000000700011',
@@ -370,6 +406,10 @@ const PLOMBIERS: readonly ProDemo[] = [
     description:
       'Installation et dépannage sanitaire. Intervention sur rendez-vous dans le 11e et les arrondissements voisins.',
     communes: ['75111'],
+    prestations: [
+      ['plombier--installation-de-wc', 270],
+      ['plombier--remplacement-de-chasse-d-eau', 150],
+    ],
   },
 ];
 
@@ -388,7 +428,17 @@ async function semeDemonstration(idsMetier: Map<string, string>): Promise<void> 
   for (const pro of PLOMBIERS) {
     const entreprise = await prisma.entreprise.upsert({
       where: { siret: pro.siret },
-      update: {},
+      // Les données de démonstration se rafraîchissent à chaque semis : sans cela, un champ
+      // ajouté au modèle resterait vide sur les lignes déjà créées, et le défaut passerait
+      // pour un comportement.
+      update: {
+        nom: pro.nom,
+        noteMoyenne: pro.note,
+        nombreAvis: pro.avis,
+        disponible: pro.disponible ?? true,
+        interventionUrgente: pro.formule !== 'gratuit',
+        delaiReponseMinutes: pro.delaiReponseMinutes,
+      },
       create: {
         siret: pro.siret,
         siren: pro.siret.slice(0, 9),
@@ -400,6 +450,10 @@ async function semeDemonstration(idsMetier: Map<string, string>): Promise<void> 
         verifiee: true,
         noteMoyenne: pro.note,
         nombreAvis: pro.avis,
+        disponible: pro.disponible ?? true,
+        // Les urgences sont réservées aux formules payantes.
+        interventionUrgente: pro.formule !== 'gratuit',
+        delaiReponseMinutes: pro.delaiReponseMinutes,
       },
     });
 
@@ -452,6 +506,26 @@ async function semeDemonstration(idsMetier: Map<string, string>): Promise<void> 
       update: {},
       create: { entrepriseId: entreprise.id, metierId: metierPlombier, principal: true },
     });
+
+    for (const [slugPrestation, prixTTC] of pro.prestations ?? []) {
+      const prestation = await prisma.prestation.findUnique({
+        where: { slug: slugPrestation },
+        select: { id: true },
+      });
+      if (prestation === null) {
+        throw new Error(`Prestation inconnue dans le jeu de démonstration : ${slugPrestation}`);
+      }
+      await prisma.prestationPro.upsert({
+        where: {
+          entrepriseId_prestationId: {
+            entrepriseId: entreprise.id,
+            prestationId: prestation.id,
+          },
+        },
+        update: { prixTTC },
+        create: { entrepriseId: entreprise.id, prestationId: prestation.id, prixTTC },
+      });
+    }
 
     for (const communeId of pro.communes) {
       await prisma.zonePro.upsert({

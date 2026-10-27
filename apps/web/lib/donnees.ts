@@ -114,6 +114,10 @@ export interface ProAffiche {
   readonly sponsorise: boolean;
   readonly raison: 'emplacement-exclusif' | 'emplacement-premium' | 'classement-naturel';
   readonly communeAgence: string | null;
+  readonly disponible: boolean;
+  readonly interventionUrgente: boolean;
+  readonly delaiReponseMinutes: number | null;
+  readonly decennaleVerifiee: boolean;
 }
 
 /**
@@ -123,77 +127,145 @@ export interface ProAffiche {
  * `classePageResultats` décide de l'ordre. Aucun tri n'est fait en SQL : la règle d'affichage
  * est une règle métier, elle vit dans `packages/core` et nulle part ailleurs.
  */
-export const resultats = cache(async (slugMetier: string, slugCommune: string) => {
-  const [metier, commune] = await Promise.all([
-    prisma.metier.findUnique({
-      where: { slug: slugMetier },
+export interface FiltresResultats {
+  /** Intervient en urgence, sous 2 heures. */
+  readonly urgence?: boolean;
+  /** S'est déclaré disponible. */
+  readonly disponible?: boolean;
+  /** Note d'au moins 4,5 sur 5. */
+  readonly bienNote?: boolean;
+  /** Partenaires de Le Renom : Essentiel, Premium ou Exclusif. */
+  readonly partenaires?: boolean;
+  /** Assurance décennale vérifiée. */
+  readonly decennale?: boolean;
+  /** Une prestation précise du métier. */
+  readonly prestation?: string;
+  readonly tri?: 'pertinence' | 'note' | 'avis';
+}
+
+/** Un filtre est-il actif ? Une page filtrée n'est jamais indexée. */
+export function filtresActifs(filtres: FiltresResultats): boolean {
+  return (
+    filtres.urgence === true ||
+    filtres.disponible === true ||
+    filtres.bienNote === true ||
+    filtres.partenaires === true ||
+    filtres.decennale === true ||
+    filtres.prestation !== undefined ||
+    (filtres.tri !== undefined && filtres.tri !== 'pertinence')
+  );
+}
+
+/**
+ * La page de résultats d'un métier dans une ville.
+ *
+ * Les filtres s'appliquent **avant** le classement, pas après : un partenaire Premium écarté
+ * par un filtre ne doit pas occuper une place payée que personne ne voit. C'est aussi pour cela
+ * que le tri par note ou par nombre d'avis ne touche que le classement naturel — les
+ * emplacements payés restent en tête, c'est ce qui a été vendu, et ils restent étiquetés.
+ *
+ * La base fournit les entreprises éligibles, leur score du soir et leurs emplacements payés ;
+ * `classePageResultats` décide de l'ordre. Aucun tri n'est fait en SQL : la règle d'affichage
+ * est une règle métier, elle vit dans `packages/core` et nulle part ailleurs.
+ */
+export const resultats = cache(
+  async (slugMetier: string, slugCommune: string, filtres: FiltresResultats = {}) => {
+    const [metier, commune] = await Promise.all([
+      prisma.metier.findUnique({
+        where: { slug: slugMetier },
+        include: {
+          univers: true,
+          prestations: { where: { masque: false }, orderBy: { rang: 'asc' } },
+        },
+      }),
+      prisma.commune.findUnique({ where: { slug: slugCommune }, include: { departement: true } }),
+    ]);
+
+    if (metier === null || commune === null) return null;
+
+    const jour = new Date().toISOString().slice(0, 10);
+
+    const entreprises = await prisma.entreprise.findMany({
+      where: {
+        suspendue: false,
+        retireeLe: null,
+        metiers: { some: { metierId: metier.id } },
+        zones: { some: { communeId: commune.code } },
+        ...(filtres.urgence === true ? { interventionUrgente: true } : {}),
+        ...(filtres.disponible === true ? { disponible: true } : {}),
+        ...(filtres.bienNote === true ? { noteMoyenne: { gte: 4.5 } } : {}),
+        ...(filtres.partenaires === true ? { abonnements: { some: { statut: 'actif' } } } : {}),
+        ...(filtres.decennale === true ? { fiche: { decennaleVerifieeLe: { not: null } } } : {}),
+        ...(filtres.prestation !== undefined
+          ? { prestations: { some: { prestation: { slug: filtres.prestation } } } }
+          : {}),
+      },
       include: {
-        univers: true,
-        prestations: { where: { masque: false }, orderBy: { rang: 'asc' } },
+        fiche: true,
+        agences: { include: { commune: true }, take: 1 },
+        emplacements: { where: { metierId: metier.id, communeId: commune.code } },
+        abonnements: { where: { statut: 'actif' }, take: 1 },
+        scores: { where: { jour }, take: 1 },
+        exclusivites: {
+          where: { metierId: metier.id, communeId: commune.code, active: true },
+          take: 1,
+        },
       },
-    }),
-    prisma.commune.findUnique({ where: { slug: slugCommune }, include: { departement: true } }),
-  ]);
+    });
 
-  if (metier === null || commune === null) return null;
+    const candidats: CandidatClassement[] = entreprises.map((entreprise) => ({
+      entrepriseId: entreprise.id,
+      formule: entreprise.abonnements[0]?.formule ?? 'gratuit',
+      // Sans score du soir, l'entreprise part de zéro : elle apparaît, en fin de classement.
+      score: entreprise.scores[0]?.score ?? 0,
+      note: entreprise.noteMoyenne,
+      titulaireExclusivite: entreprise.exclusivites.length > 0,
+    }));
 
-  const jour = new Date().toISOString().slice(0, 10);
+    const page = classePageResultats(candidats, PARAMETRES_PAR_DEFAUT, compteurAffichage());
+    const parId = new Map(entreprises.map((e) => [e.id, e]));
 
-  const entreprises = await prisma.entreprise.findMany({
-    where: {
-      suspendue: false,
-      retireeLe: null,
-      metiers: { some: { metierId: metier.id } },
-      zones: { some: { communeId: commune.code } },
-    },
-    include: {
-      fiche: true,
-      agences: { include: { commune: true }, take: 1 },
-      emplacements: { where: { metierId: metier.id, communeId: commune.code } },
-      abonnements: { where: { statut: 'actif' }, take: 1 },
-      scores: { where: { jour }, take: 1 },
-      exclusivites: {
-        where: { metierId: metier.id, communeId: commune.code, active: true },
-        take: 1,
-      },
-    },
-  });
+    let pros: ProAffiche[] = page.lignes.flatMap((ligne) => {
+      const entreprise = parId.get(ligne.entrepriseId);
+      if (entreprise === undefined) return [];
+      return [
+        {
+          id: entreprise.id,
+          nom: entreprise.nom,
+          slug: entreprise.slug,
+          formule: entreprise.abonnements[0]?.formule ?? 'gratuit',
+          note: entreprise.noteMoyenne,
+          nombreAvis: entreprise.nombreAvis,
+          description: entreprise.fiche?.description ?? null,
+          completude: entreprise.fiche?.completude ?? 0,
+          rang: ligne.rang,
+          sponsorise: ligne.sponsorise,
+          raison: ligne.raison,
+          communeAgence: entreprise.agences[0]?.commune.nom ?? null,
+          disponible: entreprise.disponible,
+          interventionUrgente: entreprise.interventionUrgente,
+          delaiReponseMinutes: entreprise.delaiReponseMinutes,
+          decennaleVerifiee: entreprise.fiche?.decennaleVerifieeLe != null,
+        },
+      ];
+    });
 
-  const candidats: CandidatClassement[] = entreprises.map((entreprise) => ({
-    entrepriseId: entreprise.id,
-    formule: entreprise.abonnements[0]?.formule ?? 'gratuit',
-    // Sans score du soir, l'entreprise part de zéro : elle apparaît, en fin de classement.
-    score: entreprise.scores[0]?.score ?? 0,
-    note: entreprise.noteMoyenne,
-    titulaireExclusivite: entreprise.exclusivites.length > 0,
-  }));
+    // Le tri demandé ne réordonne que le classement naturel : les emplacements payés gardent
+    // leur place, c'est exactement ce qui a été vendu.
+    if (filtres.tri === 'note' || filtres.tri === 'avis') {
+      const payes = pros.filter((p) => p.sponsorise);
+      const naturels = pros.filter((p) => !p.sponsorise);
+      naturels.sort((a, b) =>
+        filtres.tri === 'note'
+          ? (b.note ?? 0) - (a.note ?? 0) || b.nombreAvis - a.nombreAvis
+          : b.nombreAvis - a.nombreAvis || (b.note ?? 0) - (a.note ?? 0),
+      );
+      pros = [...payes, ...naturels].map((pro, index) => ({ ...pro, rang: index + 1 }));
+    }
 
-  const page = classePageResultats(candidats, PARAMETRES_PAR_DEFAUT, compteurAffichage());
-  const parId = new Map(entreprises.map((e) => [e.id, e]));
-
-  const pros: ProAffiche[] = page.lignes.flatMap((ligne) => {
-    const entreprise = parId.get(ligne.entrepriseId);
-    if (entreprise === undefined) return [];
-    return [
-      {
-        id: entreprise.id,
-        nom: entreprise.nom,
-        slug: entreprise.slug,
-        formule: entreprise.abonnements[0]?.formule ?? 'gratuit',
-        note: entreprise.noteMoyenne,
-        nombreAvis: entreprise.nombreAvis,
-        description: entreprise.fiche?.description ?? null,
-        completude: entreprise.fiche?.completude ?? 0,
-        rang: ligne.rang,
-        sponsorise: ligne.sponsorise,
-        raison: ligne.raison,
-        communeAgence: entreprise.agences[0]?.commune.nom ?? null,
-      },
-    ];
-  });
-
-  return { metier, commune, pros, dernierRangSponsorise: page.dernierRangSponsorise };
-});
+    return { metier, commune, pros, dernierRangSponsorise: page.dernierRangSponsorise };
+  },
+);
 
 /**
  * Le compteur qui fait tourner les Premium.
