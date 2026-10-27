@@ -259,3 +259,40 @@ elles portent, **dans le dépôt et non sur le site**, la mention explicite de b
 avocat spécialisé en droit du numérique (DSA, avis en ligne L111-7-2, RGPD, CGV marketplace) et
 le dépôt de la marque « Le Renom » à l'INPI. **Les paiements ne doivent pas être ouverts avant.**
 C'est la question la plus urgente de cette liste, et la seule que le code ne peut pas trancher.
+
+---
+
+## Q15 🟡 — Durée de validité et nombre de tentatives du code SMS
+
+_(non couvert par le cahier des charges)_
+
+Le cahier des charges impose la vérification du mobile par code à six chiffres, mais ne fixe ni
+sa durée de validité, ni le nombre d'essais autorisés.
+
+**Défaut appliqué : 15 minutes et 5 tentatives.** Six chiffres, c'est un million de
+combinaisons : sans limite, un robot les épuise en quelques minutes, et le numéro d'un tiers
+pourrait être utilisé pour déposer des demandes. Cinq essais laissent au client de bonne foi la
+marge de se tromper deux fois ; « je n'ai rien reçu » remet le compteur à zéro, pour qu'une
+erreur de frappe ne soit jamais une impasse.
+
+Les deux valeurs sont des constantes de `@lerenom/core` (`VALIDITE_CODE_MINUTES`,
+`TENTATIVES_MAX`), pas des nombres écrits dans le code des routes : les déplacer est une ligne.
+**Si un volume réel montre que 15 minutes sont trop courtes** — un SMS peut mettre plusieurs
+minutes à arriver selon l'opérateur — il faudra les porter à 30.
+
+---
+
+## Q16 🟡 — Le secret de hachage des codes, et sa rotation
+
+_(non couvert par le cahier des charges)_
+
+Les codes sont hachés avec `SECRET_VERIFICATION`, une variable d'environnement sans valeur par
+défaut : le serveur **refuse** de vérifier un code si elle est absente ou plus courte que 32
+caractères, plutôt que de hacher avec une chaîne connue de tout le monde.
+
+**Défaut appliqué : aucune rotation automatique.** Changer le secret invalide les codes en cours
+de validité — au pire, quelques visiteurs redemandent un code. C'est sans conséquence, mais
+personne ne doit le faire sans le savoir : c'est écrit dans `.env.exemple`.
+
+**À trancher à l'exploitation** : où ce secret est conservé en production (gestionnaire de
+secrets de l'hébergeur, pas un fichier `.env` sur le disque) et qui y a accès.

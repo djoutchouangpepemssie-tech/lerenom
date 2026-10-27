@@ -9,7 +9,7 @@ coverage/
 .env
 .env.local
 .env.*.local
-!.env.example
+!.env.exemple
 
 # Résultats de test et traces Playwright
 test-results/

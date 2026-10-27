@@ -1,0 +1,21 @@
+{
+  "name": "@lerenom/securite",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "lint": "eslint src"
+  },
+  "dependencies": {
+    "@lerenom/core": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.19.1",
+    "vitest": "^5.0.5"
+  }
+}

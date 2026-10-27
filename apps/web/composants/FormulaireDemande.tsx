@@ -13,7 +13,7 @@ import {
   ZoneTexte,
   cn,
 } from '@lerenom/ui';
-import { mobileFrancaisValide } from '@lerenom/core';
+import { codeBienForme, mobileFrancaisValide, TENTATIVES_MAX } from '@lerenom/core';
 import type { SuggestionVille } from '@/app/api/recherche/route';
 import { QUESTIONS_PAR_UNIVERS } from '@/lib/questions-demande';
 
@@ -35,7 +35,7 @@ export interface UniversChoix {
   readonly metiers: readonly MetierChoix[];
 }
 
-const ETAPES = ['Service', 'Détails', 'Où et quand', 'Coordonnées', 'Confirmation'] as const;
+const ETAPES = ['Service', 'Détails', 'Où et quand', 'Coordonnées', 'Vérification'] as const;
 
 const URGENCES = [
   { cle: 'normale', libelle: 'Je ne suis pas pressé' },
@@ -101,6 +101,15 @@ export function FormulaireDemande({ univers }: { readonly univers: readonly Univ
   const [resultat, setResultat] = useState<{ reference: string; villeOuverte: boolean } | null>(
     null,
   );
+
+  // Étape 5 : la vérification du mobile. Tant qu'elle n'est pas faite, la demande ne part pas.
+  const [code, setCode] = useState('');
+  const [verification, setVerification] = useState(false);
+  const [erreurCode, setErreurCode] = useState<string | null>(null);
+  const [tentativesRestantes, setTentativesRestantes] = useState<number | null>(null);
+  const [nouveauCodeRequis, setNouveauCodeRequis] = useState(false);
+  const [renvoye, setRenvoye] = useState(false);
+  const [verifie, setVerifie] = useState(false);
 
   const universCourant = univers.find((u) => u.slug === universSlug) ?? univers[0];
   const metierCourant = universCourant?.metiers.find((m) => m.slug === metierSlug);
@@ -176,6 +185,67 @@ export function FormulaireDemande({ univers }: { readonly univers: readonly Univ
       setErreur('Votre demande n’a pas pu être envoyée. Vérifiez votre connexion et réessayez.');
     } finally {
       setEnvoi(false);
+    }
+  }
+
+  /** Confronte le code saisi. C'est ce qui fait partir la demande, rien d'autre. */
+  async function verifieLeCode() {
+    if (resultat === null || !codeBienForme(code)) return;
+    setVerification(true);
+    setErreurCode(null);
+
+    try {
+      const reponse = await fetch('/api/demande/verification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reference: resultat.reference, code }),
+      });
+
+      const brut: unknown = await reponse.json();
+      const donnees = brut as {
+        statut?: string;
+        erreur?: string;
+        tentativesRestantes?: number;
+        nouveauCodeRequis?: boolean;
+      };
+
+      if (reponse.ok) {
+        setVerifie(true);
+        setErreurCode(null);
+        setTentativesRestantes(null);
+        return;
+      }
+
+      setErreurCode(donnees.erreur ?? 'Ce code n’a pas pu être vérifié.');
+      setTentativesRestantes(donnees.tentativesRestantes ?? null);
+      setNouveauCodeRequis(donnees.nouveauCodeRequis === true);
+    } catch {
+      setErreurCode('Le code n’a pas pu être vérifié. Vérifiez votre connexion et réessayez.');
+    } finally {
+      setVerification(false);
+    }
+  }
+
+  /** « Je n'ai rien reçu » : un nouveau code, et le compteur de tentatives repart de zéro. */
+  async function renvoieLeCode() {
+    if (resultat === null) return;
+    setVerification(true);
+    setErreurCode(null);
+
+    try {
+      await fetch('/api/demande/verification', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reference: resultat.reference }),
+      });
+      setRenvoye(true);
+      setNouveauCodeRequis(false);
+      setTentativesRestantes(null);
+      setCode('');
+    } catch {
+      setErreurCode('Le nouveau code n’a pas pu être envoyé. Réessayez dans un instant.');
+    } finally {
+      setVerification(false);
     }
   }
 
@@ -590,31 +660,141 @@ export function FormulaireDemande({ univers }: { readonly univers: readonly Univ
             </div>
           )}
 
-          {/* ── 5. Confirmation ─────────────────────────────────────────── */}
-          {etape === 4 && resultat !== null && (
+          {/* ── 5. Vérification du mobile ──────────────────────────────── */}
+          {etape === 4 && resultat !== null && !resultat.villeOuverte && (
             <div className="text-center">
               <span className="bg-succes-fond text-succes mx-auto flex size-14 items-center justify-center rounded-full text-2xl">
                 ✓
               </span>
-              <h2 className="mt-5 text-2xl">
-                {resultat.villeOuverte
-                  ? 'Votre demande est enregistrée'
-                  : 'Nous vous préviendrons à l’ouverture'}
-              </h2>
+              <h2 className="mt-5 text-2xl">Nous vous préviendrons à l’ouverture</h2>
               <p className="text-encre-70 mx-auto mt-3 max-w-[52ch] text-sm leading-relaxed">
-                {resultat.villeOuverte ? (
-                  <>
-                    Nous vous envoyons un code à 6 chiffres par SMS. Dès que votre numéro est
-                    vérifié, votre demande part à trois professionnels au maximum. Vous recevrez
-                    leurs coordonnées par SMS et par e-mail au fur et à mesure qu’ils acceptent.
-                  </>
-                ) : (
-                  <>
-                    Les demandes de devis ne sont pas encore ouvertes dans cette ville. Votre
-                    demande est conservée et ne part chez personne. Nous vous préviendrons dès
-                    l’ouverture, et vous confirmerez par SMS avant tout envoi.
-                  </>
-                )}
+                Les demandes de devis ne sont pas encore ouvertes dans cette ville. Votre demande
+                est conservée et ne part chez personne. Nous vous préviendrons dès l’ouverture, et
+                vous confirmerez par SMS avant tout envoi.
+              </p>
+              <p className="text-encre-55 mt-5 font-mono text-sm">
+                Référence : <strong className="text-encre">{resultat.reference}</strong>
+              </p>
+              <div className="mt-8 flex flex-wrap justify-center gap-3">
+                <Link href="/">
+                  <Bouton aspect="contour">Retour à l’accueil</Bouton>
+                </Link>
+                <Link href="/guide-des-prix">
+                  <Bouton aspect="or">Consulter le guide des prix</Bouton>
+                </Link>
+              </div>
+            </div>
+          )}
+
+          {etape === 4 && resultat !== null && resultat.villeOuverte && !verifie && (
+            <div className="mx-auto max-w-[36rem] text-center">
+              <span className="bg-or/12 text-or-fonce mx-auto flex size-14 items-center justify-center rounded-full text-2xl">
+                ✉
+              </span>
+              <h2 className="mt-5 text-2xl">Vérifiez votre mobile</h2>
+              <p className="text-encre-70 mx-auto mt-3 max-w-[46ch] text-sm leading-relaxed">
+                Nous venons d’envoyer un code à 6 chiffres au{' '}
+                <strong className="text-encre whitespace-nowrap">{telephone.trim()}</strong>. Votre
+                demande ne part chez personne avant que ce code soit saisi.
+              </p>
+
+              <div className="mt-7">
+                <label htmlFor="code-verification" className="sr-only">
+                  Code de vérification à 6 chiffres
+                </label>
+                <input
+                  id="code-verification"
+                  type="text"
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  maxLength={6}
+                  value={code}
+                  onChange={(e) => {
+                    setCode(e.target.value.replace(/\D/g, '').slice(0, 6));
+                    setErreurCode(null);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && codeBienForme(code)) void verifieLeCode();
+                  }}
+                  placeholder="000000"
+                  aria-describedby={erreurCode !== null ? 'code-erreur' : undefined}
+                  aria-invalid={erreurCode !== null}
+                  className={cn(
+                    'bg-creme mx-auto block w-full max-w-[16rem] rounded-[var(--radius-douce)]',
+                    // L'interlettrage ajoute un blanc après le dernier chiffre : sans
+                    // retrait compensatoire, la saisie paraît décalée vers la gauche.
+                    'border px-4 py-4 text-center font-mono text-[1.75rem] tracking-[0.5em]',
+                    'indent-[0.5em]',
+                    'text-encre placeholder:text-encre-40 outline-none',
+                    'focus-visible:border-or focus-visible:ring-or/30 focus-visible:ring-4',
+                    erreurCode !== null ? 'border-erreur' : 'border-bordure',
+                  )}
+                />
+              </div>
+
+              {erreurCode !== null && (
+                <p
+                  id="code-erreur"
+                  role="alert"
+                  className="bg-erreur-fond text-erreur mx-auto mt-4 max-w-[34rem] rounded-[var(--radius-douce)] px-4 py-3 text-sm"
+                >
+                  {erreurCode}
+                  {tentativesRestantes !== null && tentativesRestantes > 0 && (
+                    <>
+                      {' '}
+                      Il vous reste {tentativesRestantes}{' '}
+                      {tentativesRestantes === 1 ? 'tentative' : 'tentatives'}.
+                    </>
+                  )}
+                </p>
+              )}
+
+              {renvoye && erreurCode === null && (
+                <p
+                  role="status"
+                  className="bg-succes-fond text-succes mx-auto mt-4 max-w-[34rem] rounded-[var(--radius-douce)] px-4 py-3 text-sm"
+                >
+                  Un nouveau code vient de partir. Le précédent ne fonctionne plus.
+                </p>
+              )}
+
+              <div className="mt-7 flex flex-col items-center gap-3">
+                <Bouton
+                  aspect="or"
+                  taille="grand"
+                  onClick={() => void verifieLeCode()}
+                  disabled={!codeBienForme(code) || nouveauCodeRequis}
+                  chargement={verification}
+                >
+                  Vérifier et envoyer ma demande
+                </Bouton>
+                <Bouton
+                  aspect="discret"
+                  onClick={() => void renvoieLeCode()}
+                  disabled={verification}
+                >
+                  Je n’ai rien reçu, renvoyer un code
+                </Bouton>
+              </div>
+
+              <p className="text-encre-55 mx-auto mt-6 max-w-[42ch] text-xs leading-relaxed">
+                Le code est valable 15 minutes et {TENTATIVES_MAX} tentatives. Référence de votre
+                demande : <span className="text-encre-70 font-mono">{resultat.reference}</span>
+              </p>
+            </div>
+          )}
+
+          {/* ── 6. Confirmation ─────────────────────────────────────────── */}
+          {etape === 4 && resultat !== null && resultat.villeOuverte && verifie && (
+            <div className="text-center">
+              <span className="bg-succes-fond text-succes mx-auto flex size-14 items-center justify-center rounded-full text-2xl">
+                ✓
+              </span>
+              <h2 className="mt-5 text-2xl">Votre demande est partie</h2>
+              <p className="text-encre-70 mx-auto mt-3 max-w-[52ch] text-sm leading-relaxed">
+                Votre numéro est vérifié et votre demande part à trois professionnels au maximum.
+                Vous recevrez leurs coordonnées par SMS et par e-mail au fur et à mesure qu’ils
+                acceptent. Passé 72 heures, elle ne sera transmise à personne d’autre.
               </p>
               <p className="text-encre-55 mt-5 font-mono text-sm">
                 Référence : <strong className="text-encre">{resultat.reference}</strong>

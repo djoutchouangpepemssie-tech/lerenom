@@ -17,6 +17,66 @@ import { chromium } from 'playwright';
 const BASE = process.argv[2] ?? 'http://127.0.0.1:3100';
 const SORTIE = path.resolve(import.meta.dirname, '../../../docs/captures');
 
+/**
+ * Mène le tunnel de demande jusqu'à l'écran de vérification du mobile.
+ *
+ * Cet écran n'a pas d'adresse propre : on n'y arrive qu'en remplissant les quatre étapes. Le
+ * capturer suppose donc de les jouer, et c'est tant mieux — le tunnel est vérifié de bout en
+ * bout par la même occasion.
+ *
+ * Chaque passage tire un numéro différent dans la plage réservée 06 12 99 xx xx : le garde
+ * anti-doublon de l'API refuse la même prestation, dans la même ville, depuis le même mobile
+ * sur sept jours — et il a raison. Rejouer les captures ne doit pas buter sur cette règle.
+ */
+function mobileDeCapture() {
+  const quatre = Math.floor(Math.random() * 10_000)
+    .toString()
+    .padStart(4, '0');
+  return `06 12 99 ${quatre.slice(0, 2)} ${quatre.slice(2)}`;
+}
+
+async function jusquALaVerification(onglet) {
+  const suivant = async () => {
+    await onglet.getByRole('button', { name: 'Continuer' }).click();
+    await onglet.waitForTimeout(250);
+  };
+
+  // 1. Service : on cherche une prestation et on prend la première proposition.
+  await onglet.getByLabel('Rechercher une prestation').fill('serrure');
+  await onglet.waitForTimeout(350);
+  await onglet.locator('ul li button').first().click();
+  await suivant();
+
+  // 2. Détails : la description suffit, les questions sont facultatives.
+  await onglet
+    .getByRole('textbox')
+    .last()
+    .fill(
+      'La serrure de la porte d’entrée tourne dans le vide depuis hier soir, ' +
+        'la porte ne se verrouille plus.',
+    );
+  await suivant();
+
+  // 3. Où et quand : la recherche de ville passe par l'API, il faut la laisser répondre.
+  await onglet.getByLabel('Ville').fill('Paris 11');
+  await onglet.waitForTimeout(900);
+  await onglet.locator('ul li button').first().click();
+  await suivant();
+
+  // 4. Coordonnées.
+  await onglet.getByLabel('Prénom').fill('Camille');
+  await onglet.getByLabel('Mobile').fill(mobileDeCapture());
+  await onglet.getByLabel('Adresse électronique').fill('camille.captures@exemple.fr');
+  await onglet.locator('input[type=checkbox]').check();
+  await onglet.getByRole('button', { name: 'Envoyer ma demande' }).click();
+
+  // 5. L'écran attendu : le champ du code.
+  await onglet.getByLabel('Code de vérification à 6 chiffres').waitFor({ timeout: 15_000 });
+  // Un code complet : la capture doit montrer le bouton dans son état actif.
+  await onglet.getByLabel('Code de vérification à 6 chiffres').fill('123456');
+  await onglet.waitForTimeout(200);
+}
+
 /** Les pages à capturer. `nom` sert de nom de fichier. */
 const PAGES = [
   { nom: 'accueil', chemin: '/', titre: 'Accueil' },
@@ -48,6 +108,12 @@ const PAGES = [
     titre: 'Résultats filtrés',
   },
   { nom: 'demande', chemin: '/demande', titre: 'Demande de devis' },
+  {
+    nom: 'demande-verification',
+    chemin: '/demande',
+    titre: 'Demande — vérification du mobile',
+    scenario: jusquALaVerification,
+  },
   { nom: 'pro-inscription', chemin: '/pro/inscription', titre: 'Inscription professionnelle' },
   { nom: 'design-system', chemin: '/design', titre: 'Design system' },
 ];
@@ -96,6 +162,15 @@ async function main() {
       // Le temps que les apparitions échelonnées se posent. Sous `reducedMotion: reduce` elles
       // sont immédiates, mais la mise en page, elle, a besoin d'un souffle.
       await onglet.waitForTimeout(600);
+
+      // Certains écrans ne s'atteignent qu'en agissant : on joue le scénario avant de mesurer.
+      if (page.scenario !== undefined) {
+        try {
+          await page.scenario(onglet);
+        } catch (erreur) {
+          erreurs.push(`scénario interrompu : ${erreur.message}`);
+        }
+      }
 
       const controle = await onglet.evaluate(() => {
         const racine = document.documentElement;

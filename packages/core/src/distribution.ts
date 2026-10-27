@@ -38,8 +38,24 @@ export type RaisonRangCascade =
 
 export interface AgencePro {
   readonly agenceId: string;
-  readonly position: Point;
+  /** Position de l'agence. Absente tant que le géocodage n'a pas tourné. */
+  readonly position?: Point | undefined;
   readonly rayonKm: number;
+  /**
+   * Communes couvertes par cette agence, par code INSEE.
+   *
+   * Le cahier des charges autorise deux façons de déclarer une zone : une adresse et un rayon,
+   * **ou une liste de communes**. La seconde ne dépend d'aucune coordonnée : elle reste donc
+   * juste même quand le géocodage n'a pas encore tourné, et c'est elle qui fait foi lorsque
+   * l'agence ou l'adresse n'ont pas de position.
+   */
+  readonly communesCouvertes?: readonly string[] | undefined;
+}
+
+/** Où se passent les travaux : une commune toujours, une position quand on l'a. */
+export interface AdresseDemande {
+  readonly communeCode: string;
+  readonly position?: Point | undefined;
 }
 
 export interface ProCandidat {
@@ -82,7 +98,8 @@ export interface ProRetenu {
   readonly score: number;
   /** L'agence la plus proche qui couvre l'adresse : c'est elle qui reçoit la demande. */
   readonly agenceId: string;
-  readonly distanceKm: number;
+  /** `null` quand la couverture a été établie par liste de communes, sans coordonnées. */
+  readonly distanceKm: number | null;
   readonly titulaireExclusivite: boolean;
   readonly demandesAccepteesCeMois: number;
 }
@@ -103,7 +120,7 @@ function formateKm(km: number): string {
  */
 export function rapproche(
   candidats: readonly ProCandidat[],
-  adresse: Point,
+  adresse: AdresseDemande,
   parametres: Parametres,
 ): Rapprochement {
   const retenus: ProRetenu[] = [];
@@ -138,13 +155,23 @@ export function rapproche(
     }
 
     // L'agence la plus proche parmi celles qui couvrent réellement l'adresse.
-    let meilleure: { agenceId: string; distanceKm: number } | null = null;
+    let meilleure: { agenceId: string; distanceKm: number | null } | null = null;
     let plusProcheHorsZone: { distanceKm: number; rayonKm: number } | null = null;
 
     for (const agence of pro.agences) {
-      const d = distanceKm(agence.position, adresse);
-      if (couvre(agence.position, agence.rayonKm, adresse)) {
-        if (meilleure === null || d < meilleure.distanceKm) {
+      const couvreParCommune = agence.communesCouvertes?.includes(adresse.communeCode) === true;
+
+      // Sans position de part et d'autre, seule la liste de communes peut trancher.
+      if (agence.position === undefined || adresse.position === undefined) {
+        if (couvreParCommune && meilleure === null) {
+          meilleure = { agenceId: agence.agenceId, distanceKm: null };
+        }
+        continue;
+      }
+
+      const d = distanceKm(agence.position, adresse.position);
+      if (couvreParCommune || couvre(agence.position, agence.rayonKm, adresse.position)) {
+        if (meilleure === null || meilleure.distanceKm === null || d < meilleure.distanceKm) {
           meilleure = { agenceId: agence.agenceId, distanceKm: d };
         }
       } else if (plusProcheHorsZone === null || d < plusProcheHorsZone.distanceKm) {
@@ -154,9 +181,11 @@ export function rapproche(
 
     if (meilleure === null) {
       const explication =
-        plusProcheHorsZone === null
+        pro.agences.length === 0
           ? 'Aucune agence enregistrée.'
-          : `Hors zone : ${formateKm(plusProcheHorsZone.distanceKm)} km pour un rayon de ${formateKm(plusProcheHorsZone.rayonKm)} km.`;
+          : plusProcheHorsZone === null
+            ? 'Aucune agence ne couvre cette commune.'
+            : `Hors zone : ${formateKm(plusProcheHorsZone.distanceKm)} km pour un rayon de ${formateKm(plusProcheHorsZone.rayonKm)} km.`;
       ecartes.push({ entrepriseId: pro.entrepriseId, raison: 'hors-zone', explication });
       continue;
     }
@@ -212,7 +241,12 @@ function partConsommee(pro: ProRetenu, parametres: Parametres): number {
  * Le rayon de référence de la proximité est le rayon par défaut d'une agence.
  */
 export function noteMixte(pro: ProRetenu, parametres: Parametres): number {
-  const proximite = scoreProximite(pro.distanceKm, parametres.rayonAgenceParDefautKm);
+  // Sans distance connue, la proximité est neutre : on ne récompense ni ne pénalise un pro
+  // parce que son agence n'a pas encore été géocodée.
+  const proximite =
+    pro.distanceKm === null
+      ? 0.5
+      : scoreProximite(pro.distanceKm, parametres.rayonAgenceParDefautKm);
   const partQualite = parametres.partQualiteHorsAbonnes;
   return partQualite * pro.score + (1 - partQualite) * proximite;
 }
@@ -254,7 +288,9 @@ export function planifieCascadePartagee(
       const pa = partConsommee(a, parametres);
       const pb = partConsommee(b, parametres);
       if (pa !== pb) return pa - pb; // le moins servi ce mois-ci d'abord
-      if (a.distanceKm !== b.distanceKm) return a.distanceKm - b.distanceKm;
+      const da = a.distanceKm ?? Number.POSITIVE_INFINITY;
+      const db = b.distanceKm ?? Number.POSITIVE_INFINITY;
+      if (da !== db) return da - db;
       if (b.score !== a.score) return b.score - a.score;
       return a.entrepriseId.localeCompare(b.entrepriseId);
     })
@@ -332,7 +368,9 @@ export function planifieCascadeUrgente(
 
   const tries = (liste: readonly ProRetenu[]): readonly ProRetenu[] =>
     [...liste].sort((a, b) => {
-      if (a.distanceKm !== b.distanceKm) return a.distanceKm - b.distanceKm;
+      const da = a.distanceKm ?? Number.POSITIVE_INFINITY;
+      const db = b.distanceKm ?? Number.POSITIVE_INFINITY;
+      if (da !== db) return da - db;
       return a.entrepriseId.localeCompare(b.entrepriseId);
     });
 
@@ -382,14 +420,29 @@ export function demandePerimee(etat: EtatDistribution, parametres: Parametres): 
 
 /**
  * Peut-on encore envoyer la demande à quelqu'un ?
- * Non si l'objectif est atteint, si elle est périmée, en pause, suspecte, ou si le nombre total
- * de pros sollicités atteindrait le plafond de 3.
+ *
+ * Le plafond de 3 porte sur les professionnels qui **obtiennent** la demande, pas sur ceux à qui
+ * elle a été proposée : un pro qui refuse ou laisse expirer n'a jamais vu les coordonnées du
+ * client et ne le contactera pas. C'est bien ce que dit la règle — « jamais revendue à plus de
+ * 3 pros » — et c'est ce qui permet à la cascade de continuer après un refus, comme elle le
+ * doit. Sans cela, trois refus condamneraient une demande parfaitement valable.
+ *
+ * Les propositions en cours comptent avec les acceptations : chacune peut encore devenir une
+ * acceptation, et quatre pros ne doivent jamais pouvoir obtenir la même demande.
  */
 export function peutEncoreDistribuer(etat: EtatDistribution, parametres: Parametres): boolean {
   if (etat.enPause === true || etat.suspecte === true) return false;
   if (demandeComplete(etat)) return false;
   if (demandePerimee(etat, parametres)) return false;
-  return solliciter(etat) < parametres.prosMaxParDemande;
+  return placesRestantes(etat) > 0;
+}
+
+/**
+ * Combien de professionnels peuvent encore obtenir cette demande.
+ * Les acceptations sont acquises, les propositions en cours sont réservées.
+ */
+export function placesRestantes(etat: EtatDistribution): number {
+  return Math.max(0, etat.objectif - etat.acceptes.length - etat.enCours.length);
 }
 
 /** Nombre de pros déjà sollicités : acceptations, refus, expirations et envois en cours. */
@@ -403,13 +456,19 @@ export function solliciter(etat: EtatDistribution): number {
   return ids.size;
 }
 
-/** Le statut à afficher dans le centre de distribution. */
+/**
+ * Le statut à afficher dans le centre de distribution.
+ *
+ * « Sans preneur » n'est pas déduit ici : c'est une conclusion de la distribution, qui seule
+ * sait s'il reste un professionnel éligible à solliciter. Cette fonction dit ce que l'état
+ * permet de dire, et rien de plus.
+ */
 export function statutDemande(etat: EtatDistribution, parametres: Parametres): StatutDemande {
   if (etat.suspecte === true) return 'suspecte';
   if (etat.enPause === true) return 'en-pause';
   if (demandeComplete(etat)) return 'complete';
+  if (demandePerimee(etat, parametres)) return 'sans-preneur';
   if (etat.enCours.length > 0) return 'en-distribution';
-  if (solliciter(etat) > 0 && !peutEncoreDistribuer(etat, parametres)) return 'sans-preneur';
   return 'en-attente-de-relance';
 }
 

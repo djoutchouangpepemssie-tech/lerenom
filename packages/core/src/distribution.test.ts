@@ -7,6 +7,7 @@ import {
   objectifPros,
   peutEncoreDistribuer,
   peutEtreRePropose,
+  placesRestantes,
   planifieCascadePartagee,
   planifieCascadeUrgente,
   rapproche,
@@ -19,7 +20,9 @@ import { PARAMETRES_PAR_DEFAUT, avecParametres } from './parametres';
 
 const P = PARAMETRES_PAR_DEFAUT;
 
-const ADRESSE = { latitude: 48.8594, longitude: 2.3765 }; // Paris 11e
+const POSITION_PARIS_11 = { latitude: 48.8594, longitude: 2.3765 };
+/** L'adresse des travaux : une commune toujours, une position quand on l'a. */
+const ADRESSE = { communeCode: '75111', position: POSITION_PARIS_11 };
 const MONTREUIL = { latitude: 48.8638, longitude: 2.4485 }; // ≈ 5,3 km
 const VERSAILLES = { latitude: 48.8014, longitude: 2.1301 }; // ≈ 19 km
 
@@ -32,7 +35,7 @@ function pro(partiel: Partial<ProCandidat> & { entrepriseId: string }): ProCandi
     disponible: true,
     compteAJour: true,
     demandesAccepteesCeMois: 0,
-    agences: [{ agenceId: `${partiel.entrepriseId}-a1`, position: ADRESSE, rayonKm: 10 }],
+    agences: [{ agenceId: `${partiel.entrepriseId}-a1`, position: POSITION_PARIS_11, rayonKm: 10 }],
     ...partiel,
   };
 }
@@ -122,7 +125,7 @@ describe('rapproche : éligibilité d’un pro à une demande', () => {
           agences: [
             { agenceId: 'versailles', position: VERSAILLES, rayonKm: 30 },
             { agenceId: 'montreuil', position: MONTREUIL, rayonKm: 30 },
-            { agenceId: 'paris-11', position: ADRESSE, rayonKm: 30 },
+            { agenceId: 'paris-11', position: POSITION_PARIS_11, rayonKm: 30 },
           ],
         }),
       ],
@@ -138,7 +141,7 @@ describe('rapproche : éligibilité d’un pro à une demande', () => {
         pro({
           entrepriseId: 'mixte',
           agences: [
-            { agenceId: 'trop-petit-rayon', position: ADRESSE, rayonKm: 0 },
+            { agenceId: 'trop-petit-rayon', position: POSITION_PARIS_11, rayonKm: 0 },
             { agenceId: 'montreuil', position: MONTREUIL, rayonKm: 10 },
           ],
         }),
@@ -147,6 +150,103 @@ describe('rapproche : éligibilité d’un pro à une demande', () => {
       P,
     );
     expect(retenus[0]?.agenceId).toBe('montreuil');
+  });
+});
+
+describe('rapproche : couverture par liste de communes, sans coordonnées', () => {
+  /**
+   * Le cahier des charges autorise deux façons de déclarer une zone : une adresse et un rayon,
+   * ou une liste de communes. La seconde doit rester juste tant que le géocodage n'a pas tourné,
+   * sans quoi aucune demande ne pourrait être distribuée.
+   */
+  const SANS_POSITION = { communeCode: '75111' };
+
+  it('retient un pro dont une agence couvre la commune, sans aucune coordonnée', () => {
+    const { retenus, ecartes } = rapproche(
+      [
+        pro({
+          entrepriseId: 'par-commune',
+          agences: [{ agenceId: 'a1', rayonKm: 10, communesCouvertes: ['75111', '93048'] }],
+        }),
+      ],
+      SANS_POSITION,
+      P,
+    );
+
+    expect(ecartes).toHaveLength(0);
+    expect(retenus[0]?.agenceId).toBe('a1');
+    // La distance est inconnue, et c'est dit plutôt que deviné.
+    expect(retenus[0]?.distanceKm).toBeNull();
+  });
+
+  it('écarte un pro dont aucune agence ne couvre la commune', () => {
+    const { retenus, ecartes } = rapproche(
+      [
+        pro({
+          entrepriseId: 'ailleurs',
+          agences: [{ agenceId: 'a1', rayonKm: 10, communesCouvertes: ['93048'] }],
+        }),
+      ],
+      SANS_POSITION,
+      P,
+    );
+
+    expect(retenus).toHaveLength(0);
+    expect(ecartes[0]?.raison).toBe('hors-zone');
+    expect(ecartes[0]?.explication).toBe('Aucune agence ne couvre cette commune.');
+  });
+
+  it('couvre par la liste de communes même si l’adresse sort du rayon', () => {
+    // Un pro qui déclare explicitement une commune l'a voulu : la liste prime sur le rayon.
+    const { retenus } = rapproche(
+      [
+        pro({
+          entrepriseId: 'declare-la-commune',
+          agences: [
+            {
+              agenceId: 'a1',
+              position: VERSAILLES,
+              rayonKm: 2,
+              communesCouvertes: ['75111'],
+            },
+          ],
+        }),
+      ],
+      ADRESSE,
+      P,
+    );
+
+    expect(retenus).toHaveLength(1);
+    expect(retenus[0]?.distanceKm).toBeGreaterThan(15);
+  });
+
+  it('ne pénalise ni ne récompense un pro dont la distance est inconnue', () => {
+    const sansDistance = retenu({ entrepriseId: 'inconnue', score: 0.5, distanceKm: null });
+    // Proximité neutre à 0,5 : 0,6 × 0,5 + 0,4 × 0,5 = 0,5.
+    expect(noteMixte(sansDistance, P)).toBeCloseTo(0.5, 10);
+  });
+
+  it('classe un pro géolocalisé proche devant un pro de distance inconnue, à score égal', () => {
+    const proche = retenu({ entrepriseId: 'proche', score: 0.5, distanceKm: 0.5 });
+    const inconnue = retenu({ entrepriseId: 'inconnue', score: 0.5, distanceKm: null });
+    expect(noteMixte(proche, P)).toBeGreaterThan(noteMixte(inconnue, P));
+  });
+
+  it('sert d’abord le Premium le moins servi, même sans distance connue', () => {
+    const beaucoupServi = retenu({
+      entrepriseId: 'beaucoup',
+      formule: 'premium',
+      distanceKm: null,
+      demandesAccepteesCeMois: 4,
+    });
+    const peuServi = retenu({
+      entrepriseId: 'peu',
+      formule: 'premium',
+      distanceKm: null,
+      demandesAccepteesCeMois: 1,
+    });
+    const cascade = planifieCascadePartagee([beaucoupServi, peuServi], P);
+    expect(cascade[0]?.entrepriseId).toBe('peu');
   });
 });
 
@@ -362,16 +462,34 @@ describe('état d’une demande', () => {
     ).toBe(3);
   });
 
-  it('ne distribue plus au-delà de 3 pros sollicités, même si personne n’a accepté', () => {
-    const trois = etat({
+  it('continue après trois refus : le plafond porte sur ceux qui obtiennent la demande', () => {
+    // Trois pros l'ont vue sans la prendre : aucun n'a reçu les coordonnées du client, et la
+    // demande reste parfaitement valable. L'arrêter ici la condamnerait sans raison.
+    const troisRefus = etat({
       refus: [
         { entrepriseId: 'a', motif: 'indisponible' },
         { entrepriseId: 'b', motif: 'trop-loin' },
       ],
       expires: ['c'],
     });
-    expect(peutEncoreDistribuer(trois, P)).toBe(false);
-    expect(statutDemande(trois, P)).toBe('sans-preneur');
+    expect(peutEncoreDistribuer(troisRefus, P)).toBe(true);
+    expect(placesRestantes(troisRefus)).toBe(3);
+    expect(statutDemande(troisRefus, P)).toBe('en-attente-de-relance');
+  });
+
+  it('réserve une place pour chaque proposition en cours', () => {
+    // Deux acceptations et une proposition qui court : plus aucune place, sinon quatre
+    // professionnels pourraient obtenir la même demande.
+    const presqueComplete = etat({ acceptes: ['a', 'b'], enCours: ['c'] });
+    expect(placesRestantes(presqueComplete)).toBe(0);
+    expect(peutEncoreDistribuer(presqueComplete, P)).toBe(false);
+    expect(statutDemande(presqueComplete, P)).toBe('en-distribution');
+  });
+
+  it('rouvre une place quand la proposition en cours expire', () => {
+    const apresExpiration = etat({ acceptes: ['a', 'b'], expires: ['c'] });
+    expect(placesRestantes(apresExpiration)).toBe(1);
+    expect(peutEncoreDistribuer(apresExpiration, P)).toBe(true);
   });
 
   it('ne distribue plus une demande périmée, complète, en pause ou suspecte', () => {

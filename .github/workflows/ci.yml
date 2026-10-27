@@ -39,14 +39,16 @@ jobs:
       - name: Types
         run: pnpm run typecheck
 
+      # Les tests qui touchent la base et Redis tournent dans le travail « base », qui a les
+      # services pour cela. Ici, seules les règles pures : elles doivent tenir sans rien autour.
       - name: Tests unitaires et couverture
-        run: pnpm run test:couverture
+        run: pnpm --filter @lerenom/core --filter @lerenom/securite run test:couverture
 
       - name: Build
         run: pnpm run build
 
   base:
-    name: Schéma et données de démonstration
+    name: Schéma, démonstration et cascade
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
@@ -63,8 +65,20 @@ jobs:
           --health-timeout 5s
           --health-retries 5
 
+      redis:
+        image: redis:7-alpine
+        ports: ['6379:6379']
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     env:
       DATABASE_URL: postgresql://postgres:lerenom@127.0.0.1:5432/lerenom
+      REDIS_URL: redis://127.0.0.1:6379
+      SECRET_VERIFICATION: secret-dintegration-continue-strictement-jetable
+      LERENOM_ENV: developpement
 
     steps:
       - uses: actions/checkout@v4
@@ -113,6 +127,32 @@ jobs:
               IF n_univers <> 18 OR n_metiers <> 69 OR n_prestations <> 479 THEN
                 RAISE EXCEPTION 'Catalogue attendu 18/69/479, obtenu %/%/%',
                   n_univers, n_metiers, n_prestations;
+              END IF;
+            END
+            \$\$;"
+
+      # La cascade de distribution et le parcours de la demande, contre la vraie base et le vrai
+      # Redis : c'est le seul endroit où l'on peut prouver qu'aucune demande ne part avant la
+      # vérification du mobile, et qu'elle part bien juste après.
+      - name: Tests d'intégration de la distribution
+        run: pnpm --filter @lerenom/worker --filter @lerenom/web run test
+
+      - name: Vérifier que les tests ne laissent aucune trace
+        run: |
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -c "
+            DO \$\$
+            DECLARE
+              n_distributions int;
+              n_demandes int;
+            BEGIN
+              SELECT count(*) INTO n_distributions FROM distributions;
+              SELECT count(*) INTO n_demandes
+                FROM demandes WHERE client_telephone LIKE '%612000042';
+              IF n_distributions <> 0 THEN
+                RAISE EXCEPTION '% distributions laissées derrière eux', n_distributions;
+              END IF;
+              IF n_demandes <> 0 THEN
+                RAISE EXCEPTION '% demandes de test laissées derrière eux', n_demandes;
               END IF;
             END
             \$\$;"

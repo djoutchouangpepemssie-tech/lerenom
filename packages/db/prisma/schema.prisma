@@ -785,6 +785,13 @@ model Demande {
   clientTelephone String @map("client_telephone")
   telephoneVerifieLe DateTime? @map("telephone_verifie_le")
 
+  /// Code de vérification du mobile, stocké haché : une fuite de la base ne doit pas permettre
+  /// de valider des demandes à la place des visiteurs.
+  codeVerificationHash String?   @map("code_verification_hash")
+  codeExpireLe         DateTime? @map("code_expire_le")
+  /// Tentatives de saisie du code. Au-delà de la limite, un nouveau code est exigé.
+  tentativesVerification Int @default(0) @map("tentatives_verification")
+
   /// Le texte exact du consentement, conservé avec la demande : c'est lui qui fera foi.
   consentementTexte String  @db.Text @map("consentement_texte")
   consentementDonneLe DateTime @map("consentement_donne_le")

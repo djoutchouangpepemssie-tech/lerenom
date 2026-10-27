@@ -17,3 +17,4 @@ export * from './distribution';
 export * from './garantie';
 export * from './devis';
 export * from './validateurs';
+export * from './verification';

@@ -1,7 +1,14 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@lerenom/db';
-import { mobileFrancaisValide, normaliseMobileFrancais } from '@lerenom/core';
+import {
+  expirationCode,
+  mobileFrancaisValide,
+  normaliseMobileFrancais,
+  VALIDITE_CODE_MINUTES,
+} from '@lerenom/core';
+import { empreinteCode, tireCode } from '@lerenom/securite';
+import { secretVerification } from '../../../lib/secrets';
 
 /**
  * Dépôt d'une demande de devis.
@@ -136,20 +143,34 @@ export async function POST(requete: Request): Promise<NextResponse> {
       origine: requete.headers.get('referer'),
       appareil: requete.headers.get('user-agent'),
     },
-    select: { reference: true, statut: true },
+    select: { id: true, reference: true, statut: true },
   });
 
-  // Le code de vérification part par SMS. Le worker prendra ce message dans la file ;
-  // tant qu'aucun opérateur n'est branché, il y reste et la demande n'est pas distribuée.
-  await prisma.messageSortant.create({
-    data: {
-      canal: 'sms',
-      modele: 'verification-demande',
-      destinataire: telephone,
-      corps: `Le Renom : votre code de vérification pour la demande ${demande.reference}.`,
-      statut: 'en_attente',
-    },
-  });
+  // Le code de vérification : tiré ici, haché en base, envoyé en clair par SMS et nulle part
+  // ailleurs. Le worker prendra ce message dans la file ; tant qu'aucun opérateur n'est branché,
+  // il y reste et la demande n'est pas distribuée.
+  const code = tireCode();
+  await prisma.$transaction([
+    prisma.demande.update({
+      where: { id: demande.id },
+      data: {
+        codeVerificationHash: empreinteCode(code, demande.id, secretVerification()),
+        codeExpireLe: expirationCode(),
+        tentativesVerification: 0,
+      },
+    }),
+    prisma.messageSortant.create({
+      data: {
+        canal: 'sms',
+        modele: 'verification-demande',
+        destinataire: telephone,
+        corps:
+          `Le Renom : votre code de vérification est ${code}. ` +
+          `Il est valable ${String(VALIDITE_CODE_MINUTES)} minutes. Demande ${demande.reference}.`,
+        statut: 'en_attente',
+      },
+    }),
+  ]);
 
   return NextResponse.json({
     reference: demande.reference,

@@ -8,10 +8,13 @@
     "start": "next start --port 3000",
     "typecheck": "tsc --noEmit",
     "lint": "eslint app composants lib scripts next.config.ts",
+    "test": "vitest run",
     "captures": "node scripts/captures.mjs"
   },
   "dependencies": {
     "@lerenom/core": "workspace:*",
+    "@lerenom/files": "workspace:*",
+    "@lerenom/securite": "workspace:*",
     "@lerenom/ui": "workspace:*",
     "next": "^16.4.3",
     "react": "^19.3.1",
@@ -25,6 +28,7 @@
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "playwright": "^1.64.1",
+    "vitest": "^5.0.5",
     "tailwindcss": "^4.3.3"
   }
 }

@@ -8,9 +8,15 @@
     },
     "dev": { "cache": false, "persistent": true },
     "lint": { "dependsOn": ["^build"] },
-    "typecheck": { "dependsOn": ["^build"] },
-    "test": { "dependsOn": ["^build"] },
-    "test:couverture": { "dependsOn": ["^build"] },
+    "typecheck": { "dependsOn": ["^build"], "env": ["DATABASE_URL"] },
+    "test": {
+      "dependsOn": ["^build"],
+      "env": ["DATABASE_URL", "REDIS_URL", "SECRET_VERIFICATION", "LERENOM_ENV"]
+    },
+    "test:couverture": {
+      "dependsOn": ["^build"],
+      "env": ["DATABASE_URL", "REDIS_URL", "SECRET_VERIFICATION", "LERENOM_ENV"]
+    },
     "captures": { "cache": false, "dependsOn": ["^build"] }
   }
 }

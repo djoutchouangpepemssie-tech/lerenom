@@ -240,6 +240,83 @@ vérification, l'enregistrement du compte et le paiement Stripe.
 
 ---
 
+## Phase 4 — Le moteur de distribution · 27 octobre 2026
+
+C'est le cœur du produit : ce qui décide **qui** reçoit une demande, **quand**, et **ce que ça
+coûte**. Tout y est désormais réel, de la saisie du code à la cinquième sollicitation.
+
+### La cascade, dans `apps/worker`
+
+Le worker n'édicte aucune règle : il orchestre. Les décisions viennent de `@lerenom/core`, les
+seuils de la table `parametres` que le back-office modifie, et le minutage de BullMQ.
+
+- **Un tour à la fois.** L'Exclusif de la zone est seul pendant 30 minutes ; les Premium
+  suivent, du moins servi au plus servi ; puis les autres. Chaque proposition part avec son
+  minuteur, programmé sous un identifiant fixe pour que relancer la cascade ne crée pas deux
+  échéances sur la même proposition.
+- **Rien n'est facturé sur un refus ni sur une expiration.** Le refus est libre, le motif
+  obligatoire. Seule l'acceptation consomme un forfait ou déclenche une facturation.
+- **L'acceptation est définitive**, et sérialisée : la transaction verrouille la ligne de
+  distribution (`SELECT … FOR UPDATE`), donc deux pros qui acceptent à la même seconde ne
+  peuvent pas prendre la même place.
+
+**Un vrai défaut de conception a été trouvé par le test d'intégration**, pas par la lecture : la
+cascade s'arrêtait au bout de 3 **sollicitations**. Or la règle est « jamais revendue à plus de
+3 pros » — le plafond porte sur ceux qui **obtiennent** la demande. Des refus ne doivent pas
+condamner une demande valable. `placesRestantes` compte désormais les acceptés et les
+propositions en cours, et rien d'autre.
+
+Treize tests d'intégration jouent le scénario complet contre la vraie base, avec six
+professionnels construits pour l'occasion, et ne laissent aucune trace derrière eux.
+
+### La vérification du mobile : la barrière d'entrée
+
+Le Renom n'a pas de compte client. Le mobile est la seule identité, et le code à six chiffres la
+seule preuve. La boucle est désormais fermée de bout en bout :
+
+1. le dépôt tire un code avec le générateur cryptographique, le **hache** (HMAC-SHA-256, salé
+   par l'identifiant de la demande) et met le code en clair dans le SMS, nulle part ailleurs ;
+2. `POST /api/demande/verification` confronte la saisie à temps constant, compte les tentatives
+   (5 au maximum, 15 minutes de validité), et n'ouvre la distribution qu'en cas de succès ;
+3. `PUT` renvoie un code — le « je n'ai rien reçu » — et remet le compteur à zéro, sans quoi
+   cinq erreurs de frappe seraient une impasse ;
+4. le code qui a servi est effacé, et la cascade est **programmée**, pas exécutée : le visiteur
+   n'attend pas que six professionnels soient sollicités pour voir sa confirmation.
+
+Dans une ville non ouverte, le mobile se vérifie comme ailleurs mais la demande ne part pas :
+elle attend l'ouverture, ce que l'écran dit avant l'envoi.
+
+L'ordre des refus n'est pas indifférent : déjà vérifié, puis trop de tentatives, puis expiré,
+puis code faux. Un robot ne doit pas pouvoir distinguer un code faux d'un code périmé.
+
+### Deux paquets nouveaux, pour une raison précise
+
+- `@lerenom/files` sort les files BullMQ du worker, pour que le site puisse programmer la
+  cascade. Tout y est construit **à la demande** : une connexion Redis ouverte à l'import ferait
+  échouer un `next build` sur une machine où Redis ne tourne pas. Vérifié en construisant le
+  site avec un `REDIS_URL` injoignable.
+- `@lerenom/securite` isole le tirage et le hachage, qui ont besoin de Node. `@lerenom/core`
+  reste utilisable dans le navigateur : le formulaire valide la saisie avec exactement les mêmes
+  règles que le serveur.
+
+### Trouvé en regardant les captures
+
+- Le numéro de mobile se **coupait en fin de ligne** (« 06 12 00 00 / 44 ») : `whitespace-nowrap`.
+- Les chiffres du code paraissaient **décalés vers la gauche** : l'interlettrage ajoute un blanc
+  après le dernier caractère, compensé par un retrait de `0.5em`.
+
+Le script de captures sait désormais **jouer un scénario** avant de photographier : l'écran de
+vérification n'a pas d'adresse propre, on n'y arrive qu'en remplissant les quatre étapes. Le
+tunnel entier est donc vérifié dans un vrai navigateur, aux deux largeurs, à chaque passage.
+32 captures, aucun débordement.
+
+### Reste pour clore la phase 4
+
+Le raccordement d'un opérateur SMS (le message attend dans `messages_sortants`), les pages
+client d'une seule action, le suivi jusqu'à l'avis, les contestations et l'anti-fraude.
+
+---
+
 ## Phases 5 à 11 · à venir
 
 Agenda et documents du pro, monétisation Stripe, back-office, personnalisation, avis et

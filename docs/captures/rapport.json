@@ -130,6 +130,16 @@
     "erreursConsole": []
   },
   {
+    "page": "Demande — vérification du mobile",
+    "largeur": 390,
+    "fichier": "demande-verification-390.png",
+    "defilementHorizontal": false,
+    "largeurDocument": 390,
+    "largeurFenetre": 390,
+    "debordements": [],
+    "erreursConsole": []
+  },
+  {
     "page": "Inscription professionnelle",
     "largeur": 390,
     "fichier": "pro-inscription-390.png",
@@ -273,6 +283,16 @@
     "page": "Demande de devis",
     "largeur": 1440,
     "fichier": "demande-1440.png",
+    "defilementHorizontal": false,
+    "largeurDocument": 1440,
+    "largeurFenetre": 1440,
+    "debordements": [],
+    "erreursConsole": []
+  },
+  {
+    "page": "Demande — vérification du mobile",
+    "largeur": 1440,
+    "fichier": "demande-verification-1440.png",
     "defilementHorizontal": false,
     "largeurDocument": 1440,
     "largeurFenetre": 1440,

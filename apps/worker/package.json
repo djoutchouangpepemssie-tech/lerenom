@@ -1,0 +1,27 @@
+{
+  "name": "@lerenom/worker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node --experimental-strip-types --watch src/index.ts",
+    "start": "node --experimental-strip-types src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src",
+    "test": "vitest run",
+    "test:couverture": "vitest run --coverage"
+  },
+  "dependencies": {
+    "@lerenom/core": "workspace:*",
+    "@lerenom/db": "workspace:*",
+    "@lerenom/files": "workspace:*",
+    "@lerenom/securite": "workspace:*",
+    "bullmq": "^6.5.0",
+    "ioredis": "^6.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.19.1",
+    "@vitest/coverage-v8": "^5.0.5",
+    "vitest": "^5.0.5"
+  }
+}
