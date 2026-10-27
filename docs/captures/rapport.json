@@ -110,6 +110,26 @@
     "erreursConsole": []
   },
   {
+    "page": "Demande de devis",
+    "largeur": 390,
+    "fichier": "demande-390.png",
+    "defilementHorizontal": false,
+    "largeurDocument": 390,
+    "largeurFenetre": 390,
+    "debordements": [],
+    "erreursConsole": []
+  },
+  {
+    "page": "Inscription professionnelle",
+    "largeur": 390,
+    "fichier": "pro-inscription-390.png",
+    "defilementHorizontal": false,
+    "largeurDocument": 390,
+    "largeurFenetre": 390,
+    "debordements": [],
+    "erreursConsole": []
+  },
+  {
     "page": "Design system",
     "largeur": 390,
     "fichier": "design-system-390.png",
@@ -223,6 +243,26 @@
     "page": "Comment nous classons",
     "largeur": 1440,
     "fichier": "comment-nous-classons-1440.png",
+    "defilementHorizontal": false,
+    "largeurDocument": 1440,
+    "largeurFenetre": 1440,
+    "debordements": [],
+    "erreursConsole": []
+  },
+  {
+    "page": "Demande de devis",
+    "largeur": 1440,
+    "fichier": "demande-1440.png",
+    "defilementHorizontal": false,
+    "largeurDocument": 1440,
+    "largeurFenetre": 1440,
+    "debordements": [],
+    "erreursConsole": []
+  },
+  {
+    "page": "Inscription professionnelle",
+    "largeur": 1440,
+    "fichier": "pro-inscription-1440.png",
     "defilementHorizontal": false,
     "largeurDocument": 1440,
     "largeurFenetre": 1440,

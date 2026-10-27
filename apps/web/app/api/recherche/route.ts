@@ -28,6 +28,8 @@ export interface SuggestionService {
 
 export interface SuggestionVille {
   readonly type: 'ville';
+  /** Code INSEE : c'est la clé de la commune, le slug n'est qu'une adresse. */
+  readonly code: string;
   readonly slug: string;
   readonly nom: string;
   readonly departement: string;
@@ -102,6 +104,7 @@ async function chercheVilles(recherche: string): Promise<SuggestionVille[]> {
 
   return communes.map((c) => ({
     type: 'ville' as const,
+    code: c.code,
     slug: c.slug,
     nom: c.nom.replace(/\s+Arrondissement$/i, ''),
     departement: c.departement.nom,

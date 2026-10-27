@@ -42,6 +42,8 @@ const PAGES = [
     chemin: '/comment-nous-classons',
     titre: 'Comment nous classons',
   },
+  { nom: 'demande', chemin: '/demande', titre: 'Demande de devis' },
+  { nom: 'pro-inscription', chemin: '/pro/inscription', titre: 'Inscription professionnelle' },
   { nom: 'design-system', chemin: '/design', titre: 'Design system' },
 ];
 

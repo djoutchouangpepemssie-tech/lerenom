@@ -161,9 +161,87 @@ ne dépend ni de PostGIS ni de la présence des coordonnées pour être **juste*
 
 ---
 
-## Phases 2 à 11 · à venir
+## Phase 2 — Site public · 27 octobre 2026 · l'essentiel est là
 
-Le site public, l'espace pro, le moteur de demandes, les devis et factures, la monétisation, le
-back-office, la personnalisation, les avis et le référencement technique restent à construire.
-`packages/core` porte déjà leurs règles, testées : ces phases les branchent sur des écrans et
-sur la base.
+### Fait
+
+- **Socle commun.** En-tête collant avec les deux méga-menus — Services (18 univers → métiers →
+  prestations très demandées, encart Urgence) et Villes (8 départements, villes les plus
+  recherchées, villes ouvertes avec leur statut) — et tiroir plein écran à accordéons sur
+  téléphone. Pied de page sombre avec les promesses, les colonnes, les liens légaux et la
+  mention obligatoire des sources SIRENE et Base Adresse Nationale. **Aucune liste n'est écrite
+  en dur** : tout vient de la base, donc aucun lien ne meurt quand Arcel ajoute un métier.
+- **Recherche service + ville** avec suggestions, combobox ARIA complet au clavier, et le statut
+  de la ville annoncé dès la suggestion. Les suggestions mènent à un métier, une prestation ou
+  une ville — jamais à une entreprise qui a payé.
+- **Les pages** : accueil, Île-de-France, département, ville, métier, résultats métier × ville,
+  fiche entreprise selon la formule, tous les services, guide des prix avec estimateur,
+  professionnels et tarifs avec calculateur de pages, comment ça marche, comment nous classons,
+  et les sept pages légales et de confiance.
+- **La liste de résultats est classée par `packages/core`, pas par SQL** : la base fournit les
+  entreprises éligibles et leur score du soir, `classePageResultats` décide de l'ordre. Le
+  séparateur « Classement naturel », la mention « Sponsorisé » et le texte de « Pourquoi ce
+  résultat ? » viennent tous de `core` — le même mot pour mot sur chaque écran.
+- **Règle d'indexation appliquée dans le rendu, invisible à l'écran** : une page métier × ville
+  sous trois entreprises et une fiche non enrichie passent en `noindex, follow`.
+- **28 captures** à 390 et 1440 px, sans débordement horizontal ni erreur de console.
+
+### Trouvé en regardant les captures
+
+1. Le fil d'Ariane était **illisible sur l'en-tête sombre** d'une fiche Exclusif : encre sur
+   nuit. Il a désormais une variante claire.
+2. « Paris 11e Arrondissement » **alourdissait chaque titre**. Les données gardent le nom
+   officiel de l'Insee — c'est lui qui fait foi dans un export ou un litige — et l'affichage
+   écrit « Paris 11e », avec un helper qui gère aussi « au Plessis-Robinson ».
+3. Un **débordement horizontal de 49 px** à 390 px, invisible au premier contrôle parce que
+   `overflow-x: hidden` sur `<html>` le masque à `scrollWidth` de la racine. Le contrôle mesure
+   maintenant aussi le corps.
+
+### Reste pour clore la phase 2
+
+- Filtres réels sur la page de résultats (urgence, disponible aujourd'hui, note, partenaires,
+  prestations, tri) et carte synchronisée avec la liste.
+- Sélection de 3 pros et barre collante « Demander des devis à 3 pros ».
+- Carte interactive des 8 départements sur l'accueil et les pages ville.
+- Lighthouse mobile ≥ 90 à mesurer.
+
+---
+
+## Phases 3 et 4 — premiers jalons · 27 octobre 2026
+
+### Demande de devis (phase 4)
+
+Le parcours en 5 étapes est en ligne et **fonctionne de bout en bout jusqu'à la base** :
+service (fenêtre du catalogue ou recherche), détails (trois questions adaptées à l'univers,
+description, urgence), où et quand, coordonnées avec le consentement, confirmation.
+
+L'API vérifie la saisie, normalise le mobile en E.164, **refuse les doublons** (même numéro,
+même prestation, même ville sur 7 jours), enregistre **le texte exact du consentement**, et fixe
+le statut selon la ville : `brouillon` dans une ville ouverte — rien ne part tant que le
+téléphone n'est pas vérifié — et `en_attente_ouverture` ailleurs, ce que le formulaire annonce
+avant l'envoi. Vérifié en conditions réelles contre la base.
+
+Reste : l'envoi du code SMS (opérateur à raccorder), la cascade de distribution dans le worker,
+les pages d'une seule action côté client, et le suivi jusqu'à l'avis.
+
+### Inscription professionnelle (phase 3)
+
+Les 8 étapes sont en ligne, avec la colonne sombre, l'aperçu vivant de la carte qui change avec
+la formule, et l'anneau de complétude. Deux mécanismes y sont réels :
+
+- le **compteur de pages** utilise `nombreDePages` de `core`, la même fonction que la page de
+  tarifs : un professionnel ne découvrira pas un autre chiffre après avoir payé ;
+- le **retrait de villes en descente de formule** utilise `ajusteZonesPourFormule` et **nomme
+  les villes retirées**, dans l'ordre imposé — le siège en dernier, puis les villes ouvertes,
+  puis « bientôt », puis l'annuaire.
+
+Reste : la recherche SIRENE (hôte refusé par la politique réseau), l'envoi du code de
+vérification, l'enregistrement du compte et le paiement Stripe.
+
+---
+
+## Phases 5 à 11 · à venir
+
+Agenda et documents du pro, monétisation Stripe, back-office, personnalisation, avis et
+modération, référencement technique. `packages/core` porte déjà l'essentiel de leurs règles,
+testées : ces phases les branchent sur des écrans, sur la base et sur le worker.

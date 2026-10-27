@@ -14,11 +14,13 @@ export function Puce({
   children,
   className,
 }: {
-  readonly active?: boolean;
-  readonly onBascule?: () => void;
-  readonly compte?: number;
+  readonly active?: boolean | undefined;
+  readonly onBascule?: (() => void) | undefined;
+  // `| undefined` explicite : avec `exactOptionalPropertyTypes`, un appelant qui calcule la
+  // valeur — `compte={n || undefined}` — ne doit pas se voir refuser la propriété.
+  readonly compte?: number | undefined;
   readonly children: ReactNode;
-  readonly className?: string;
+  readonly className?: string | undefined;
 }) {
   return (
     <button
