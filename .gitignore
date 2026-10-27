@@ -1,0 +1,27 @@
+node_modules/
+.next/
+dist/
+out/
+.turbo/
+coverage/
+*.tsbuildinfo
+
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Résultats de test et traces Playwright
+test-results/
+playwright-report/
+blob-report/
+.playwright/
+
+# Données brutes volumineuses (SIRENE, BAN) : jamais commitées
+data/brut/
+data/cache/
+*.csv.gz
+*.zip
+
+.DS_Store
+Thumbs.db
