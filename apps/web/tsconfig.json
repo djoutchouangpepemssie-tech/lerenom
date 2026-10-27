@@ -2,6 +2,10 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "noEmit": true,
+    // L'application n'émet pas de déclarations : inutile d'exiger des types portables
+    // sur des valeurs inférées depuis le client Prisma.
+    "declaration": false,
+    "declarationMap": false,
     "jsx": "preserve",
     "lib": ["ES2023", "DOM", "DOM.Iterable"],
     "module": "esnext",

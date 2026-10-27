@@ -31,3 +31,6 @@ packages/db/src/genere/
 
 # Généré par Next.js à chaque build
 next-env.d.ts
+
+# Variables locales de développement
+.env.local

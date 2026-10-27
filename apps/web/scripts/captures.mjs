@@ -18,7 +18,32 @@ const BASE = process.argv[2] ?? 'http://127.0.0.1:3100';
 const SORTIE = path.resolve(import.meta.dirname, '../../../docs/captures');
 
 /** Les pages à capturer. `nom` sert de nom de fichier. */
-const PAGES = [{ nom: 'design-system', chemin: '/design', titre: 'Design system' }];
+const PAGES = [
+  { nom: 'accueil', chemin: '/', titre: 'Accueil' },
+  { nom: 'ile-de-france', chemin: '/ile-de-france', titre: 'Île-de-France' },
+  { nom: 'departement', chemin: '/seine-saint-denis-93', titre: 'Département' },
+  { nom: 'ville', chemin: '/paris-11', titre: 'Ville' },
+  { nom: 'metier', chemin: '/plombier', titre: 'Métier' },
+  { nom: 'resultats', chemin: '/plombier/paris-11', titre: 'Résultats métier × ville' },
+  {
+    nom: 'fiche-exclusif',
+    chemin: '/entreprise/plomberie-martin-paris-11-80000000100017',
+    titre: 'Fiche Exclusif',
+  },
+  {
+    nom: 'fiche-gratuite',
+    chemin: '/entreprise/lefevre-sanitaire-paris-11-80000000700011',
+    titre: 'Fiche gratuite',
+  },
+  { nom: 'guide-des-prix', chemin: '/guide-des-prix', titre: 'Guide des prix' },
+  { nom: 'pro', chemin: '/pro', titre: 'Professionnels et tarifs' },
+  {
+    nom: 'comment-nous-classons',
+    chemin: '/comment-nous-classons',
+    titre: 'Comment nous classons',
+  },
+  { nom: 'design-system', chemin: '/design', titre: 'Design system' },
+];
 
 const LARGEURS = [
   { nom: 'telephone', largeur: 390, hauteur: 844, mobile: true },
@@ -57,8 +82,13 @@ async function main() {
         if (message.type() === 'error') erreurs.push(message.text());
       });
 
-      await onglet.goto(`${BASE}${page.chemin}`, { waitUntil: 'networkidle' });
+      // `networkidle` ne se produit jamais sur une page riche en liens : Next en précharge le
+      // rendu dès qu'ils entrent dans le cadre, et la capture pleine page les y fait tous entrer.
+      await onglet.goto(`${BASE}${page.chemin}`, { waitUntil: 'load' });
       await onglet.evaluate(() => document.fonts.ready);
+      // Le temps que les apparitions échelonnées se posent. Sous `reducedMotion: reduce` elles
+      // sont immédiates, mais la mise en page, elle, a besoin d'un souffle.
+      await onglet.waitForTimeout(600);
 
       const controle = await onglet.evaluate(() => {
         const racine = document.documentElement;

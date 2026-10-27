@@ -38,6 +38,9 @@ importers:
       '@lerenom/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@lerenom/db':
+        specifier: workspace:*
+        version: link:../../packages/db
       '@lerenom/ui':
         specifier: workspace:*
         version: link:../../packages/ui

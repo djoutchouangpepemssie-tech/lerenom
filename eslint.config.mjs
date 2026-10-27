@@ -24,7 +24,9 @@ export default tseslint.config(
       '@typescript-eslint/consistent-type-imports': 'error',
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
       // Les règles métier sont écrites en français : on n'impose pas de casse aux identifiants.
-      eqeqeq: ['error', 'always'],
+      // `x != null` couvre null et undefined en une seule comparaison : c'est l'idiome le plus
+      // lisible face aux champs nullables de Prisma. Partout ailleurs, l'égalité est stricte.
+      eqeqeq: ['error', 'always', { null: 'ignore' }],
       'no-console': ['warn', { allow: ['warn', 'error'] }],
     },
   },
