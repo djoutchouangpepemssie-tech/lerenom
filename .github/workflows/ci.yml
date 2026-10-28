@@ -79,6 +79,7 @@ jobs:
       REDIS_URL: redis://127.0.0.1:6379
       SECRET_VERIFICATION: secret-dintegration-continue-strictement-jetable
       LERENOM_ENV: developpement
+      LERENOM_URL: http://127.0.0.1:3000
 
     steps:
       - uses: actions/checkout@v4
@@ -135,7 +136,7 @@ jobs:
       # Redis : c'est le seul endroit où l'on peut prouver qu'aucune demande ne part avant la
       # vérification du mobile, et qu'elle part bien juste après.
       - name: Tests d'intégration de la distribution et du suivi client
-        run: pnpm --filter @lerenom/worker --filter @lerenom/web run test
+        run: pnpm --filter @lerenom/distribution --filter @lerenom/web run test
 
       - name: Vérifier que les tests ne laissent aucune trace
         run: |

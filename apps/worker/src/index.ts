@@ -10,11 +10,9 @@ import process from 'node:process';
 import { Worker } from 'bullmq';
 import { exigeConfiguration } from '@lerenom/securite';
 import { prisma } from '@lerenom/db';
-import { avanceCascade, expire } from './distribution.ts';
+import { avanceCascade, executeTravailDeNuit, expire } from '@lerenom/distribution';
 import { connexion, fermeFiles, fileNuit, programmeEcheance } from '@lerenom/files';
 import type { TacheCascade, TacheEcheance } from '@lerenom/files';
-import { perimeLesDemandes, recalculeScores } from './scores.ts';
-import { demandeConfirmationIntervention, inviteAuxAvis } from './avis.ts';
 
 // Avant toute connexion : un secret absent est une erreur de déploiement, pas un incident à
 // découvrir au premier client qui valide son numéro.
@@ -54,15 +52,7 @@ const workerEcheances = new Worker<TacheEcheance>(
 
 const workerNuit = new Worker<{ travail: string }>(
   'nuit',
-  async (tache) => {
-    if (tache.data.travail === 'scores') return { scores: await recalculeScores() };
-    if (tache.data.travail === 'peremption') return { perimees: await perimeLesDemandes() };
-    if (tache.data.travail === 'invitations-avis') return await inviteAuxAvis();
-    if (tache.data.travail === 'confirmations-intervention') {
-      return await demandeConfirmationIntervention();
-    }
-    throw new Error(`Travail de nuit inconnu : ${tache.data.travail}`);
-  },
+  async (tache) => executeTravailDeNuit(tache.data.travail),
   { connection: connexion(), concurrency: 1 },
 );
 

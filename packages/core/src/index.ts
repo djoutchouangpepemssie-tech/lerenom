@@ -21,3 +21,5 @@ export * from './verification';
 export * from './liens';
 export * from './avis';
 export * from './contestation';
+export * from './mot-de-passe';
+export * from './connexion';

@@ -19,13 +19,31 @@ export function Minuteur({
   readonly className?: string;
   readonly surExpiration?: () => void;
 }) {
-  const [restantMs, setRestantMs] = useState(() => echeance.getTime() - Date.now());
+  /**
+   * `null` tant que le composant n'est pas monté.
+   *
+   * Le temps restant ne peut pas être calculé au rendu serveur : entre ce rendu et
+   * l'hydratation, quelques centaines de millisecondes passent, et React trouve deux textes
+   * différents — ce qui casse l'hydratation de toute la page. On n'affiche donc rien de
+   * daté tant que le navigateur n'a pas pris la main : le décompte apparaît au montage,
+   * c'est-à-dire aussitôt.
+   */
+  const [restantMs, setRestantMs] = useState<number | null>(null);
 
   useEffect(() => {
-    const identifiant = setInterval(() => {
+    const met = () => {
       const restant = echeance.getTime() - Date.now();
       setRestantMs(restant);
-      if (restant <= 0) {
+      return restant;
+    };
+
+    if (met() <= 0) {
+      surExpiration?.();
+      return;
+    }
+
+    const identifiant = setInterval(() => {
+      if (met() <= 0) {
         clearInterval(identifiant);
         surExpiration?.();
       }
@@ -33,10 +51,10 @@ export function Minuteur({
     return () => clearInterval(identifiant);
   }, [echeance, surExpiration]);
 
-  const expire = restantMs <= 0;
-  const minutes = Math.max(0, Math.floor(restantMs / 60000));
-  const secondes = Math.max(0, Math.floor((restantMs % 60000) / 1000));
-  const urgent = !expire && restantMs < 5 * 60 * 1000;
+  const expire = restantMs !== null && restantMs <= 0;
+  const minutes = Math.max(0, Math.floor((restantMs ?? 0) / 60000));
+  const secondes = Math.max(0, Math.floor(((restantMs ?? 0) % 60000) / 1000));
+  const urgent = restantMs !== null && !expire && restantMs < 5 * 60 * 1000;
 
   return (
     <span
@@ -60,7 +78,14 @@ export function Minuteur({
         <circle cx="7" cy="7.6" r="5.4" />
         <path d="M7 4.6v3l2 1.4" strokeLinecap="round" />
       </svg>
-      {expire ? 'Délai dépassé' : `${minutes} min ${String(secondes).padStart(2, '0')} s`}
+      {restantMs === null
+        ? // Avant le montage, aucun texte tiré de l'horloge : un décompte est par nature une
+          // affaire de navigateur, et le moindre écart entre le rendu serveur et le rendu
+          // client empêcherait React d'hydrater la page entière.
+          '—'
+        : expire
+          ? 'Délai dépassé'
+          : `${minutes} min ${String(secondes).padStart(2, '0')} s`}
     </span>
   );
 }

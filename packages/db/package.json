@@ -12,6 +12,7 @@
     "pousser": "prisma db push",
     "semer": "node --experimental-strip-types prisma/seed.ts",
     "demo:suivi": "node --experimental-strip-types prisma/demo-suivi.ts",
+    "demo:pro": "node --experimental-strip-types prisma/demo-pro.ts",
     "studio": "prisma studio",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src"

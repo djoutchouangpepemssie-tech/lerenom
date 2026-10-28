@@ -17,7 +17,7 @@ import {
 import type { Merite } from '@lerenom/ui';
 import { FilAriane } from '@/composants/FilAriane';
 import { entrepriseParSlug } from '@/lib/donnees';
-import { nomVille } from '@/lib/affichage';
+import { FUSEAU, nomVille } from '@/lib/affichage';
 
 export const revalidate = 300;
 
@@ -341,6 +341,7 @@ export default async function PageEntreprise({ params }: Parametres) {
                         {avis.publieLe?.toLocaleDateString('fr-FR', {
                           month: 'long',
                           year: 'numeric',
+                          timeZone: FUSEAU,
                         })}
                       </span>
                     </div>

@@ -146,6 +146,11 @@ const PLOMBIERS: readonly (CandidatClassement & { nom: string; avis: number })[]
   },
 ];
 
+// Cette page de démonstration affiche un minuteur, donc une valeur tirée de l'horloge au
+// moment du rendu. Servie depuis un cache, elle finirait par montrer une heure plus vieille
+// que celle que reçoit le navigateur, et React refuserait d'hydrater la page.
+export const dynamic = 'force-dynamic';
+
 export default function PageDesign() {
   const [filtres, setFiltres] = useState<readonly string[]>(['urgence']);
   const [modaleOuverte, setModaleOuverte] = useState(false);
@@ -154,6 +159,9 @@ export default function PageDesign() {
 
   const page = classePageResultats(PLOMBIERS, PARAMETRES_PAR_DEFAUT, 0);
   const forfait = etatForfait('premium', 4, PARAMETRES_PAR_DEFAUT);
+  // L'échéance est calculée à chaque requête. Sur une page mise en cache, une valeur tirée de
+  // l'horloge au moment du rendu finit par différer de ce que le navigateur reçoit, et React
+  // refuse d'hydrater : c'est pourquoi cette page est explicitement dynamique.
   const echeance = new Date(Date.now() + 27 * 60 * 1000);
 
   function bascule(cle: string) {

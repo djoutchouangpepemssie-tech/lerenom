@@ -479,12 +479,47 @@ model UtilisateurPro {
   emailVerifieLe DateTime? @map("email_verifie_le")
   telephoneVerifieLe DateTime? @map("telephone_verifie_le")
   derniereConnexion DateTime? @map("derniere_connexion")
+  /// Tentatives de connexion échouées depuis la dernière réussite, et dernière tentative.
+  /// C'est la vraie défense contre la devinette de mot de passe : la limitation, pas la
+  /// complexité exigée.
+  tentativesConnexion Int @default(0) @map("tentatives_connexion")
+  derniereTentativeLe DateTime? @map("derniere_tentative_le")
+
+  sessions SessionPro[]
 
   creeLe DateTime @default(now()) @map("cree_le")
   modifieLe DateTime @updatedAt @map("modifie_le")
 
   @@index([entrepriseId])
   @@map("utilisateurs_pro")
+}
+
+/// Une session ouverte par un professionnel.
+///
+/// Stockée en base et non dans un simple cookie signé : une session doit pouvoir être
+/// **révoquée** — quand un salarié quitte l'entreprise, quand un mot de passe change, quand
+/// une connexion paraît suspecte. Un jeton auto-porté ne se révoque pas, il expire, et c'est
+/// insuffisant pour un compte qui engage de l'argent.
+model SessionPro {
+  id             String         @id @default(cuid())
+  utilisateurId  String         @map("utilisateur_id")
+  utilisateur    UtilisateurPro @relation(fields: [utilisateurId], references: [id], onDelete: Cascade)
+
+  /// Empreinte du jeton de session, jamais le jeton lui-même : lire la base ne doit pas
+  /// permettre de se faire passer pour quelqu'un.
+  jeton      String    @unique
+  expireLe   DateTime  @map("expire_le")
+  revoqueeLe DateTime? @map("revoquee_le")
+
+  adresseIp String? @map("adresse_ip")
+  appareil  String?
+
+  derniereActiviteLe DateTime @default(now()) @map("derniere_activite_le")
+  creeLe             DateTime @default(now()) @map("cree_le")
+
+  @@index([utilisateurId])
+  @@index([expireLe])
+  @@map("sessions_pro")
 }
 
 model Verification {

@@ -34,3 +34,38 @@ export function telephoneLisible(numero: string): string {
   if (!/^0\d{9}$/.test(chiffres)) return numero;
   return (chiffres.match(/\d{2}/g) ?? []).join(' ');
 }
+
+/**
+ * Le fuseau dans lequel toutes les dates sont écrites.
+ *
+ * Le fixer n'est pas un détail : le serveur tourne en UTC, le navigateur dans le fuseau de son
+ * utilisateur. Sans ce réglage, la même date rend deux textes différents de part et d'autre, et
+ * React refuse d'hydrater la page — un bogue qui ne se voit qu'en production, sur les pages
+ * pré-rendues, à certaines heures.
+ *
+ * Le Renom opère en Île-de-France : l'heure de Paris est la bonne pour tout le monde, y compris
+ * pour un client qui consulte depuis l'étranger. « Votre rendez-vous à 9 h » veut dire 9 h chez
+ * lui, pas 9 h là où il se trouve ce jour-là.
+ */
+export const FUSEAU = 'Europe/Paris';
+
+/** Une date et une heure : « 28 octobre à 09:30 ». */
+export function dateEtHeure(valeur: Date | string): string {
+  return new Date(valeur).toLocaleDateString('fr-FR', {
+    day: 'numeric',
+    month: 'long',
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZone: FUSEAU,
+  });
+}
+
+/** Une date seule : « 28 octobre 2026 ». */
+export function dateSeule(valeur: Date | string): string {
+  return new Date(valeur).toLocaleDateString('fr-FR', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    timeZone: FUSEAU,
+  });
+}

@@ -12,7 +12,7 @@
 import process from 'node:process';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { nettoieLesDonneesDeTest, prisma } from '@lerenom/db';
-import { accepte, avanceCascade, expire, refuse } from './distribution.ts';
+import { accepte, avanceCascade, expire, refuse } from './distribution';
 
 const aUneBase = (process.env['DATABASE_URL'] ?? '') !== '';
 const decrire = aUneBase ? describe : describe.skip;

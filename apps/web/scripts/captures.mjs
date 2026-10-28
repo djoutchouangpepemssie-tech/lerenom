@@ -45,6 +45,27 @@ function cheminDAvis() {
   return valeur === null ? null : `/suivi/${valeur}`;
 }
 
+/**
+ * Les identifiants du compte de démonstration professionnel.
+ *
+ * `pnpm --filter @lerenom/db demo:pro` le crée. Les captures de l'espace pro passent par une
+ * vraie connexion : photographier un écran protégé sans s'y connecter reviendrait à
+ * photographier autre chose que ce que verra l'artisan.
+ */
+const COMPTE_PRO = {
+  email: process.env.PRO_EMAIL ?? 'demo@lerenom.exemple',
+  motDePasse: process.env.PRO_MOT_DE_PASSE ?? 'le chat dort sur le toit',
+};
+
+/** Se connecte à l'espace professionnel, une fois par contexte de navigation. */
+async function connecteLEspacePro(onglet) {
+  await onglet.goto(`${BASE}/pro/connexion`, { waitUntil: 'load' });
+  await onglet.getByLabel('Adresse électronique').fill(COMPTE_PRO.email);
+  await onglet.getByLabel('Mot de passe').fill(COMPTE_PRO.motDePasse);
+  await onglet.getByRole('button', { name: 'Se connecter' }).click();
+  await onglet.waitForURL('**/pro/espace', { timeout: 15_000 });
+}
+
 function cheminDeConfirmation() {
   const valeur = jeton('confirmation');
   return valeur === null ? null : `/suivi/${valeur}`;
@@ -211,6 +232,40 @@ const PAGES = [
   },
   { nom: 'pro-inscription', chemin: '/pro/inscription', titre: 'Inscription professionnelle' },
   { nom: 'design-system', chemin: '/design', titre: 'Design system' },
+  { nom: 'pro-connexion', chemin: '/pro/connexion', titre: 'Connexion professionnelle' },
+  {
+    nom: 'pro-tableau-de-bord',
+    chemin: '/pro/espace',
+    titre: 'Espace pro — tableau de bord',
+    connexionPro: true,
+  },
+  {
+    nom: 'pro-demandes',
+    chemin: '/pro/espace/demandes',
+    titre: 'Espace pro — demandes à répondre',
+    connexionPro: true,
+  },
+  {
+    nom: 'pro-demandes-acceptees',
+    chemin: '/pro/espace/demandes',
+    titre: 'Espace pro — demandes acceptées',
+    connexionPro: true,
+    scenario: async (onglet) => {
+      await onglet.getByRole('tab', { name: /Acceptées/ }).click();
+      await onglet.waitForTimeout(250);
+    },
+  },
+  {
+    nom: 'pro-refus',
+    chemin: '/pro/espace/demandes',
+    titre: 'Espace pro — motif de refus',
+    connexionPro: true,
+    scenario: async (onglet) => {
+      await onglet.getByRole('button', { name: 'Refuser' }).first().click();
+      await onglet.getByText('Pourquoi refusez-vous ?').waitFor();
+      await onglet.waitForTimeout(200);
+    },
+  },
 ];
 
 const LARGEURS = [
@@ -251,6 +306,17 @@ async function main() {
       }
 
       const onglet = await contexte.newPage();
+
+      // Les écrans protégés se photographient connecté. La session reste dans le contexte,
+      // donc la connexion n'a lieu qu'une fois par largeur.
+      if (page.connexionPro === true && !contexte.__proConnecte) {
+        try {
+          await connecteLEspacePro(onglet);
+          contexte.__proConnecte = true;
+        } catch (erreur) {
+          console.error(`    connexion professionnelle impossible : ${erreur.message}`);
+        }
+      }
       const erreurs = [];
       onglet.on('pageerror', (erreur) => erreurs.push(erreur.message));
       onglet.on('console', (message) => {

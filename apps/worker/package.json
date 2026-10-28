@@ -8,12 +8,14 @@
     "start": "node --experimental-strip-types src/index.ts",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src",
-    "test": "vitest run",
-    "test:couverture": "vitest run --coverage"
+    "// test": "Le worker n'est que du câblage : files, minuteurs, signaux d'arrêt. Les règles et le routage sont testés dans @lerenom/distribution.",
+    "test": "vitest run --passWithNoTests",
+    "test:couverture": "vitest run --coverage --passWithNoTests"
   },
   "dependencies": {
     "@lerenom/core": "workspace:*",
     "@lerenom/db": "workspace:*",
+    "@lerenom/distribution": "workspace:*",
     "@lerenom/files": "workspace:*",
     "@lerenom/liens": "workspace:*",
     "@lerenom/securite": "workspace:*",

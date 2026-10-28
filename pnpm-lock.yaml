@@ -41,6 +41,9 @@ importers:
       '@lerenom/db':
         specifier: workspace:*
         version: link:../../packages/db
+      '@lerenom/distribution':
+        specifier: workspace:*
+        version: link:../../packages/distribution
       '@lerenom/files':
         specifier: workspace:*
         version: link:../../packages/files
@@ -96,6 +99,9 @@ importers:
       '@lerenom/db':
         specifier: workspace:*
         version: link:../../packages/db
+      '@lerenom/distribution':
+        specifier: workspace:*
+        version: link:../../packages/distribution
       '@lerenom/files':
         specifier: workspace:*
         version: link:../../packages/files
@@ -153,6 +159,25 @@ importers:
       prisma:
         specifier: ^7.10.1
         version: 7.10.1(@types/node@22.20.5)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(magicast@0.5.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(typescript@6.0.3)
+
+  packages/distribution:
+    dependencies:
+      '@lerenom/core':
+        specifier: workspace:*
+        version: link:../core
+      '@lerenom/db':
+        specifier: workspace:*
+        version: link:../db
+      '@lerenom/liens':
+        specifier: workspace:*
+        version: link:../liens
+    devDependencies:
+      '@types/node':
+        specifier: ^22.19.1
+        version: 22.20.5
+      vitest:
+        specifier: ^5.0.5
+        version: 5.0.5(@types/node@22.20.5)(@vitest/coverage-v8@5.0.5)(vite@8.3.5(@types/node@22.20.5)(jiti@2.7.0))
 
   packages/files:
     dependencies:

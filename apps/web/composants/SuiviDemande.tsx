@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { Bouton, Carte, Note, Puce, ZoneTexte, cn } from '@lerenom/ui';
-import { telephoneLisible } from '@/lib/affichage';
+import { dateEtHeure, telephoneLisible } from '@/lib/affichage';
 import type { SuiviClient } from '@/lib/suivi';
 
 /**
@@ -21,21 +21,12 @@ const MOTIFS = [
   'Je reporte les travaux',
 ] as const;
 
-function dateCourte(valeur: Date | string): string {
-  return new Date(valeur).toLocaleDateString('fr-FR', {
-    day: 'numeric',
-    month: 'long',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-}
-
 /** Les quelques statuts qu'un client peut voir, dits dans sa langue et pas dans celle de la base. */
 function enClair(suivi: SuiviClient): { readonly titre: string; readonly texte: string } {
   if (suivi.annuleeLe !== null) {
     return {
       titre: 'Demande annulée',
-      texte: `Vous avez annulé cette demande le ${dateCourte(suivi.annuleeLe)}. Elle n’est plus transmise à personne.`,
+      texte: `Vous avez annulé cette demande le ${dateEtHeure(suivi.annuleeLe)}. Elle n’est plus transmise à personne.`,
     };
   }
 
@@ -143,7 +134,7 @@ export function SuiviDemande({
           <p className="text-encre-70 mt-2 max-w-[60ch] text-sm leading-relaxed">{etat.texte}</p>
 
           <ol className="mt-6 space-y-4">
-            <Etape faite libelle="Demande déposée" detail={dateCourte(suivi.deposeeLe)} />
+            <Etape faite libelle="Demande déposée" detail={dateEtHeure(suivi.deposeeLe)} />
             <Etape
               faite={suivi.nombreSollicites > 0}
               libelle="Professionnels sollicités"
@@ -201,7 +192,7 @@ export function SuiviDemande({
 
                 {pro.accepteeLe !== null && (
                   <p className="text-encre-55 mt-3 text-xs">
-                    A accepté le {dateCourte(pro.accepteeLe)}
+                    A accepté le {dateEtHeure(pro.accepteeLe)}
                   </p>
                 )}
               </Carte>
@@ -303,7 +294,7 @@ export function SuiviDemande({
             <Ligne cle="Référence" valeur={suivi.reference} />
             <Ligne cle="Prestation" valeur={suivi.besoin} />
             <Ligne cle="Ville" valeur={suivi.ville} />
-            <Ligne cle="Déposée le" valeur={dateCourte(suivi.deposeeLe)} />
+            <Ligne cle="Déposée le" valeur={dateEtHeure(suivi.deposeeLe)} />
           </dl>
           <p className="text-encre-70 border-bordure mt-4 border-t pt-4 text-sm leading-relaxed">
             {suivi.description}

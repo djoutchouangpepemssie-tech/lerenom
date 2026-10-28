@@ -469,6 +469,97 @@ modération des avis au back-office, le dépôt d'une contestation par le profes
 
 ---
 
+## Phase 3 — L'espace professionnel · 28 octobre 2026
+
+C'est la pièce qui transforme un moteur qui tourne en produit utilisable. Jusqu'ici, la
+cascade distribuait des demandes que **personne ne pouvait accepter** autrement qu'en appelant
+une fonction depuis du code. Désormais un artisan se connecte, voit ce qui l'attend, accepte
+ou refuse, et déclare ses interventions.
+
+### Les mots de passe : la longueur plutôt que la complexité
+
+Le parti pris suit la CNIL et l'ANSSI, pas les habitudes des années 2000 : douze caractères
+minimum, **aucune exigence de composition**. Imposer une majuscule, un chiffre et un caractère
+spécial produit `Password1!` — court, prévisible, et noté « fort » par la plupart des
+formulaires. Une phrase de passe vaut infiniment mieux, et le formulaire le dit.
+
+Ce qui est refusé l'est fermement : trop court, presque sans caractères distincts, figurant
+parmi les plus essayés, ou bâti sur l'adresse électronique du compte.
+
+Le hachage utilise **scrypt** de la bibliothèque standard, à 64 Mio par calcul. Argon2id serait
+marginalement préférable, mais suppose un module natif compilé : une dépendance binaire de plus
+à construire et à déployer, pour un gain théorique. Un algorithme standard correctement
+paramétré vaut mieux qu'un meilleur algorithme mal installé. L'empreinte **porte ses propres
+paramètres**, donc durcir le coût demain n'invalidera pas les mots de passe d'hier : on les
+réécrira à la connexion suivante, sans rien demander à personne.
+
+### Les sessions : en base, pas dans un jeton auto-porté
+
+Le cookie ne contient qu'un identifiant et un jeton aléatoire ; tout le reste vit en base, et
+la base n'en garde que l'empreinte. Ce choix coûte une requête par page, et il l'achète : une
+session doit pouvoir être **révoquée** — un salarié qui part, un mot de passe changé, une
+connexion suspecte. Un jeton auto-porté ne se révoque pas, il expire, et c'est insuffisant pour
+un compte qui engage de l'argent.
+
+### La défense : limiter les essais, pas compliquer les mots de passe
+
+Cinq tentatives, puis un quart d'heure d'attente. Le verrou **se lève tout seul** : un compte
+bloqué définitivement serait une arme entre les mains de n'importe qui — il suffirait de saisir
+dix mauvais mots de passe sur le compte d'un concurrent pour le sortir de la plateforme un jour
+de pointe.
+
+Le message d'échec est unique et vague, que l'adresse soit inconnue ou le mot de passe faux :
+distinguer les deux donnerait à quiconque le moyen de savoir quels artisans sont inscrits chez
+nous. Un test vérifie que les deux réponses sont **identiques au caractère près**.
+
+### La frontière des coordonnées, tenue dans la requête
+
+Avant acceptation, le client n'est ni nommé ni joignable : ni prénom, ni téléphone, ni adresse.
+Ce n'est pas une affaire d'affichage — les colonnes ne sont pas même lues en base. Le test le
+vérifie en sérialisant la réponse et en y cherchant le numéro : s'il apparaissait, le test
+échouerait.
+
+### Trouvé en travaillant
+
+- **Le prix affiché avant le clic était faux.** Le champ `montantHT` d'une distribution ne vaut
+  rien tant que la demande n'est pas acceptée : le bouton annonçait donc « Gratuite » une
+  demande facturée 12 €. Le coût est maintenant recalculé avec la formule et le forfait du
+  mois, par la même fonction que la facturation — un professionnel sait ce qu'il paie au
+  moment où il décide.
+- **Le test a révélé un défaut de conception** : la remise à zéro du compteur d'échecs était
+  cachée dans l'ouverture de session. Une décision de sécurité n'a rien à faire là : un futur
+  appelant aurait remis un compteur à zéro sans le savoir. Elle est remontée dans le contrôle
+  d'identité, où elle appartient.
+- **Un défaut d'hydratation, invisible en développement.** Le minuteur calculait le temps
+  restant au rendu serveur puis au rendu client : deux textes différents, et React refusait
+  d'hydrater **toute la page**. Un décompte est par nature une affaire de navigateur : il ne
+  rend plus rien de daté avant son montage. Dans la foulée, toutes les dates du site sont
+  désormais écrites explicitement en heure de Paris — sans quoi le serveur (UTC) et le
+  navigateur écrivent deux heures différentes, bogue qui ne se voit qu'en production, sur les
+  pages mises en cache, à certaines heures.
+
+### Un déplacement d'architecture
+
+L'orchestration de la distribution vivait dans le worker. Elle est passée dans
+`@lerenom/distribution`, partagé : l'acceptation doit être **synchrone**, parce que le verrou
+qui empêche deux professionnels de prendre la même place doit se poser pendant la requête du
+pro, et parce qu'il attend ses coordonnées à l'écran. Passer par une file aurait rendu
+l'opération asynchrone, donc le verrou inutile.
+
+Le worker n'est plus que du câblage — files, minuteurs, signaux d'arrêt — et il l'assume : son
+routage des travaux de nuit est sorti dans une fonction testée, qui **lève sur un nom inconnu**
+plutôt que de ne rien faire toutes les nuits sans que personne ne s'en aperçoive.
+
+54 captures, aucun débordement. 509 tests verts.
+
+### Reste pour clore la phase 3
+
+L'inscription en 8 étapes ne crée toujours pas de compte : le formulaire existe, sa
+persistance non. Manquent aussi la gestion de la fiche, des zones et des agences depuis
+l'espace, et la revendication d'une fiche existante.
+
+---
+
 ## Phases 5 à 11 · à venir
 
 Agenda et documents du pro, monétisation Stripe, back-office, personnalisation, avis et

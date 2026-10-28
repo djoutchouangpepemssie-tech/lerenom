@@ -82,3 +82,4 @@ export function empreinteJeton(jeton: string, secret: string): string {
 }
 
 export * from './configuration';
+export * from './mot-de-passe';

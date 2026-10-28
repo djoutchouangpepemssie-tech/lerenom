@@ -9,7 +9,7 @@
 import process from 'node:process';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { nettoieLesDonneesDeTest, prisma } from '@lerenom/db';
-import { demandeConfirmationIntervention, inviteAuxAvis } from './avis.ts';
+import { demandeConfirmationIntervention, inviteAuxAvis } from './avis';
 
 const aUneBase = (process.env['DATABASE_URL'] ?? '') !== '';
 const decrire = aUneBase ? describe : describe.skip;
