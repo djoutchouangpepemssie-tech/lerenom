@@ -992,6 +992,60 @@ lui-même écartées.
 
 ---
 
+## Phase 5 · les devis
+
+`packages/core/src/devis.ts` portait déjà tout : calcul des totaux et des lignes de TVA au
+centime, mentions obligatoires d'un devis de dépannage à domicile, numérotation sans trou,
+préparation des factures d'acompte et de solde. Quarante fonctions, testées, et aucun écran
+pour les appeler. Cette phase les branche.
+
+### Ce qu'un devis est, et ce qui en découle
+
+Un devis envoyé est un engagement remis à quelqu'un. Deux règles en découlent, consignées en
+Q27 :
+
+**Il ne se modifie plus.** Le client en détient un exemplaire ; le changer sous ses yeux n'est
+pas une correction, c'est une substitution — et si le prix diffère entre ce qu'il a lu et ce
+qui est en base, personne ne peut dire lequel fait foi. L'écran propose « Dupliquer en nouveau
+brouillon » : la copie porte la version suivante, l'original reste tel qu'il a été remis.
+
+**Le numéro n'est attribué qu'à l'envoi.** Un brouillon abandonné ne consomme pas de numéro.
+Un trou dans une série est un défaut comptable, et numéroter à la création en produirait un à
+chaque devis commencé puis laissé. Le numéro est tiré dans la transaction d'envoi, et la
+contrainte d'unicité de la base est le dernier rempart si deux envois se croisent.
+
+### La colonne qui distingue cet écran d'un tableur
+
+Les mentions obligatoires sont listées à droite, cochées au fil de la saisie, et **le bouton
+d'envoi reste fermé tant qu'il en manque une**. Ce n'est pas une politesse réglementaire : un
+devis de dépannage à domicile qui les omet expose l'artisan qui l'a signé.
+
+Une subtilité mérite d'être dite : des frais de déplacement à **zéro** comptent comme une
+mention. « Déplacement offert » est une information ; l'absence d'information n'en est pas
+une. Le brouillon naît donc avec des frais à 0 € et non à « non renseigné ».
+
+### Deux corrections venues de la capture
+
+`LIBELLES_UNITE` écrit « u » et « h ». C'est juste **sur le document** — un devis se lit en
+diagonale et la colonne des unités n'a pas à prendre la largeur d'un mot. Dans une liste
+déroulante où il faut choisir, « u » ne dit rien. Deux tables plutôt qu'un compromis qui
+dessert les deux usages : `NOMS_UNITE` donne « À l'unité », « À l'heure ».
+
+Et une note de bas de devis — de la prose — se saisissait dans un champ d'une ligne, qui en
+cachait la fin au moment même où on l'écrivait.
+
+### La vérification
+
+26 tests sur la route et la base. Les plus utiles portent sur les refus : un devis envoyé
+refuse toute modification _et rien ne bouge en base_, un devis non conforme ne part pas et
+dit ce qui manque, trois envois successifs produisent trois numéros sans trou ni doublon,
+et trois brouillons abandonnés n'en consomment aucun.
+
+Le compte de démonstration reçoit un devis en brouillon, pour que l'éditeur ait quelque chose
+à montrer : recherche de fuite, pièces, main-d'œuvre, 410,30 € TTC avec 30 % d'acompte.
+
+---
+
 ## Phases 5 à 11 · à venir
 
 Agenda et documents du pro, monétisation Stripe, back-office, personnalisation, avis et

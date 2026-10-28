@@ -623,3 +623,30 @@ politique réseau refuse le domaine. Deux voies :
 Tant que ce point n'est pas réglé, **la phrase de « Comment nous classons » doit être corrigée
 ou la fonctionnalité livrée** : promettre publiquement un critère de classement qui ne
 s'applique pas est le genre d'inexactitude qu'un annuaire ne peut pas se permettre.
+
+---
+
+## Q27 🟢 — Un devis envoyé ne se modifie plus
+
+_(métier — tranché, consigné pour pouvoir être discuté)_
+
+Le schéma porte un champ `version` sur les devis, sans dire ce qui le fait avancer. Deux
+lectures étaient possibles : un devis envoyé reste modifiable et sa version s'incrémente à
+chaque changement, ou bien il devient immuable et toute correction passe par une copie.
+
+**La seconde est appliquée.** Un devis envoyé est un engagement remis à quelqu'un : le client
+en détient un exemplaire. Le modifier sous ses yeux, sans qu'il le sache, n'est pas une
+correction mais une substitution — et si le prix change entre ce qu'il a lu et ce qui est en
+base, personne ne peut dire lequel fait foi. L'écran propose donc « Dupliquer en nouveau
+brouillon » : la copie porte la version suivante, recevra son propre numéro à l'envoi, et
+l'original reste tel qu'il a été remis.
+
+**Le numéro n'est attribué qu'à l'envoi**, pour une raison voisine : un brouillon abandonné ne
+doit pas consommer un numéro. Un trou dans une série de numéros est un défaut comptable, et la
+numérotation à la création en produirait à chaque devis commencé puis laissé.
+
+**Ce qui reste à décider**, et qui dépend d'un conseil juridique plus que d'un choix
+technique : combien de temps conserver les devis envoyés, et si un devis expiré doit basculer
+tout seul au statut `expire` à l'échéance de sa validité. Le champ existe, le travail de nuit
+pourrait le faire ; nous ne l'avons pas branché faute de savoir si l'expiration automatique a
+des conséquences contractuelles.

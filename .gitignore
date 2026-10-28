@@ -11,6 +11,7 @@ coverage/
 .jeton-suivi
 .jeton-avis
 .jeton-confirmation
+.jeton-devis
 .env.local
 .env.*.local
 !.env.exemple

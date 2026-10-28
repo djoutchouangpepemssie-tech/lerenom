@@ -17,6 +17,12 @@
 export const UNITES = ['unite', 'heure', 'forfait', 'jour', 'm2', 'ml'] as const;
 export type Unite = (typeof UNITES)[number];
 
+/**
+ * Les unités telles qu'elles s'écrivent **sur le document** : « 2 u × 24 € ».
+ *
+ * Abrégées à dessein — un devis se lit en diagonale, et la colonne des unités n'a pas à
+ * occuper la largeur d'un mot.
+ */
 export const LIBELLES_UNITE: Readonly<Record<Unite, string>> = Object.freeze({
   unite: 'u',
   heure: 'h',
@@ -24,6 +30,22 @@ export const LIBELLES_UNITE: Readonly<Record<Unite, string>> = Object.freeze({
   jour: 'jour',
   m2: 'm²',
   ml: 'ml',
+});
+
+/**
+ * Les unités telles qu'elles s'écrivent **dans une liste de choix**.
+ *
+ * « u » et « h » conviennent à un document qu'on parcourt ; dans une liste déroulante où il
+ * faut choisir, elles ne disent rien. Deux usages, deux libellés, plutôt qu'un compromis qui
+ * dessert les deux.
+ */
+export const NOMS_UNITE: Readonly<Record<Unite, string>> = Object.freeze({
+  unite: 'À l’unité',
+  heure: 'À l’heure',
+  forfait: 'Au forfait',
+  jour: 'À la journée',
+  m2: 'Au mètre carré',
+  ml: 'Au mètre linéaire',
 });
 
 /** Les trois taux de TVA utilisables sur un devis de travaux. */

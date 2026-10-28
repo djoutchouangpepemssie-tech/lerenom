@@ -44,6 +44,11 @@ function jeton(nom) {
   return contenu === '' ? null : contenu;
 }
 
+function cheminDuDevis() {
+  const valeur = jeton('devis');
+  return valeur === null ? null : `/pro/espace/devis/${valeur}`;
+}
+
 function cheminDeSuivi() {
   const valeur = jeton('suivi');
   return valeur === null ? null : `/suivi/${valeur}`;
@@ -316,6 +321,18 @@ const PAGES = [
     nom: 'pro-agences',
     chemin: '/pro/espace/agences',
     titre: 'Espace pro — mes agences',
+    connexionPro: true,
+  },
+  {
+    nom: 'pro-devis-liste',
+    chemin: '/pro/espace/devis',
+    titre: 'Espace pro — mes devis',
+    connexionPro: true,
+  },
+  {
+    nom: 'pro-devis-editeur',
+    chemin: cheminDuDevis,
+    titre: 'Espace pro — éditeur de devis',
     connexionPro: true,
   },
   {

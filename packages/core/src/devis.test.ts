@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   LIBELLES_UNITE,
+  NOMS_UNITE,
   TAUX_TVA,
   UNITES,
   calculeTotaux,
@@ -60,6 +61,22 @@ describe('montantLigneHT', () => {
     expect(
       montantLigneHT(ligne({ id: 't', type: 'texte', designation: 'Accès par la cour' })),
     ).toBe(0);
+  });
+});
+
+describe('libellés des unités', () => {
+  it('propose un nom complet pour chaque unité', () => {
+    // « u » et « h » conviennent au document ; dans une liste où il faut choisir, elles ne
+    // disent rien. Chaque unité doit donc avoir ses deux écritures.
+    for (const unite of UNITES) {
+      expect(LIBELLES_UNITE[unite]).toBeTruthy();
+      expect(NOMS_UNITE[unite].length).toBeGreaterThan(2);
+    }
+  });
+
+  it('ne donne pas deux fois le même nom à deux unités', () => {
+    const noms = UNITES.map((unite) => NOMS_UNITE[unite]);
+    expect(new Set(noms).size).toBe(noms.length);
   });
 });
 

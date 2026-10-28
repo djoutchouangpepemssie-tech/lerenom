@@ -9,6 +9,8 @@
  */
 
 import process from 'node:process';
+import path from 'node:path';
+import { writeFile } from 'node:fs/promises';
 import { randomBytes, scrypt } from 'node:crypto';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '../src/genere/client.js';
@@ -185,9 +187,98 @@ async function main(): Promise<void> {
     });
   }
 
+  const devisId = await semeDevisDeDemonstration(entreprise.id);
+
   process.stdout.write(
-    `Compte de démonstration prêt.\n  adresse     : ${EMAIL}\n  mot de passe : ${MOT_DE_PASSE}\n`,
+    `Compte de démonstration prêt.\n  adresse     : ${EMAIL}\n  mot de passe : ${MOT_DE_PASSE}\n  devis       : ${devisId}\n`,
   );
+}
+
+/**
+ * Un brouillon de devis, pour que l'éditeur ait quelque chose à montrer.
+ *
+ * Idempotent : relancé, il remet le même devis dans le même état plutôt que d'en empiler.
+ * Son identifiant est écrit dans `.jeton-devis`, comme les jetons de suivi, parce que
+ * l'adresse de l'éditeur le contient et que les captures doivent savoir où aller.
+ */
+async function semeDevisDeDemonstration(entrepriseId: string): Promise<string> {
+  const client = await prisma.clientPro.upsert({
+    where: { id: (await prisma.clientPro.findFirst({ where: { entrepriseId } }))?.id ?? 'aucun' },
+    update: {},
+    create: {
+      entrepriseId,
+      nom: 'Madame Dupuis',
+      telephone: '01 99 00 00 21',
+      adresse: '18 rue Keller',
+      codePostal: '75011',
+      ville: 'Paris 11e',
+    },
+  });
+
+  await prisma.devis.deleteMany({ where: { entrepriseId, statut: 'brouillon' } });
+
+  const devis = await prisma.devis.create({
+    data: {
+      entrepriseId,
+      clientId: client.id,
+      type: 'estimatif',
+      validiteJours: 30,
+      acomptePourcent: 30,
+      fraisDeplacementTTC: 0,
+      devisPayant: false,
+      piecesRemplaceesGardees: true,
+      lignes: {
+        create: [
+          {
+            rang: 0,
+            type: 'section',
+            designation: 'Recherche et réparation de la fuite',
+          },
+          {
+            rang: 1,
+            type: 'prestation',
+            designation: 'Recherche de fuite par caméra thermique',
+            detail: 'Mur de la salle de bain, sans destruction',
+            unite: 'forfait',
+            quantite: 1,
+            prixUnitaireHT: 180,
+            tauxTva: 10,
+          },
+          {
+            rang: 2,
+            type: 'prestation',
+            designation: 'Remplacement du flexible et du raccord',
+            detail: 'Pièces fournies',
+            unite: 'unite',
+            quantite: 2,
+            prixUnitaireHT: 24,
+            tauxTva: 10,
+          },
+          {
+            rang: 3,
+            type: 'prestation',
+            designation: 'Main-d’œuvre',
+            unite: 'heure',
+            quantite: 2.5,
+            prixUnitaireHT: 58,
+            tauxTva: 10,
+          },
+          {
+            rang: 4,
+            type: 'texte',
+            designation:
+              'Intervention sous 48 h après acceptation. Les pièces remplacées restent à votre disposition.',
+          },
+        ],
+      },
+    },
+    select: { id: true },
+  });
+
+  const racine = path.resolve(import.meta.dirname, '../../..');
+  await writeFile(path.join(racine, '.jeton-devis'), `${devis.id}\n`, 'utf8');
+
+  return devis.id;
 }
 
 await main();
