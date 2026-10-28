@@ -15,7 +15,8 @@
     "format": "prettier --write .",
     "format:verifie": "prettier --check .",
     "captures": "pnpm --filter @lerenom/web captures",
-    "verifie": "bash scripts/verifie.sh"
+    "verifie": "bash scripts/verifie.sh",
+    "base:initialise": "bash scripts/initialise-base.sh"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
