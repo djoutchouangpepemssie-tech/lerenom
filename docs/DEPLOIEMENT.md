@@ -35,19 +35,54 @@ dépendent. Un PostgreSQL sans cette extension pose le schéma puis échoue sur 
 
 ## Les variables d'environnement
 
-À déclarer dans le projet d'hébergement (sur Vercel : **Settings → Environment Variables**),
-pour les trois environnements — production, préproduction, développement.
+À déclarer dans le projet d'hébergement (sur Railway : **Service → Variables**), pour chaque
+environnement — production, préproduction, développement.
 
-| Variable              | Exemple                                                   | Sans elle                                                                                 |
-| --------------------- | --------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
-| `DATABASE_URL`        | `postgresql://user:mdp@hote:5432/lerenom?sslmode=require` | **La construction échoue** : les pages publiques sont pré-rendues et lisent la base       |
-| `SECRET_VERIFICATION` | 32 caractères tirés au hasard : `openssl rand -hex 32`    | Les codes SMS, les liens clients et les sessions professionnelles refusent de fonctionner |
-| `LERENOM_URL`         | `https://lerenom.fr`                                      | Les liens envoyés par SMS pointeraient vers `localhost`                                   |
-| `REDIS_URL`           | `redis://…`                                               | Aucune demande n'est distribuée                                                           |
+| Variable              | Exemple                                                        | Sans elle                                                                                 |
+| --------------------- | -------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| `DATABASE_URL`        | `postgresql://user:mdp@postgres.railway.internal:5432/railway` | **Aucune page ne s'affiche** : tout le site public lit la base à chaque requête           |
+| `SECRET_VERIFICATION` | 32 caractères tirés au hasard : `openssl rand -hex 32`         | Les codes SMS, les liens clients et les sessions professionnelles refusent de fonctionner |
+| `LERENOM_URL`         | `https://lerenom.fr`                                           | Les liens envoyés par SMS pointeraient vers `localhost`                                   |
+| `REDIS_URL`           | `redis://…`                                                    | Aucune demande n'est distribuée                                                           |
 
 `SECRET_VERIFICATION` n'a **pas de valeur par défaut**, et c'est délibéré : hacher avec une
 chaîne connue de tout le monde reviendrait à ne pas hacher. Le worker refuse de démarrer sans
 elle, plutôt que de le découvrir au premier client qui valide son numéro.
+
+### La base n'a aucune porte publique, et le site se rend à l'exécution
+
+La base de données est sur Railway, **sur le réseau privé du projet et nulle part ailleurs** :
+pas de proxy TCP public, pas de port ouvert sur Internet. C'est la raison pour laquelle le
+site public est rendu à l'exécution plutôt que pré-rendu à la construction.
+
+L'enchaînement est le suivant. Le réseau privé de Railway n'existe qu'à l'exécution :
+pendant la construction, `postgres.railway.internal` ne résout pas. Pré-rendre les pages
+publiques — qui lisent toutes la base — obligerait donc à ouvrir un proxy TCP public et à y
+faire voyager le mot de passe de la base. Et ce mot de passe voyagerait **en clair** :
+l'image `postgis/postgis` n'embarque aucun certificat, `ssl=on` ne peut pas s'y activer, et
+la commande de démarrage personnalisée n'est pas appliquée aux services d'image sur Railway.
+Nous avons vérifié les deux : `P1011 — server does not support TLS`, puis une commande de
+démarrage enregistrée dont aucune ligne n'apparaît dans les journaux.
+
+Plutôt que de contourner, nous avons supprimé le besoin. `apps/web/app/(public)/layout.tsx`
+porte `dynamic = 'force-dynamic'`, la construction ne touche plus la base — elle réussit sans
+`DATABASE_URL` du tout — et le schéma, les index et les référentiels sont posés par
+`preDeployCommand`, après la construction et sur le réseau privé.
+
+| Étape              | Accès à la base | Ce qui s'y fait                          |
+| ------------------ | --------------- | ---------------------------------------- |
+| Construction       | **aucun**       | Génération du client Prisma, compilation |
+| `preDeployCommand` | Réseau privé    | `pousser`, `sql`, `semer`                |
+| Exécution          | Réseau privé    | Toutes les lectures et écritures du site |
+
+Cet ordre a un mérite propre, indépendant de la sécurité : les migrations s'appliquent
+**après** la construction et **avant** le démarrage. Un changement de schéma ne peut plus
+casser une construction qui lisait l'ancien.
+
+Ce que cela coûte, et il faut le dire : les pages ville et métier ne sont plus mises en cache
+entre deux visiteurs. Les y remettre demande des objets de transfert sérialisables — les
+`Decimal` de Prisma n'en sont pas, et le cache de Next les rendrait silencieusement faux.
+C'est inscrit dans `docs/QUESTIONS.md` plutôt que bricolé.
 
 ---
 

@@ -442,3 +442,30 @@ apportées à son traitement :
 de secrets de l'hébergeur, jamais un fichier `.env` sur le disque — et qui y a accès. Changer
 le secret invalide les codes et les liens en cours de validité : au pire, quelques visiteurs en
 redemandent un. C'est sans gravité, mais personne ne doit le faire sans le savoir.
+
+---
+
+## Q22 🟡 — Remettre les pages publiques en cache, sans les rendre fausses
+
+_(technique — décidé par défaut, à reprendre)_
+
+Le site public est rendu à l'exécution (`dynamic = 'force-dynamic'` sur
+`apps/web/app/(public)/layout.tsx`). La raison est détaillée dans `docs/DEPLOIEMENT.md` : elle
+permet à la base de n'avoir **aucune porte publique**, ce qui valait mieux qu'un pré-rendu
+payé par un mot de passe de base de données traversant Internet en clair.
+
+**Le défaut appliqué** : chaque visiteur déclenche les lectures de sa page. Sur le réseau privé
+de l'hébergeur, avec une seule instance, c'est quelques millisecondes — invisible aujourd'hui,
+pas tenable à volume.
+
+**Ce qui reste à faire, et pourquoi ce n'est pas qu'un réglage.** La reprise évidente serait
+d'envelopper les lectures dans le cache de données de Next (`unstable_cache`). Elle est piégée :
+ce cache sérialise ce qu'il garde, et les `Decimal` de Prisma — tous les prix, tous les taux de
+TVA — n'y survivent pas comme des `Decimal`. Ils reviendraient en chaînes de caractères, avec
+le type `Decimal` toujours affiché par TypeScript. Le code appellerait `Number(...)` dessus et
+fonctionnerait la plupart du temps, ce qui est exactement ce qui rend une erreur de prix
+difficile à voir.
+
+La reprise propre est donc : des objets de transfert explicites entre la base et les pages, où
+les montants sont des `number` et les dates des `string`, puis la mise en cache de ces objets.
+C'est un travail de frontière, pas un réglage, et il mérite ses propres tests.

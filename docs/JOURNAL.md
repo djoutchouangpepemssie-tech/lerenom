@@ -611,6 +611,59 @@ qui n'écrit rien n'a pas besoin d'un jeton qui écrit.
 
 ---
 
+## Déploiement · la base sans porte publique
+
+La base de données est sur Railway, par choix explicite. Restait à décider comment le site
+l'atteint, et ce chapitre a coûté plusieurs tentatives qui méritent d'être écrites, parce que
+chacune a échoué pour une raison différente.
+
+Le point de départ : le réseau privé de Railway n'existe qu'à l'exécution. Pendant la
+construction, `postgres.railway.internal` ne résout pas — et toutes les pages publiques
+lisaient la base, puisqu'elles étaient pré-rendues. Première réponse : un proxy TCP public pour
+la construction, le réseau privé pour l'exécution. Elle fonctionnait, et elle était mauvaise :
+le mot de passe de la base traversait Internet **en clair**.
+
+Il a fallu trois constats pour l'admettre :
+
+1. `P1011 — server does not support TLS`. L'image `postgis/postgis` n'embarque aucun
+   certificat ; `ssl=on` ne peut pas s'y activer.
+2. La commande de démarrage était posée **après** le dernier redémarrage. Elle n'avait donc
+   jamais pris effet, et rien ne le signalait. Un redéploiement a corrigé cela — sans rien
+   changer.
+3. La commande de démarrage n'est **pas appliquée** à ce service d'image : ni le `ls` que j'y
+   avais glissé, ni le message de génération du certificat n'apparaissent dans les journaux.
+   Elle est enregistrée, visible dans la configuration, et ignorée.
+
+On peut passer longtemps à chercher comment faire du TLS. La bonne question était autre :
+_pourquoi la construction lit-elle la base ?_ Elle n'en lit que les référentiels, que le dépôt
+contient déjà. Le besoin n'était pas légitime, il était hérité.
+
+`dynamic = 'force-dynamic'` sur la disposition publique, et la construction n'ouvre plus une
+seule connexion — elle réussit sans `DATABASE_URL` du tout. Le schéma, les index géographiques
+et les référentiels passent en `preDeployCommand`, après la construction et sur le réseau
+privé. Le proxy public n'a plus de raison d'être.
+
+Deux bénéfices n'étaient pas cherchés. Les migrations s'appliquent maintenant **après** la
+construction et **avant** le démarrage : un changement de schéma ne peut plus casser une
+construction qui lisait l'ancien. Et la base n'a plus aucun port ouvert sur Internet, ce qui
+vaut mieux que le TLS auto-signé que je cherchais à installer.
+
+Le coût est réel et il est écrit en Q22 : les pages ville et métier ne sont plus mises en cache
+entre deux visiteurs. La reprise n'est pas un réglage — le cache de Next sérialise ce qu'il
+garde, et les `Decimal` de Prisma n'y survivent pas comme des `Decimal`. Les remettre en cache
+sans objets de transfert explicites rendrait les prix silencieusement faux. Mieux vaut une page
+plus lente qu'un prix douteux.
+
+### Le worker ne démarrait pas, et 509 tests verts ne le disaient pas
+
+À noter ici parce que c'est la leçon la plus coûteuse de la phase : le worker n'avait **jamais
+été lancé**. Node, quand il exécute du TypeScript directement, exige l'extension dans les
+imports relatifs ; Vitest résout sans. Toute la suite passait sur du code qui ne démarrait pas.
+La porte de validation lance désormais le worker et vérifie qu'il se met en écoute. Un câblage
+sans test n'excuse pas un câblage sans vérification.
+
+---
+
 ## Phases 5 à 11 · à venir
 
 Agenda et documents du pro, monétisation Stripe, back-office, personnalisation, avis et

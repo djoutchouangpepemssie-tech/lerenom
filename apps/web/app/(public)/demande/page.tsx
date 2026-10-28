@@ -3,8 +3,6 @@ import { FilAriane } from '@/composants/FilAriane';
 import { FormulaireDemande } from '@/composants/FormulaireDemande';
 import { catalogue } from '@/lib/donnees';
 
-export const revalidate = 600;
-
 export const metadata = {
   title: 'Demander un devis',
   description:

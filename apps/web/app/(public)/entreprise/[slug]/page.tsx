@@ -19,8 +19,6 @@ import { FilAriane } from '@/composants/FilAriane';
 import { entrepriseParSlug } from '@/lib/donnees';
 import { FUSEAU, nomVille } from '@/lib/affichage';
 
-export const revalidate = 300;
-
 interface Parametres {
   readonly params: Promise<{ readonly slug: string }>;
 }

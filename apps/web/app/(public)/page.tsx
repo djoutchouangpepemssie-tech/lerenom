@@ -22,8 +22,6 @@ import { VitrineUnivers } from '@/composants/VitrineUnivers';
 import { catalogue, communesOuvertes, departements, resultats } from '@/lib/donnees';
 import { nomVille } from '@/lib/affichage';
 
-export const revalidate = 300;
-
 export const metadata = {
   description:
     'Trouvez un professionnel vérifié en Île-de-France : plombier, électricien, nettoyage de canapé, déménagement. Comparez les avis, demandez jusqu’à 3 devis gratuitement, sans créer de compte.',

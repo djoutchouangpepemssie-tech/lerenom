@@ -4,8 +4,6 @@ import { Accent, Apparition, Carte, Chiffre, Conteneur, Section, TitreSection } 
 import { FilAriane } from '@/composants/FilAriane';
 import { ListeCommunes } from '@/composants/ListeCommunes';
 
-export const revalidate = 600;
-
 export const metadata = {
   title: 'Île-de-France',
   description:

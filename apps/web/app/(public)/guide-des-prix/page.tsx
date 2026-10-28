@@ -4,8 +4,6 @@ import { Accent, Carte, Conteneur, Section, TitreSection } from '@lerenom/ui';
 import { FilAriane } from '@/composants/FilAriane';
 import { Estimateur } from '@/composants/Estimateur';
 
-export const revalidate = 600;
-
 export const metadata = {
   title: 'Guide des prix',
   description:

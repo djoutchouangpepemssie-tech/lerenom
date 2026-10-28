@@ -1,8 +1,6 @@
 import { prisma } from '@lerenom/db';
 import { FormulaireInscription } from '@/composants/FormulaireInscription';
 
-export const revalidate = 600;
-
 export const metadata = {
   title: 'Créer ou revendiquer ma fiche',
   description:

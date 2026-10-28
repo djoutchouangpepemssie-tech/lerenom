@@ -9,6 +9,23 @@ import { nomVille } from '@/lib/affichage';
  * Les menus sont construits à partir du catalogue et de la géographie réels : il n'y a aucune
  * liste écrite en dur, donc aucun lien mort quand Arcel ajoute un métier ou ouvre une ville.
  */
+
+/**
+ * Tout le site public se rend à l'exécution, et c'est une décision d'infrastructure, pas une
+ * préférence de rendu.
+ *
+ * Le réseau privé de l'hébergeur n'existe qu'à l'exécution : pendant la construction, la base
+ * n'est joignable que par un proxy public. Pré-rendre les pages obligerait donc à exposer la
+ * base sur Internet et à y faire voyager son mot de passe — pour ne lire que des référentiels
+ * que le dépôt contient déjà. Entre une base sans aucune porte publique et quelques
+ * millisecondes de rendu, le choix n'est pas difficile.
+ *
+ * Ce que cela coûte, et qu'il faut dire : les pages ville et métier ne sont plus mises en
+ * cache entre deux visiteurs. Les remettre en cache demande des objets de transfert
+ * sérialisables — les `Decimal` de Prisma n'en sont pas — et c'est noté dans
+ * `docs/QUESTIONS.md` plutôt que bricolé ici.
+ */
+export const dynamic = 'force-dynamic';
 export default async function DispositionPublique({
   children,
 }: {

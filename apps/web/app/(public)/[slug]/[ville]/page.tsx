@@ -10,8 +10,6 @@ import { communeParSlug, filtresActifs, metierParSlug, resultats } from '@/lib/d
 import type { FiltresResultats as Filtres } from '@/lib/donnees';
 import { aLaVille, nomVille } from '@/lib/affichage';
 
-export const revalidate = 300;
-
 interface Parametres {
   readonly params: Promise<{ readonly slug: string; readonly ville: string }>;
   readonly searchParams: Promise<Record<string, string | string[] | undefined>>;

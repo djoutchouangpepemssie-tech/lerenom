@@ -6,8 +6,6 @@ import { PageVille } from '@/composants/pages/PageVille';
 import { PageDepartement } from '@/composants/pages/PageDepartement';
 import { aLaVille } from '@/lib/affichage';
 
-export const revalidate = 300;
-
 interface Parametres {
   readonly params: Promise<{ readonly slug: string }>;
 }

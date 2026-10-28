@@ -3,8 +3,6 @@ import { Accent, Apparition, Carte, Conteneur, Section } from '@lerenom/ui';
 import { FilAriane } from '@/composants/FilAriane';
 import { catalogue } from '@/lib/donnees';
 
-export const revalidate = 600;
-
 export const metadata = {
   title: 'Tous les services',
   description:
