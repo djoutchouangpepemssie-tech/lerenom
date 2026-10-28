@@ -29,3 +29,5 @@ export const prisma: PrismaClient = cache.prisma ?? creeClient();
 if (process.env['NODE_ENV'] !== 'production') {
   cache.prisma = prisma;
 }
+
+export { nettoieLesDonneesDeTest } from './nettoyage-test';

@@ -45,6 +45,11 @@ function cheminDAvis() {
   return valeur === null ? null : `/suivi/${valeur}`;
 }
 
+function cheminDeConfirmation() {
+  const valeur = jeton('confirmation');
+  return valeur === null ? null : `/suivi/${valeur}`;
+}
+
 /**
  * Mène le tunnel de demande jusqu'à l'écran de vérification du mobile.
  *
@@ -146,6 +151,25 @@ const PAGES = [
     nom: 'suivi',
     titre: 'Suivi de la demande',
     chemin: cheminDeSuivi,
+  },
+  {
+    nom: 'confirmation-intervention',
+    titre: 'L’intervention a-t-elle eu lieu ?',
+    chemin: cheminDeConfirmation,
+  },
+  {
+    nom: 'confirmation-non',
+    titre: 'Intervention non réalisée',
+    chemin: cheminDeConfirmation,
+    // On ouvre le volet « non » sans valider : la démonstration doit rester rejouable.
+    scenario: async (onglet) => {
+      await onglet.getByRole('button', { name: /Non, et ce n’est plus prévu/ }).click();
+      await onglet.getByLabel(/Que s’est-il passé/).waitFor();
+      await onglet
+        .getByLabel(/Que s’est-il passé/)
+        .fill('Il n’est jamais venu malgré deux rendez-vous fixés.');
+      await onglet.waitForTimeout(200);
+    },
   },
   {
     nom: 'avis',

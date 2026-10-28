@@ -45,7 +45,37 @@ function secret(): string {
   return valeur;
 }
 
+/**
+ * Les demandes déposées par le script de captures, dans la plage 06 12 99 xx xx que l'Arcel
+ * réserve à la fiction. Chaque passage en crée deux ; sans ce ménage, elles s'accumulent et
+ * finissent par polluer le jeu de démonstration.
+ */
+async function purgeLesDemandesDeCapture(): Promise<number> {
+  const demandes = await prisma.demande.findMany({
+    where: { clientTelephone: { startsWith: '+336129' } },
+    select: { id: true, clientTelephone: true },
+  });
+  const ids = demandes.map((demande) => demande.id);
+  if (ids.length === 0) return 0;
+
+  await prisma.lienAction.deleteMany({ where: { demandeId: { in: ids } } });
+  await prisma.messageSortant.deleteMany({ where: { demandeId: { in: ids } } });
+  await prisma.suiviDemande.deleteMany({ where: { demandeId: { in: ids } } });
+  await prisma.distribution.deleteMany({ where: { demandeId: { in: ids } } });
+  await prisma.demande.deleteMany({ where: { id: { in: ids } } });
+
+  const numeros = demandes.map((demande) => demande.clientTelephone);
+  await prisma.messageSortant.deleteMany({ where: { destinataire: { in: numeros } } });
+
+  return ids.length;
+}
+
 async function main(): Promise<void> {
+  const purgees = await purgeLesDemandesDeCapture();
+  if (purgees > 0) {
+    process.stdout.write(`${String(purgees)} demandes de capture nettoyées\n`);
+  }
+
   const demande = await prisma.demande.findUnique({
     where: { reference: REFERENCE },
     select: { id: true },
@@ -97,7 +127,10 @@ async function main(): Promise<void> {
   const demandeId = demande.id;
 
   /** Crée un lien et rend son jeton en clair — qui n'existe qu'ici. */
-  async function lien(action: 'voir_pros' | 'deposer_avis', cibleId?: string): Promise<string> {
+  async function lien(
+    action: 'voir_pros' | 'deposer_avis' | 'confirmer_intervention',
+    cibleId?: string,
+  ): Promise<string> {
     const jeton = randomBytes(32).toString('base64url');
     await prisma.lienAction.create({
       data: {
@@ -129,12 +162,21 @@ async function main(): Promise<void> {
     jetonAvis = await lien('deposer_avis', premier.id);
   }
 
+  // La question « l'intervention a-t-elle eu lieu ? » vise un second professionnel, pour que
+  // l'écran reste affichable alors même que le premier a déjà ses travaux déclarés.
+  const second = pros.find((p) => p.slug === ACCEPTENT[1]);
+  const jetonConfirmation =
+    second === undefined ? '' : await lien('confirmer_intervention', second.id);
+
   // Les jetons sont aussi écrits sur disque, pour que le script de captures les retrouve seuls.
   const racine = path.resolve(import.meta.dirname, '../../..');
   await writeFile(path.join(racine, '.jeton-suivi'), `${jetonSuivi}\n`, 'utf8');
   await writeFile(path.join(racine, '.jeton-avis'), `${jetonAvis}\n`, 'utf8');
+  await writeFile(path.join(racine, '.jeton-confirmation'), `${jetonConfirmation}\n`, 'utf8');
 
-  process.stdout.write(`suivi : ${jetonSuivi}\navis  : ${jetonAvis}\n`);
+  process.stdout.write(
+    `suivi        : ${jetonSuivi}\navis         : ${jetonAvis}\nconfirmation : ${jetonConfirmation}\n`,
+  );
 }
 
 await main();

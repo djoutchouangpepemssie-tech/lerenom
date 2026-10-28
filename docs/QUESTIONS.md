@@ -108,11 +108,12 @@ qu'il a déjà exporté : Le Renom ne peut pas l'en empêcher, seulement le lui 
 
 ---
 
-## Q5 🔴 — Recrédit et demandes non payées : à confirmer dans les CGV
+## Q5 🟢 — Recrédit et demandes non payées · **tranchée et implémentée**
 
 _(§22.4)_
 
-**Règle appliquée, à faire confirmer mot pour mot par l'avocat.**
+**Règle appliquée et codée** dans `packages/core/src/contestation.ts`, à faire confirmer mot
+pour mot par l'avocat pour la rédaction des CGV.
 
 - Une demande **refusée** n'est jamais facturée, et le refus est gratuit (motif obligatoire).
 - Une demande **laissée expirer** (30 min pour l'Exclusif, 2 h pour les autres) n'est ni facturée
@@ -125,6 +126,25 @@ _(§22.4)_
   48 h.
 - Un **écart d'informations** (surface, accès, budget irréaliste) n'ouvre **pas** de recrédit : le
   devis passe en nouvelle version et le client re-signe. C'est une vraie demande.
+
+**Ce que le code fait désormais de cette règle.** Les motifs se répartissent en deux familles,
+et la frontière est nette : **on recrédite ce que Le Renom peut vérifier dans sa propre base**,
+et rien d'autre.
+
+| Motif                                                            | Décision    | Sur quelle preuve                     |
+| ---------------------------------------------------------------- | ----------- | ------------------------------------- |
+| Client injoignable                                               | automatique | 3 appels tracés sans réponse en 48 h  |
+| Demande en double                                                | automatique | doublon constaté en base              |
+| Annulée juste après acceptation                                  | automatique | moins de 60 min, aucun contact établi |
+| Coordonnées fausses, hors zone, hors métier, demande fantaisiste | **humain**  | la base ne sait pas trancher          |
+
+Deux refus sont également automatiques, et ils comptent autant que les accords : une
+intervention **confirmée par le client** ferme le débat quel que soit le motif invoqué — le
+professionnel a eu ce qu'il a payé — et « client injoignable » est refusé si un appel a abouti.
+
+Un recrédit rend **exactement ce qui a été pris** : l'unité de forfait si la demande y était
+incluse, l'argent si elle a été facturée, jamais les deux. Tout passe par une contestation
+tracée, même accordée d'office : un recrédit sans trace serait un recrédit invérifiable.
 
 ---
 
@@ -282,20 +302,13 @@ minutes à arriver selon l'opérateur — il faudra les porter à 30.
 
 ---
 
-## Q16 🟡 — Le secret de hachage des codes, et sa rotation
+## Q16 🟢 — Le secret de hachage des codes · **traitée, voir Q21**
 
 _(non couvert par le cahier des charges)_
 
-Les codes sont hachés avec `SECRET_VERIFICATION`, une variable d'environnement sans valeur par
-défaut : le serveur **refuse** de vérifier un code si elle est absente ou plus courte que 32
-caractères, plutôt que de hacher avec une chaîne connue de tout le monde.
-
-**Défaut appliqué : aucune rotation automatique.** Changer le secret invalide les codes en cours
-de validité — au pire, quelques visiteurs redemandent un code. C'est sans conséquence, mais
-personne ne doit le faire sans le savoir : c'est écrit dans `.env.exemple`.
-
-**À trancher à l'exploitation** : où ce secret est conservé en production (gestionnaire de
-secrets de l'hébergeur, pas un fichier `.env` sur le disque) et qui y a accès.
+Le contrôle du secret a été unifié et durci : voir **Q21**, qui remplace cette entrée. Il n'y a
+plus de valeur par défaut nulle part, une seule définition dans `@lerenom/securite`, et le
+worker refuse de démarrer sans elle.
 
 ---
 
@@ -321,73 +334,111 @@ longs (une rénovation peut durer six mois) ? Si non, c'est une constante à cha
 
 ---
 
-## Q18 🟡 — Que devient une demande annulée pour les pros qui ont déjà accepté ?
+## Q18 🟢 — Demande annulée et pros ayant déjà accepté · **tranchée et implémentée**
 
 _(non tranché par le cahier des charges)_
 
-Le cahier des charges dit que l'acceptation est définitive et facturée. Il ne dit pas ce qui se
-passe si le client annule **après** qu'un professionnel a accepté.
+Le cahier des charges dit que l'acceptation est définitive et facturée. Il ne disait pas ce qui
+se passe si le client annule **après** qu'un professionnel a accepté.
 
-**Défaut appliqué : on ne reprend rien.** La demande passe à « annulée », les propositions
-encore en attente sont retirées (le pro n'a rien refusé, rien ne lui est compté), mais celles
-qui ont été acceptées restent acceptées et restent facturées. Le professionnel garde les
-coordonnées du client : il a payé pour les obtenir, et il a peut-être déjà appelé.
+**Décision appliquée, en deux temps.**
 
-La page de suivi le dit au client avant qu'il confirme : _« les professionnels qui ont déjà
-accepté gardent vos coordonnées : prévenez-les directement si vous ne souhaitez plus qu'ils
-vous recontactent »_.
+1. **Le client n'est jamais empêché d'annuler**, et rien ne lui est repris. Les propositions
+   encore en attente passent à « retirée » — le pro n'a rien refusé, rien ne lui est compté.
+   Les professionnels qui ont déjà accepté gardent les coordonnées : ils ont payé pour elles,
+   et ils ont peut-être déjà appelé. La page le dit au client avant qu'il confirme.
 
-**À trancher** : faut-il un recrédit quand l'annulation survient très vite — disons dans les
-quinze minutes suivant l'acceptation, avant tout contact ? Ce serait équitable pour le pro, et
-la table `recredits` existe déjà pour cela. Mais c'est aussi une porte ouverte aux abus, et le
-coût réel pour Le Renom n'est pas nul.
+2. **Le professionnel lésé est recrédité d'office.** Quand l'annulation tombe dans l'heure
+   suivant l'acceptation et qu'aucun contact n'a été établi — pas d'appel abouti, pas de
+   rendez-vous, pas de devis — Le Renom ouvre la contestation lui-même et la tranche dans la
+   foulée. Le pro n'a rien à réclamer.
+
+**Pourquoi d'office, et pas sur réclamation.** C'était la vraie question. Attendre que le
+professionnel réclame aurait été plus simple et moins coûteux — mais la plupart ne
+réclameraient jamais, et c'est précisément ce silence qui rendrait la pratique rentable pour la
+plateforme. Facturer des coordonnées qu'un pro n'a pas eu le temps d'utiliser, en comptant sur
+le fait qu'il ne dira rien, n'est pas défendable.
+
+Le délai de 60 minutes est un paramètre (`minutesAnnulationRecreditee`), pas un nombre écrit
+dans le code : si l'usage montre qu'il est trop court ou trop long, il se change depuis le
+back-office.
 
 ---
 
-## Q19 🔴 — Qui déclare que les travaux sont réalisés ?
+## Q19 🟢 — Qui déclare que les travaux sont réalisés ? · **tranchée et implémentée**
 
 _(§ avis — le cahier des charges dit « quinze jours après les travaux », sans dire qui le dit)_
 
-Toute la chaîne des avis part de l'étape `travaux_realises`. Aujourd'hui, **seul le
-professionnel peut la déclarer**, depuis un espace pro qui n'existe pas encore. Conséquence
-concrète : la mécanique d'invitation est complète et testée, mais aucune invitation ne peut
-partir en conditions réelles tant que cet espace n'est pas livré.
+C'était le trou le plus grave de la chaîne : l'étape « travaux réalisés » ne pouvait venir que
+du professionnel, et un professionnel qui ne déclare jamais rien n'aurait jamais eu de mauvais
+avis. L'intérêt du pro et celui de la plateforme divergeaient exactement là où il ne faut pas.
 
-**Défaut appliqué** : la déclaration vient du pro, et d'elle seule.
+**Décision appliquée : c'est le client qui tranche, et on le lui demande.**
 
-**Le problème est réel et il faut le trancher** : un professionnel qui ne déclare jamais ses
-travaux n'a jamais d'avis — donc jamais de mauvais avis. L'intérêt du pro et celui de la
-plateforme divergent ici, et c'est exactement le genre d'asymétrie qui vide un système d'avis
-de sa substance.
+Sept jours après l'acceptation, si le professionnel n'a rien déclaré, le client reçoit une
+question unique — « votre intervention avec X a-t-elle eu lieu ? » — et trois réponses :
 
-**Trois pistes**, par ordre de prudence croissante :
+- **oui** → l'étape est enregistrée **au nom du client** (`declarePar: client`, l'origine est
+  tracée, c'est elle qui fait foi dans un litige) et le formulaire d'avis s'ouvre dans la
+  foulée, sur la même page. Le client est là, il se souvient : un second message serait un
+  message de trop ;
+- **pas encore** → rien n'est déclaré, la question est reposée plus tard ;
+- **non** → l'étape « perdue » est enregistrée et une alerte part au back-office. Un
+  professionnel qui accepte une demande et ne va pas au bout, cela se regarde.
 
-1. **Relance au client** : X jours après l'acceptation, si rien n'a été déclaré, demander au
-   client lui-même si l'intervention a eu lieu. Sa réponse vaut déclaration. C'est le plus
-   simple, et le client est le mieux placé pour savoir.
-2. **Déclaration présumée** : passé un délai long (30 jours ?) sans déclaration ni annulation,
-   considérer l'intervention comme effectuée et inviter. Risque : inviter sur une intervention
-   qui n'a jamais eu lieu, ce qui abîmerait la mention « avis vérifié ».
-3. **Indicateur au pro** : afficher publiquement le taux de déclaration d'un professionnel, et
-   le faire entrer dans le score. Le silence devient coûteux sans devenir impossible.
+**On interroge, on ne harcèle pas** : une question, deux relances espacées d'une semaine, puis
+on laisse tomber. Les trois nombres sont des paramètres.
 
-La piste 1 me paraît la bonne, et elle est compatible avec les deux autres. **Elle n'est pas
-implémentée** : elle crée un message de plus vers le client, et ce n'est pas à moi d'en décider.
+**Ce que cela change.** La chaîne des avis n'a plus besoin de l'espace professionnel pour
+fonctionner : elle tourne de bout en bout avec le seul client. L'espace pro, quand il existera,
+ajoutera un second chemin — plus rapide — mais il ne sera plus le seul.
+
+**Reste à surveiller** : si beaucoup de clients ne répondent pas, il faudra afficher le taux de
+déclaration d'un professionnel et le faire entrer dans son score, pour que le silence devienne
+coûteux. Ce n'est pas nécessaire tant que le volume est faible, et cela se décide sur des
+chiffres réels, pas à l'avance.
 
 ---
 
-## Q20 🟡 — Que faire d'un avis dont le commentaire contient des coordonnées ?
+## Q20 🟢 — Avis contenant des coordonnées · **tranchée et implémentée**
 
-_(§ avis — non tranché)_
+_(§ avis)_
 
-`signauxDeModeration` repère les numéros, adresses électroniques et liens dans un commentaire.
-Le formulaire prévient le client : _« ces informations ne sont pas publiées »_.
+**Décision appliquée : on caviarde, et le caviardage est visible.**
 
-**Défaut appliqué** : l'avis est enregistré tel quel, signalé, et c'est un humain qui tranche
-au back-office.
+Plutôt que de refuser en bloc un avis contenant un numéro de téléphone, le relecteur publie
+l'avis sans le numéro, remplacé par une mention explicite : « [numéro retiré] », « [adresse
+retirée] », « [lien retiré] ». L'auteur a pris la peine d'écrire, son avis compte, et il n'a
+généralement pas voulu mal faire.
 
-**À trancher** : le relecteur doit-il pouvoir **caviarder** le passage (publier l'avis amputé
-du numéro) ou seulement refuser l'avis en entier ? Caviarder respecte mieux l'auteur — son avis
-compte, et il n'a pas voulu mal faire — mais c'est modifier le propos de quelqu'un, ce qu'une
-plateforme d'avis doit faire avec la plus grande prudence. S'il est retenu, le caviardage doit
-être visible (« [coordonnées retirées] ») et jamais silencieux.
+Trois garde-fous rendent ce choix tenable :
+
+- le texte d'origine **n'est jamais écrasé**. `commentaire` garde ce que l'auteur a écrit,
+  `commentairePublic` porte la version publiée. Le relecteur a les deux sous les yeux ;
+- le retrait est **toujours visible**. Modifier le propos de quelqu'un sans le dire serait pire
+  que de ne rien publier ;
+- seules les **données personnelles** sont caviardées. Une accusation — « arnaque », « vol » —
+  n'est pas une donnée personnelle, c'est un propos : il se publie ou se refuse avec un motif,
+  il ne se réécrit pas.
+
+---
+
+## Q21 🟡 — Rotation du secret de hachage en production
+
+_(exploitation)_
+
+`SECRET_VERIFICATION` hache les codes SMS et les jetons de lien. Deux améliorations ont été
+apportées à son traitement :
+
+- **le worker refuse de démarrer** si le secret est absent ou trop court, plutôt que de
+  découvrir le problème au premier client qui valide son numéro. Le message nomme chaque
+  variable manquante et dit quoi faire — toutes d'un coup, pour qu'un exploitant ne corrige pas
+  une variable, relance, et en découvre une autre ;
+- **une seule définition** pour tout le dépôt, dans `@lerenom/securite`. Il y en avait trois,
+  écrites séparément : trois contrôles finissent toujours par diverger, et celui qui diverge est
+  celui qu'on avait oublié de relire.
+
+**Reste à trancher à l'exploitation** : où ce secret est conservé en production — gestionnaire
+de secrets de l'hébergeur, jamais un fichier `.env` sur le disque — et qui y a accès. Changer
+le secret invalide les codes et les liens en cours de validité : au pire, quelques visiteurs en
+redemandent un. C'est sans gravité, mais personne ne doit le faire sans le savoir.

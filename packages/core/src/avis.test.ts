@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
+  caviarde,
   COMMENTAIRE_MAX,
   COMMENTAIRE_MIN,
+  confirmationInterventionDue,
   CRITERES_AVIS,
   droitDeDeposerUnAvis,
   invitationAvisDue,
@@ -9,6 +11,7 @@ import {
   signauxDeModeration,
   valideAvis,
   type EtatAvis,
+  type EtatConfirmation,
 } from './avis';
 
 const MAINTENANT = new Date('2026-10-28T10:00:00Z');
@@ -172,5 +175,141 @@ describe('CRITERES_AVIS', () => {
   it('couvre les quatre critères annoncés, sans doublon', () => {
     expect(CRITERES_AVIS).toHaveLength(4);
     expect(new Set(CRITERES_AVIS.map((c) => c.cle)).size).toBe(4);
+  });
+});
+
+describe('confirmationInterventionDue', () => {
+  const REGLES = {
+    joursConfirmationIntervention: 7,
+    joursEntreRelancesConfirmation: 7,
+    relancesConfirmationMax: 2,
+  };
+
+  function confirmation(partiel: Partial<EtatConfirmation> = {}): EtatConfirmation {
+    return {
+      accepteeLe: new Date('2026-10-01T10:00:00Z'),
+      travauxDejaDeclares: false,
+      demandeAnnuleeLe: null,
+      relancesEnvoyees: 0,
+      derniereRelanceLe: null,
+      ...partiel,
+    };
+  }
+
+  it('attend le délai avant de poser la question', () => {
+    expect(
+      confirmationInterventionDue(confirmation(), REGLES, new Date('2026-10-07T09:00:00Z')),
+    ).toBe(false);
+    expect(
+      confirmationInterventionDue(confirmation(), REGLES, new Date('2026-10-08T11:00:00Z')),
+    ).toBe(true);
+  });
+
+  it('ne demande rien quand les travaux sont déjà déclarés', () => {
+    const declares = confirmation({ travauxDejaDeclares: true });
+    expect(confirmationInterventionDue(declares, REGLES, new Date('2026-11-01T10:00:00Z'))).toBe(
+      false,
+    );
+  });
+
+  it('ne demande rien sur une demande annulée', () => {
+    const annulee = confirmation({ demandeAnnuleeLe: new Date('2026-10-03T10:00:00Z') });
+    expect(confirmationInterventionDue(annulee, REGLES, new Date('2026-11-01T10:00:00Z'))).toBe(
+      false,
+    );
+  });
+
+  it('espace les relances', () => {
+    const relance = confirmation({
+      relancesEnvoyees: 1,
+      derniereRelanceLe: new Date('2026-10-08T10:00:00Z'),
+    });
+    expect(confirmationInterventionDue(relance, REGLES, new Date('2026-10-14T10:00:00Z'))).toBe(
+      false,
+    );
+    expect(confirmationInterventionDue(relance, REGLES, new Date('2026-10-15T11:00:00Z'))).toBe(
+      true,
+    );
+  });
+
+  it('s’arrête après le nombre de relances autorisé : on interroge, on ne harcèle pas', () => {
+    const epuise = confirmation({
+      relancesEnvoyees: REGLES.relancesConfirmationMax + 1,
+      derniereRelanceLe: new Date('2026-10-22T10:00:00Z'),
+    });
+    expect(confirmationInterventionDue(epuise, REGLES, new Date('2026-12-01T10:00:00Z'))).toBe(
+      false,
+    );
+  });
+
+  it('autorise exactement une question et deux relances', () => {
+    const jour = 24 * 3_600_000;
+    const depart = new Date('2026-10-01T10:00:00Z');
+    let etat = confirmation();
+    const envois: Date[] = [];
+
+    for (let j = 0; j <= 40; j += 1) {
+      const jourJ = new Date(depart.getTime() + j * jour);
+      if (confirmationInterventionDue(etat, REGLES, jourJ)) {
+        envois.push(jourJ);
+        etat = { ...etat, relancesEnvoyees: etat.relancesEnvoyees + 1, derniereRelanceLe: jourJ };
+      }
+    }
+
+    expect(envois).toHaveLength(3);
+  });
+});
+
+describe('caviarde', () => {
+  it('retire un numéro de téléphone en le disant', () => {
+    const resultat = caviarde('Très bien, rappelez-moi au 06 12 34 56 78 si besoin.');
+    expect(resultat.texte).toBe('Très bien, rappelez-moi au [numéro retiré] si besoin.');
+    expect(resultat.retraits).toEqual(['telephone']);
+  });
+
+  it('retire une adresse électronique et un lien', () => {
+    const resultat = caviarde('Écrivez à jean@exemple.fr ou voyez https://exemple.fr/preuve');
+    expect(resultat.texte).toContain('[adresse retirée]');
+    expect(resultat.texte).toContain('[lien retiré]');
+    expect(resultat.retraits).toContain('email');
+    expect(resultat.retraits).toContain('lien');
+  });
+
+  it('ne confond pas l’adresse électronique avec le lien qui la suit', () => {
+    const resultat = caviarde('jean@exemple.fr et www.exemple.fr');
+    expect(resultat.texte).toBe('[adresse retirée] et [lien retiré]');
+  });
+
+  it('retire plusieurs occurrences, pas seulement la première', () => {
+    const resultat = caviarde('Au 06 12 34 56 78 ou au 07 98 76 54 32.');
+    expect(resultat.texte).toBe('Au [numéro retiré] ou au [numéro retiré].');
+    expect(resultat.retraits).toEqual(['telephone']);
+  });
+
+  it('laisse intact un avis qui n’a rien à cacher', () => {
+    const texte = 'Travail soigné, ponctuel, et le chantier était propre en partant.';
+    expect(caviarde(texte)).toEqual({ texte, retraits: [] });
+  });
+
+  it('ne laisse pas de double espace derrière un retrait', () => {
+    expect(caviarde('Appelez  06 12 34 56 78  vite').texte).toBe('Appelez [numéro retiré] vite');
+  });
+
+  it('ne touche pas aux nombres qui ne sont pas des numéros', () => {
+    const texte = 'Facture de 1250 euros pour 12 heures de travail en 2026.';
+    expect(caviarde(texte).retraits).toEqual([]);
+  });
+
+  it('caviarde exactement ce que la modération signale', () => {
+    const texte = 'Arnaque ! joignable au 06 12 34 56 78 et sur jean@exemple.fr';
+    const signaux = signauxDeModeration(texte);
+    const resultat = caviarde(texte);
+
+    expect(signaux).toContain('coordonnees-telephoniques');
+    expect(signaux).toContain('adresse-electronique');
+    expect([...resultat.retraits].sort()).toEqual(['email', 'telephone']);
+    // L'accusation, elle, n'est pas caviardée : ce n'est pas une donnée personnelle, c'est un
+    // propos. Il se publie ou se refuse, il ne se réécrit pas.
+    expect(resultat.texte).toContain('Arnaque');
   });
 });

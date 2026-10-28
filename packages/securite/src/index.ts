@@ -80,3 +80,5 @@ export function tireJeton(): string {
 export function empreinteJeton(jeton: string, secret: string): string {
   return createHmac('sha256', secret).update(`lien:${jeton}`).digest('hex');
 }
+
+export * from './configuration';

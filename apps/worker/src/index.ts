@@ -8,12 +8,17 @@
 
 import process from 'node:process';
 import { Worker } from 'bullmq';
+import { exigeConfiguration } from '@lerenom/securite';
 import { prisma } from '@lerenom/db';
 import { avanceCascade, expire } from './distribution.ts';
 import { connexion, fermeFiles, fileNuit, programmeEcheance } from '@lerenom/files';
 import type { TacheCascade, TacheEcheance } from '@lerenom/files';
 import { perimeLesDemandes, recalculeScores } from './scores.ts';
-import { inviteAuxAvis } from './avis.ts';
+import { demandeConfirmationIntervention, inviteAuxAvis } from './avis.ts';
+
+// Avant toute connexion : un secret absent est une erreur de déploiement, pas un incident à
+// découvrir au premier client qui valide son numéro.
+exigeConfiguration(process.env);
 
 const options = { connection: connexion(), concurrency: 8 };
 
@@ -53,6 +58,9 @@ const workerNuit = new Worker<{ travail: string }>(
     if (tache.data.travail === 'scores') return { scores: await recalculeScores() };
     if (tache.data.travail === 'peremption') return { perimees: await perimeLesDemandes() };
     if (tache.data.travail === 'invitations-avis') return await inviteAuxAvis();
+    if (tache.data.travail === 'confirmations-intervention') {
+      return await demandeConfirmationIntervention();
+    }
     throw new Error(`Travail de nuit inconnu : ${tache.data.travail}`);
   },
   { connection: connexion(), concurrency: 1 },
@@ -88,6 +96,14 @@ await fileNuit().upsertJobScheduler(
   'invitations-avis',
   { pattern: '20 10 * * *', tz: 'Europe/Paris' },
   { name: 'nuit', data: { travail: 'invitations-avis' } },
+);
+
+// La question « l'intervention a-t-elle eu lieu ? » part en fin de matinée, à distance de
+// l'invitation à l'avis : deux messages dans la même heure seraient mal reçus.
+await fileNuit().upsertJobScheduler(
+  'confirmations-intervention',
+  { pattern: '40 11 * * *', tz: 'Europe/Paris' },
+  { name: 'nuit', data: { travail: 'confirmations-intervention' } },
 );
 
 console.warn('[worker] Le Renom · cascade, échéances et travaux de nuit en écoute.');

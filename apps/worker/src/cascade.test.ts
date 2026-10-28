@@ -11,7 +11,7 @@
 
 import process from 'node:process';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { prisma } from '@lerenom/db';
+import { nettoieLesDonneesDeTest, prisma } from '@lerenom/db';
 import { accepte, avanceCascade, expire, refuse } from './distribution.ts';
 
 const aUneBase = (process.env['DATABASE_URL'] ?? '') !== '';
@@ -54,6 +54,10 @@ decrire('cascade de distribution', () => {
   beforeAll(async () => {
     // L'acceptation crée désormais le lien de suivi du client, qui a besoin du secret.
     process.env['SECRET_VERIFICATION'] ??= 'secret-de-test-strictement-local-et-assez-long';
+
+    // Un test interrompu laisse ses données derrière lui : on repart d'une table nette,
+    // sinon la contrainte d'unicité sur le slug ferait échouer la relance.
+    await nettoieLesDonneesDeTest(MARQUE);
 
     // Un métier sans données de démonstration : le scénario ne doit croiser aucune entreprise
     // qu'il n'a pas créée lui-même, et aucune exclusivité déjà vendue.

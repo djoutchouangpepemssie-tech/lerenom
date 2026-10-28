@@ -189,3 +189,121 @@ export function moyenneDesCriteres(
   if (valeurs.length === 0) return null;
   return valeurs.reduce((somme, v) => somme + v, 0) / valeurs.length;
 }
+
+/* ------------------------------------------------------------------------- */
+/* Confirmation de l'intervention par le client                              */
+/* ------------------------------------------------------------------------- */
+
+/**
+ * Faut-il demander au client si l'intervention a eu lieu ?
+ *
+ * Toute la chaîne des avis part de l'étape « travaux réalisés ». Si seul le professionnel
+ * pouvait la déclarer, celui qui ne déclare jamais rien n'aurait jamais de mauvais avis :
+ * l'intérêt du pro et celui de la plateforme divergeraient, et le système d'avis se viderait
+ * de sa substance. C'est le client qui tranche, et il est le mieux placé pour le faire.
+ *
+ * On interroge, on ne harcèle pas : la première question part quelques jours après
+ * l'acceptation, les relances sont espacées et plafonnées.
+ */
+export interface EtatConfirmation {
+  readonly accepteeLe: Date;
+  /** Le pro ou le client a-t-il déjà déclaré quelque chose ? */
+  readonly travauxDejaDeclares: boolean;
+  readonly demandeAnnuleeLe: Date | null;
+  readonly relancesEnvoyees: number;
+  readonly derniereRelanceLe: Date | null;
+}
+
+export interface ReglesConfirmation {
+  readonly joursConfirmationIntervention: number;
+  readonly joursEntreRelancesConfirmation: number;
+  readonly relancesConfirmationMax: number;
+}
+
+export function confirmationInterventionDue(
+  etat: EtatConfirmation,
+  regles: ReglesConfirmation,
+  maintenant: Date = new Date(),
+): boolean {
+  if (etat.travauxDejaDeclares) return false;
+  if (etat.demandeAnnuleeLe !== null) return false;
+  // `relancesConfirmationMax` compte les relances : la première question n'en est pas une.
+  if (etat.relancesEnvoyees > regles.relancesConfirmationMax) return false;
+
+  const jour = 24 * 60 * 60 * 1000;
+
+  if (etat.relancesEnvoyees === 0 || etat.derniereRelanceLe === null) {
+    return (
+      maintenant.getTime() >=
+      etat.accepteeLe.getTime() + regles.joursConfirmationIntervention * jour
+    );
+  }
+
+  return (
+    maintenant.getTime() >=
+    etat.derniereRelanceLe.getTime() + regles.joursEntreRelancesConfirmation * jour
+  );
+}
+
+/** Les trois réponses possibles du client à « l'intervention a-t-elle eu lieu ? ». */
+export type ReponseConfirmation = 'oui' | 'pas-encore' | 'non';
+
+/* ------------------------------------------------------------------------- */
+/* Caviardage                                                                 */
+/* ------------------------------------------------------------------------- */
+
+/**
+ * Les mentions substituées. Elles sont explicites : un caviardage silencieux serait une
+ * réécriture, et une plateforme d'avis n'a pas à réécrire ce qu'on lui confie.
+ */
+export const MENTIONS_CAVIARDAGE: Readonly<Record<'telephone' | 'email' | 'lien', string>> =
+  Object.freeze({
+    telephone: '[numéro retiré]',
+    email: '[adresse retirée]',
+    lien: '[lien retiré]',
+  });
+
+export interface Caviardage {
+  readonly texte: string;
+  /** Ce qui a été retiré, pour que le relecteur voie ce qu'il publie. */
+  readonly retraits: readonly ('telephone' | 'email' | 'lien')[];
+}
+
+/**
+ * Retire d'un commentaire ce qui ne doit pas être publié, en le disant.
+ *
+ * Le choix est délibéré : plutôt que de refuser en bloc un avis contenant un numéro de
+ * téléphone, on publie l'avis sans le numéro. L'auteur a pris la peine d'écrire, son avis
+ * compte, et il n'a généralement pas voulu mal faire. Mais le retrait est **visible** —
+ * « [numéro retiré] » — parce que modifier le propos de quelqu'un sans le dire serait pire
+ * que de ne rien publier.
+ *
+ * Le texte d'origine n'est jamais écrasé : c'est la version publiée qui est caviardée, et le
+ * relecteur garde sous les yeux ce que l'auteur avait écrit.
+ */
+export function caviarde(commentaire: string): Caviardage {
+  const retraits = new Set<'telephone' | 'email' | 'lien'>();
+  let texte = commentaire;
+
+  // L'ordre compte : une adresse électronique contient un point, un lien aussi, et un numéro
+  // mal découpé pourrait se cacher dans l'un ou l'autre. On retire du plus spécifique au moins.
+  texte = texte.replace(/[\w.+-]+@[\w-]+\.[a-z]{2,}/gi, () => {
+    retraits.add('email');
+    return MENTIONS_CAVIARDAGE.email;
+  });
+
+  texte = texte.replace(/\b(?:https?:\/\/|www\.)\S+/gi, () => {
+    retraits.add('lien');
+    return MENTIONS_CAVIARDAGE.lien;
+  });
+
+  texte = texte.replace(/(?:\+33|0)\s?[1-9](?:[\s.-]?\d{2}){4}/g, () => {
+    retraits.add('telephone');
+    return MENTIONS_CAVIARDAGE.telephone;
+  });
+
+  // Les espaces laissés par les retraits ne doivent pas déformer la mise en page.
+  texte = texte.replace(/[ \t]{2,}/g, ' ').trim();
+
+  return { texte, retraits: [...retraits] };
+}

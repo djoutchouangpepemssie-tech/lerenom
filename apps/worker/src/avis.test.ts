@@ -8,8 +8,8 @@
 
 import process from 'node:process';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { prisma } from '@lerenom/db';
-import { inviteAuxAvis } from './avis.ts';
+import { nettoieLesDonneesDeTest, prisma } from '@lerenom/db';
+import { demandeConfirmationIntervention, inviteAuxAvis } from './avis.ts';
 
 const aUneBase = (process.env['DATABASE_URL'] ?? '') !== '';
 const decrire = aUneBase ? describe : describe.skip;
@@ -24,7 +24,11 @@ decrire('invitations à déposer un avis', () => {
   /** Crée une demande acceptée par le pro, avec ou sans travaux déclarés. */
   async function creeDossier(
     cle: string,
-    options: { readonly travauxIlYAJours?: number; readonly annulee?: boolean } = {},
+    options: {
+      readonly travauxIlYAJours?: number;
+      readonly annulee?: boolean;
+      readonly accepteeIlYAJours?: number;
+    } = {},
   ): Promise<string> {
     const metier = await prisma.metier.findFirstOrThrow({ where: { slug: 'serrurier' } });
     const demande = await prisma.demande.create({
@@ -57,7 +61,7 @@ decrire('invitations à déposer un avis', () => {
         raisonRang: 'score_et_proximite',
         statut: 'acceptee',
         echeanceLe: new Date(Date.now() + 3_600_000),
-        repondueLe: new Date(),
+        repondueLe: new Date(Date.now() - (options.accepteeIlYAJours ?? 0) * JOUR),
       },
     });
 
@@ -88,6 +92,7 @@ decrire('invitations à déposer un avis', () => {
 
   beforeAll(async () => {
     process.env['SECRET_VERIFICATION'] ??= 'secret-de-test-strictement-local-et-assez-long';
+    await nettoieLesDonneesDeTest(MARQUE);
 
     const entreprise = await prisma.entreprise.create({
       data: {
@@ -169,5 +174,68 @@ decrire('invitations à déposer un avis', () => {
     expect(await invitations('deja-note')).toBe(0);
 
     await prisma.avis.delete({ where: { id: avis.id } });
+  });
+
+  describe('confirmation de l’intervention par le client', () => {
+    async function confirmations(cle: string): Promise<number> {
+      return prisma.lienAction.count({
+        where: { demandeId: id(cle), action: 'confirmer_intervention' },
+      });
+    }
+
+    beforeAll(async () => {
+      await creeDossier('muet', { accepteeIlYAJours: 10 });
+      await creeDossier('accepte-hier', { accepteeIlYAJours: 1 });
+      await creeDossier('deja-declare', { accepteeIlYAJours: 10, travauxIlYAJours: 2 });
+      await creeDossier('abandonne', { accepteeIlYAJours: 10, annulee: true });
+    });
+
+    it('interroge le client quand le pro n’a rien déclaré', async () => {
+      const bilan = await demandeConfirmationIntervention();
+      expect(bilan.envoyees).toBeGreaterThanOrEqual(1);
+
+      expect(await confirmations('muet')).toBe(1);
+      // Trop tôt : le délai n'est pas écoulé.
+      expect(await confirmations('accepte-hier')).toBe(0);
+      // Le pro a déclaré : la question n'a pas lieu d'être.
+      expect(await confirmations('deja-declare')).toBe(0);
+      // Demande annulée : on ne réveille personne.
+      expect(await confirmations('abandonne')).toBe(0);
+    });
+
+    it('met le lien en clair dans le SMS et le courriel', async () => {
+      const messages = await prisma.messageSortant.findMany({
+        where: { demandeId: id('muet'), modele: 'confirmation-intervention' },
+      });
+      expect(messages.filter((m) => m.canal === 'sms')).toHaveLength(1);
+      expect(messages.filter((m) => m.canal === 'email')).toHaveLength(1);
+      for (const message of messages) {
+        expect(message.corps).toMatch(/\/suivi\/[A-Za-z0-9_-]{43}/);
+        expect(message.corps).toContain(`${MARQUE} pro`);
+      }
+    });
+
+    it('espace les relances au lieu de les empiler', async () => {
+      await demandeConfirmationIntervention();
+      await demandeConfirmationIntervention();
+      expect(await confirmations('muet')).toBe(1);
+    });
+
+    it('relance après le délai, puis s’arrête : on interroge, on ne harcèle pas', async () => {
+      const demandeId = id('muet');
+      const jour = 24 * 3_600_000;
+
+      // Deux relances espacées, puis une troisième tentative qui ne doit rien produire.
+      for (const semaines of [1, 2, 3, 4]) {
+        await prisma.demande.update({
+          where: { id: demandeId },
+          data: { derniereRelanceConfirmationLe: new Date(Date.now() - semaines * 8 * jour) },
+        });
+        await demandeConfirmationIntervention();
+      }
+
+      // Une question et deux relances au maximum, jamais davantage.
+      expect(await confirmations('muet')).toBe(3);
+    });
   });
 });

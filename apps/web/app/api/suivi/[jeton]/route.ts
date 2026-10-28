@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@lerenom/db';
-import { consommeLien, resoudLien } from '@lerenom/liens';
+import { consommeLien, creeLien, resoudLien } from '@lerenom/liens';
+import { recrediteApresAnnulation } from '../../../../lib/recredit';
 import {
   COMMENTAIRE_MAX,
   CRITERES_AVIS,
@@ -48,7 +49,13 @@ const DepotAvis = z.object({
   commentaire: z.string().max(COMMENTAIRE_MAX).optional(),
 });
 
-const Action = z.discriminatedUnion('action', [Annulation, DepotAvis]);
+const Confirmation = z.object({
+  action: z.literal('confirmer-intervention'),
+  reponse: z.enum(['oui', 'pas-encore', 'non']),
+  motif: z.string().max(300).optional(),
+});
+
+const Action = z.discriminatedUnion('action', [Annulation, DepotAvis, Confirmation]);
 
 /** Les statuts depuis lesquels une annulation a encore un sens. */
 const ANNULABLES = ['brouillon', 'en_distribution', 'en_attente_de_relance', 'en_pause'];
@@ -77,6 +84,13 @@ export async function POST(
       { erreur: 'Ce lien n’est plus valide.', etat: resolution.issue },
       { status: 410 },
     );
+  }
+
+  if (analyse.data.action === 'confirmer-intervention') {
+    if (resolution.lien.action !== 'confirmer_intervention') {
+      return NextResponse.json({ erreur: 'Ce lien ne permet pas cette action.' }, { status: 403 });
+    }
+    return confirmeIntervention(resolution.lien, analyse.data, requete);
   }
 
   if (analyse.data.action === 'deposer-avis') {
@@ -131,6 +145,26 @@ export async function POST(
       data: { statut: 'retiree', repondueLe: annuleeLe },
     }),
   ]);
+
+  // Un professionnel qui vient d'accepter n'a pas eu le temps d'appeler : on lui rend ce
+  // qu'il a payé, sans attendre qu'il le réclame. La plupart ne réclameraient jamais, et
+  // c'est précisément ce silence qui rendrait la pratique rentable.
+  //
+  // Un échec ici ne doit jamais faire échouer l'annulation : le client a le droit d'arrêter
+  // sa demande, et un problème de facturation entre Le Renom et un pro ne le regarde pas.
+  try {
+    await recrediteApresAnnulation(demande.id, annuleeLe);
+  } catch (erreur) {
+    await prisma.alerte.create({
+      data: {
+        type: 'message_non_envoye',
+        gravite: 'moyenne',
+        titre: 'Recrédit automatique en échec après annulation',
+        explication: erreur instanceof Error ? erreur.message : String(erreur),
+        objetId: demande.id,
+      },
+    });
+  }
 
   await consommeLien(resolution.lien.id, requete.headers.get('x-forwarded-for') ?? undefined);
 
@@ -239,4 +273,102 @@ async function deposeAvis(
   await consommeLien(lien.id, requete.headers.get('x-forwarded-for') ?? undefined);
 
   return NextResponse.json({ depose: true });
+}
+
+/**
+ * Enregistre la réponse du client à « l'intervention a-t-elle eu lieu ? ».
+ *
+ * C'est le verrou qui manquait à la chaîne des avis : l'étape « travaux réalisés » ne pouvait
+ * venir que du professionnel, et celui qui ne déclare jamais rien n'aurait jamais eu de
+ * mauvais avis. La déclaration du client est tracée comme telle (`declarePar: client`) :
+ * l'origine compte, et un litige se tranche là-dessus.
+ *
+ * Trois réponses :
+ *   * **oui** → l'étape est enregistrée, et un lien de dépôt d'avis est rendu tout de suite.
+ *     Le client est là, il se souvient : un second message serait un message de trop ;
+ *   * **pas encore** → rien n'est déclaré, le worker reposera la question ;
+ *   * **non** → l'étape « perdue » est enregistrée et une alerte part au back-office. Un
+ *     professionnel qui accepte une demande et ne va pas au bout, cela se regarde.
+ */
+async function confirmeIntervention(
+  lien: { readonly id: string; readonly demandeId: string; readonly cibleId: string | null },
+  saisi: z.infer<typeof Confirmation>,
+  requete: Request,
+): Promise<NextResponse> {
+  if (lien.cibleId === null) {
+    return NextResponse.json(
+      { erreur: 'Ce lien ne désigne aucun professionnel.' },
+      { status: 400 },
+    );
+  }
+
+  const [demande, distribution, dejaDeclare] = await Promise.all([
+    prisma.demande.findUnique({
+      where: { id: lien.demandeId },
+      select: { annuleeLe: true, reference: true },
+    }),
+    prisma.distribution.findFirst({
+      where: { demandeId: lien.demandeId, entrepriseId: lien.cibleId, statut: 'acceptee' },
+      select: { id: true },
+    }),
+    prisma.suiviDemande.findFirst({
+      where: {
+        demandeId: lien.demandeId,
+        entrepriseId: lien.cibleId,
+        etape: { in: ['travaux_realises', 'perdue'] },
+      },
+      select: { etape: true },
+    }),
+  ]);
+
+  if (demande === null || distribution === null) {
+    return NextResponse.json({ erreur: 'Cette intervention est introuvable.' }, { status: 404 });
+  }
+  if (demande.annuleeLe !== null) {
+    return NextResponse.json({ erreur: 'Ce dossier est clos.' }, { status: 409 });
+  }
+
+  // « Pas encore » ne déclare rien : on laisse le worker reposer la question.
+  if (saisi.reponse === 'pas-encore') {
+    await consommeLien(lien.id, requete.headers.get('x-forwarded-for') ?? undefined);
+    return NextResponse.json({ enregistre: true });
+  }
+
+  const etape = saisi.reponse === 'oui' ? 'travaux_realises' : 'perdue';
+
+  // Une réponse déjà donnée n'est pas rejouée : on ne réécrit pas l'histoire d'un dossier.
+  if (dejaDeclare === null) {
+    await prisma.suiviDemande.create({
+      data: {
+        demandeId: lien.demandeId,
+        entrepriseId: lien.cibleId,
+        etape,
+        declarePar: 'client',
+        ...(saisi.motif !== undefined ? { commentaire: saisi.motif } : {}),
+      },
+    });
+  }
+
+  if (saisi.reponse === 'non') {
+    await prisma.alerte.create({
+      data: {
+        type: 'intervention_non_realisee',
+        gravite: 'moyenne',
+        titre: 'Intervention déclarée non réalisée par le client',
+        explication:
+          `Demande ${demande.reference} : le client indique que l’intervention n’a pas eu lieu.` +
+          (saisi.motif !== undefined ? ` Motif : ${saisi.motif}` : ''),
+        objetId: distribution.id,
+      },
+    });
+    await consommeLien(lien.id, requete.headers.get('x-forwarded-for') ?? undefined);
+    return NextResponse.json({ enregistre: true });
+  }
+
+  await consommeLien(lien.id, requete.headers.get('x-forwarded-for') ?? undefined);
+
+  // Le client tient déjà un lien valide sur cette demande : lui remettre celui du dépôt d'avis
+  // n'élargit aucun accès, et lui épargne un aller-retour par SMS.
+  const avis = await creeLien(lien.demandeId, 'deposer_avis', lien.cibleId);
+  return NextResponse.json({ enregistre: true, jetonAvis: avis.jeton });
 }

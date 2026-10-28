@@ -85,10 +85,27 @@ export interface Parametres {
   readonly heuresTraitementContestation: number;
   /** Taux de contestation d'un pro au-delà duquel une vérification est déclenchée. */
   readonly seuilAlerteTauxContestation: number;
+  /**
+   * Minutes après l'acceptation pendant lesquelles l'annulation par le client ouvre droit à
+   * un recrédit automatique. Le professionnel a payé des coordonnées qu'il n'a pas eu le
+   * temps d'utiliser : les lui facturer serait indéfendable. Passé ce délai, il a pu appeler,
+   * et le recrédit redevient une affaire d'instruction.
+   */
+  readonly minutesAnnulationRecreditee: number;
 
   /** Messages au client. */
   readonly joursControleClient: number;
   readonly joursDemandeAvis: number;
+  /**
+   * Jours après l'acceptation au bout desquels on demande au client si l'intervention a eu
+   * lieu, quand le professionnel n'a rien déclaré. Sans cette question, un pro qui ne déclare
+   * jamais ses chantiers n'a jamais d'avis — donc jamais de mauvais avis.
+   */
+  readonly joursConfirmationIntervention: number;
+  /** Jours entre deux relances « l'intervention a-t-elle eu lieu ? ». */
+  readonly joursEntreRelancesConfirmation: number;
+  /** Relances maximum avant d'abandonner. On interroge, on ne harcèle pas. */
+  readonly relancesConfirmationMax: number;
   readonly joursRelanceDevis: number;
   readonly heuresRelanceCreneau: number;
 
@@ -158,9 +175,13 @@ export const PARAMETRES_PAR_DEFAUT: Parametres = Object.freeze({
   joursContestation: 7,
   heuresTraitementContestation: 48,
   seuilAlerteTauxContestation: 0.15,
+  minutesAnnulationRecreditee: 60,
 
   joursControleClient: 2,
   joursDemandeAvis: 15,
+  joursConfirmationIntervention: 7,
+  joursEntreRelancesConfirmation: 7,
+  relancesConfirmationMax: 2,
   joursRelanceDevis: 3,
   heuresRelanceCreneau: 24,
 

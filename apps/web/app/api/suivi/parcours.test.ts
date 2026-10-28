@@ -9,7 +9,7 @@
  */
 
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { prisma } from '@lerenom/db';
+import { nettoieLesDonneesDeTest, prisma } from '@lerenom/db';
 import { creeLien, resoudLien } from '@lerenom/liens';
 import { expirationLien } from '@lerenom/core';
 import { empreinteJeton, tireJeton } from '@lerenom/securite';
@@ -61,6 +61,7 @@ async function creeUnPro(cle: string, telephone: string): Promise<string> {
 
 beforeAll(async () => {
   process.env['SECRET_VERIFICATION'] ??= 'secret-de-test-strictement-local-et-assez-long';
+  await nettoieLesDonneesDeTest(MARQUE);
 
   const metier = await prisma.metier.findFirstOrThrow({ where: { slug: 'serrurier' } });
   const prestation = await prisma.prestation.findFirstOrThrow({

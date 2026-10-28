@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Accent, Carte, Conteneur, Section } from '@lerenom/ui';
 import { resoudLien } from '@lerenom/liens';
 import { FormulaireAvis } from '@/composants/FormulaireAvis';
+import { ParcoursIntervention } from '@/composants/ParcoursIntervention';
 import { SuiviDemande } from '@/composants/SuiviDemande';
 import { contexteAvis } from '@/lib/avis';
 import { suiviDeLaDemande } from '@/lib/suivi';
@@ -74,6 +75,43 @@ export default async function PageSuivi({
         titre="Ce lien a déjà servi"
         texte="L’action qu’il portait a été effectuée. Si ce n’est pas vous, répondez au SMS reçu : nous vérifierons."
       />
+    );
+  }
+
+  // « L'intervention a-t-elle eu lieu ? » : une question, et le dépôt d'avis dans la foulée.
+  if (resolution.lien.action === 'confirmer_intervention') {
+    const contexte = await contexteAvis(resolution.lien.demandeId, resolution.lien.cibleId);
+
+    if (contexte === null || contexte.droit.issue === 'demande-annulee') {
+      return (
+        <Impasse
+          titre="Cette question n’a plus lieu d’être"
+          texte="Le dossier concerné est clos. Si vous pensez qu’il s’agit d’une erreur, répondez au SMS reçu."
+        />
+      );
+    }
+
+    if (contexte.droit.issue === 'deja-depose') {
+      return (
+        <Impasse
+          titre="Vous avez déjà répondu"
+          texte="Merci : votre avis a bien été enregistré et sera publié après relecture."
+        />
+      );
+    }
+
+    return (
+      <Section fond="creme" className="py-12 md:py-16">
+        <Conteneur>
+          <ParcoursIntervention
+            jeton={jeton}
+            reference={contexte.reference}
+            prenom={contexte.prenom}
+            nomPro={contexte.nomPro}
+            villePro={contexte.villePro}
+          />
+        </Conteneur>
+      </Section>
     );
   }
 

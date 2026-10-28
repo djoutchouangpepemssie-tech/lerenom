@@ -21,6 +21,7 @@
 export type ActionLien =
   | 'modifier_demande'
   | 'annuler_demande'
+  | 'confirmer_intervention'
   | 'voir_pros'
   | 'choisir_creneau'
   | 'envoyer_photos'
@@ -40,6 +41,8 @@ export const DUREE_LIEN_JOURS: Readonly<Record<ActionLien, number>> = Object.fre
   /** Le temps de la cascade, pas davantage : passé ce délai la demande ne bouge plus. */
   modifier_demande: 3,
   annuler_demande: 7,
+  /** Le temps de deux relances, plus une marge : au-delà, la question n'a plus de sens. */
+  confirmer_intervention: 30,
   /** On garde l'accès aux coordonnées bien après l'intervention. */
   voir_pros: 90,
   choisir_creneau: 14,

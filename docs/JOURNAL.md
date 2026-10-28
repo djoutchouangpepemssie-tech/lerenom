@@ -405,13 +405,67 @@ atteint bien la réponse aimable.
 40 captures, aucun débordement. Le formulaire est photographié vide et rempli, aux deux
 largeurs, via un lien de démonstration que `demo:suivi` fabrique.
 
+### Les trous rebouchés : quatre décisions prises, pas reportées
+
+Quatre questions ouvertes bloquaient la chaîne ou laissaient un déséquilibre. Elles sont
+tranchées et codées, pas renvoyées à plus tard.
+
+**Q19 — qui déclare que les travaux sont réalisés.** C'était le trou le plus grave : l'étape
+« travaux réalisés » ne pouvait venir que du professionnel, donc un professionnel qui ne
+déclare jamais rien n'aurait jamais eu de mauvais avis. Désormais, sept jours après
+l'acceptation, si le pro n'a rien déclaré, **le client est interrogé** : « votre intervention
+avec X a-t-elle eu lieu ? ». Oui enregistre l'étape **au nom du client** — l'origine est tracée,
+c'est elle qui fait foi dans un litige — et ouvre le formulaire d'avis sur la même page. Non
+marque le dossier perdu et alerte le back-office. Une question, deux relances espacées, puis on
+laisse tomber : on interroge, on ne harcèle pas.
+
+La conséquence compte autant que la mécanique : **la chaîne des avis n'a plus besoin de
+l'espace professionnel pour fonctionner.** Elle tourne de bout en bout avec le seul client.
+
+**Q5 et Q18 — le recrédit.** La règle tient en une phrase : on recrédite ce que Le Renom peut
+vérifier dans sa propre base, et rien d'autre. Trois motifs se prouvent — appels tracés,
+doublon, annulation immédiate — et sont accordés sans discussion ; les autres passent par un
+humain qui motive sa décision. Deux refus sont tout aussi automatiques, et ils comptent autant :
+une intervention confirmée par le client ferme le débat quel que soit le motif invoqué, et
+« client injoignable » tombe si un appel a abouti.
+
+Le cas concret : un client annule dans l'heure suivant une acceptation, avant tout contact. Le
+professionnel a payé des coordonnées qu'il n'a pas eu le temps d'utiliser. **Le Renom ouvre la
+contestation lui-même et la tranche dans la foulée** — le pro n'a rien à réclamer. Attendre
+qu'il réclame aurait été plus simple ; mais la plupart ne réclameraient jamais, et c'est
+précisément ce silence qui rendrait la pratique rentable. Un recrédit rend exactement ce qui a
+été pris : l'unité de forfait si la demande y était incluse, l'argent si elle a été facturée,
+jamais les deux. Tout passe par une contestation tracée, même accordée d'office.
+
+**Q20 — les coordonnées dans un avis.** On caviarde plutôt que de refuser, et le caviardage est
+visible : « [numéro retiré] ». Le texte d'origine n'est jamais écrasé, et seules les données
+personnelles sont retirées — une accusation est un propos, elle se publie ou se refuse avec un
+motif, elle ne se réécrit pas.
+
+**Q16/Q21 — le secret de hachage.** Il en existait **trois contrôles écrits séparément**. Trois
+contrôles finissent par diverger, et celui qui diverge est toujours celui qu'on avait oublié de
+relire : il n'y en a plus qu'un, dans `@lerenom/securite`. Et le worker refuse désormais de
+démarrer sans secret, au lieu de découvrir le problème au premier client qui valide son numéro.
+Le message nomme toutes les variables manquantes d'un coup, pour qu'on n'en corrige pas une,
+relance, et en découvre une autre.
+
+### Deux défauts d'outillage, corrigés au passage
+
+- **Un test interrompu bloquait sa propre relance.** Les entreprises laissées derrière lui
+  faisaient échouer la contrainte d'unicité sur le slug, et l'on perdait du temps à chercher
+  une régression qui n'existait pas. Chaque suite d'intégration nettoie maintenant sa marque
+  avant de commencer.
+- **Les passages de captures s'accumulaient en base** : huit demandes fictives traînaient.
+  `demo:suivi` purge désormais la plage de numéros réservée à la fiction avant de préparer la
+  démonstration.
+
+44 captures, aucun débordement. 455 tests verts.
+
 ### Reste pour clore la phase 4
 
 Le raccordement d'un opérateur SMS (les messages attendent dans `messages_sortants`), la
-modération des avis au back-office, les contestations et l'anti-fraude. **Et surtout :**
-l'étape « travaux réalisés » ne peut être déclarée que par le professionnel, depuis un espace
-pro qui n'existe pas encore. Tant qu'il manque, aucune invitation ne peut partir en conditions
-réelles — la mécanique est complète et testée, mais elle attend son déclencheur.
+modération des avis au back-office, le dépôt d'une contestation par le professionnel lui-même
+— la mécanique d'instruction existe et est testée, il lui manque l'écran — et l'anti-fraude.
 
 ---
 

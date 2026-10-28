@@ -10,6 +10,7 @@ coverage/
 # Jetons de démonstration des pages client, écrits par `demo:suivi`.
 .jeton-suivi
 .jeton-avis
+.jeton-confirmation
 .env.local
 .env.*.local
 !.env.exemple

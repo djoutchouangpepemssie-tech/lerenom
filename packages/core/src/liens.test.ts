@@ -23,7 +23,7 @@ function lien(partiel: Partial<LienStocke> = {}): LienStocke {
 
 describe('DUREE_LIEN_JOURS', () => {
   it('couvre toutes les actions, sans durée nulle ni négative', () => {
-    expect(TOUTES).toHaveLength(9);
+    expect(TOUTES).toHaveLength(10);
     for (const action of TOUTES) {
       expect(DUREE_LIEN_JOURS[action]).toBeGreaterThan(0);
     }
@@ -31,6 +31,12 @@ describe('DUREE_LIEN_JOURS', () => {
 
   it('laisse l’accès aux coordonnées plus longtemps que la fenêtre d’annulation', () => {
     expect(DUREE_LIEN_JOURS.voir_pros).toBeGreaterThan(DUREE_LIEN_JOURS.annuler_demande);
+  });
+
+  it('laisse la question « l’intervention a-t-elle eu lieu ? » ouverte le temps des relances', () => {
+    // Une question, deux relances à une semaine d'intervalle, plus une marge : le lien du
+    // premier message doit encore fonctionner quand le client s'y remet.
+    expect(DUREE_LIEN_JOURS.confirmer_intervention).toBeGreaterThanOrEqual(21);
   });
 
   it('ferme la modification avant la péremption de la demande, à 72 heures', () => {

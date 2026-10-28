@@ -1,22 +1,12 @@
 /**
- * Les secrets du serveur.
+ * Les secrets et l'environnement du site.
  *
- * Un secret absent n'est pas une valeur par défaut : c'est une erreur de déploiement. On préfère
- * refuser de démarrer la fonctionnalité plutôt que de hacher des codes avec une chaîne connue de
- * tout le monde.
+ * La définition du secret vit dans `@lerenom/securite` : une seule, pour le site, le worker et
+ * la création des liens. Trois contrôles écrits séparément finissent par diverger, et celui qui
+ * diverge est toujours celui qu'on avait oublié de relire.
  */
 
-/** Le secret qui sert à hacher les codes de vérification SMS. */
-export function secretVerification(): string {
-  const secret = process.env['SECRET_VERIFICATION'];
-  if (secret === undefined || secret.length < 32) {
-    throw new Error(
-      'SECRET_VERIFICATION est absent ou trop court (32 caractères minimum). ' +
-        'Voir .env.exemple : openssl rand -hex 32',
-    );
-  }
-  return secret;
-}
+export { secretVerification } from '@lerenom/securite';
 
 /**
  * Sommes-nous en développement ?

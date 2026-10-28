@@ -12,19 +12,7 @@
 import { prisma } from '@lerenom/db';
 import { decideLien, expirationLien, jetonBienForme, type ActionLien } from '@lerenom/core';
 import type { EtatLien } from '@lerenom/core';
-import { empreinteJeton, tireJeton } from '@lerenom/securite';
-
-/** Le secret qui sert à hacher les jetons. Absent, on refuse : pas de valeur par défaut. */
-function secret(): string {
-  const valeur = process.env['SECRET_VERIFICATION'];
-  if (valeur === undefined || valeur.length < 32) {
-    throw new Error(
-      'SECRET_VERIFICATION est absent ou trop court (32 caractères minimum). ' +
-        'Voir .env.exemple : openssl rand -hex 32',
-    );
-  }
-  return valeur;
-}
+import { empreinteJeton, secretVerification, tireJeton } from '@lerenom/securite';
 
 /** L'adresse publique du site, pour écrire des liens cliquables dans les messages. */
 export function adresseDuSite(): string {
@@ -58,7 +46,7 @@ export async function creeLien(
   const lien = await prisma.lienAction.create({
     data: {
       demandeId,
-      jeton: empreinteJeton(jeton, secret()),
+      jeton: empreinteJeton(jeton, secretVerification()),
       action,
       ...(cibleId !== undefined ? { cibleId } : {}),
       expireLe,
@@ -94,7 +82,7 @@ export async function resoudLien(jeton: string): Promise<ResolutionLien> {
   if (!jetonBienForme(jeton)) return { issue: 'inconnu' };
 
   const lien = await prisma.lienAction.findUnique({
-    where: { jeton: empreinteJeton(jeton, secret()) },
+    where: { jeton: empreinteJeton(jeton, secretVerification()) },
     select: {
       id: true,
       action: true,

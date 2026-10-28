@@ -20,3 +20,4 @@ export * from './validateurs';
 export * from './verification';
 export * from './liens';
 export * from './avis';
+export * from './contestation';

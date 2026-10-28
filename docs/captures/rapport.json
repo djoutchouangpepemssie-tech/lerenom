@@ -150,6 +150,26 @@
     "erreursConsole": []
   },
   {
+    "page": "L’intervention a-t-elle eu lieu ?",
+    "largeur": 390,
+    "fichier": "confirmation-intervention-390.png",
+    "defilementHorizontal": false,
+    "largeurDocument": 390,
+    "largeurFenetre": 390,
+    "debordements": [],
+    "erreursConsole": []
+  },
+  {
+    "page": "Intervention non réalisée",
+    "largeur": 390,
+    "fichier": "confirmation-non-390.png",
+    "defilementHorizontal": false,
+    "largeurDocument": 390,
+    "largeurFenetre": 390,
+    "debordements": [],
+    "erreursConsole": []
+  },
+  {
     "page": "Dépôt d’un avis",
     "largeur": 390,
     "fichier": "avis-390.png",
@@ -343,6 +363,26 @@
     "page": "Suivi de la demande",
     "largeur": 1440,
     "fichier": "suivi-1440.png",
+    "defilementHorizontal": false,
+    "largeurDocument": 1440,
+    "largeurFenetre": 1440,
+    "debordements": [],
+    "erreursConsole": []
+  },
+  {
+    "page": "L’intervention a-t-elle eu lieu ?",
+    "largeur": 1440,
+    "fichier": "confirmation-intervention-1440.png",
+    "defilementHorizontal": false,
+    "largeurDocument": 1440,
+    "largeurFenetre": 1440,
+    "debordements": [],
+    "erreursConsole": []
+  },
+  {
+    "page": "Intervention non réalisée",
+    "largeur": 1440,
+    "fichier": "confirmation-non-1440.png",
     "defilementHorizontal": false,
     "largeurDocument": 1440,
     "largeurFenetre": 1440,

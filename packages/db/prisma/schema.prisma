@@ -821,6 +821,10 @@ model Demande {
   /// Annulation par le client, depuis son lien de suivi. Le motif est demandé, jamais exigé.
   annuleeLe DateTime? @map("annulee_le")
   motifAnnulation String? @map("motif_annulation")
+  /// Relances « l'intervention a-t-elle eu lieu ? » déjà envoyées, et la date de la dernière.
+  /// On ne harcèle pas : le nombre est plafonné.
+  relancesConfirmation Int @default(0) @map("relances_confirmation")
+  derniereRelanceConfirmationLe DateTime? @map("derniere_relance_confirmation_le")
   modifieeLe DateTime  @updatedAt @map("modifiee_le")
 
   @@index([statut, deposeeLe])
@@ -928,6 +932,9 @@ model SuiviDemande {
 
   entrepriseId String @map("entreprise_id")
   etape        EtapeSuivi
+  /// Qui a déclaré cette étape. Le distinguer n'est pas un détail : la mention « avis vérifié »
+  /// repose sur l'origine de la déclaration, et un litige se tranche là-dessus.
+  declarePar   AuteurSuivi @default(pro) @map("declare_par")
   commentaire  String?
   /// Écart d'informations signalé par le pro (surface, accès, budget irréaliste).
   ecartSignale Boolean @default(false) @map("ecart_signale")
@@ -936,6 +943,12 @@ model SuiviDemande {
 
   @@index([demandeId, entrepriseId])
   @@map("suivis_demande")
+}
+
+enum AuteurSuivi {
+  pro
+  client
+  administrateur
 }
 
 enum EtapeSuivi {
@@ -992,6 +1005,9 @@ model Contestation {
 }
 
 enum MotifContestation {
+  /// Le client a annulé juste après l'acceptation, avant tout contact : Le Renom ouvre la
+  /// contestation lui-même, sans attendre que le professionnel la demande.
+  annulation_immediate
   coordonnees_fausses
   client_injoignable
   hors_zone
@@ -1385,7 +1401,12 @@ model Avis {
   note       Int
   /// Notes par critère : qualité, délai, propreté, rapport qualité-prix.
   criteres   Json?
+  /// Le texte tel que l'auteur l'a écrit. Il n'est jamais modifié : c'est lui qui fait foi.
   commentaire String? @db.Text
+  /// La version publiée, quand un relecteur a dû retirer des coordonnées. Le retrait est
+  /// visible dans le texte — « [numéro retiré] » — jamais silencieux. `null` quand l'avis est
+  /// publié tel quel, ce qui est le cas général.
+  commentairePublic String? @db.Text @map("commentaire_public")
 
   auteurPrenom String @map("auteur_prenom")
   statut       StatutAvis @default(en_attente)
@@ -1535,6 +1556,9 @@ model LienAction {
 
 enum ActionLien {
   modifier_demande
+  /// « L'intervention a-t-elle eu lieu ? » — la question posée au client quand le pro n'a
+  /// rien déclaré. C'est elle qui débloque le dépôt d'avis.
+  confirmer_intervention
   annuler_demande
   voir_pros
   choisir_creneau
@@ -1633,6 +1657,8 @@ enum TypeAlerte {
   envoi_rapport_echoue
   /// Un message dû à un client ou à un pro n'a pas pu être mis en file : à rattraper à la main.
   message_non_envoye
+  /// Le client déclare que l'intervention n'a pas eu lieu, alors que le pro avait accepté.
+  intervention_non_realisee
 }
 
 enum GraviteAlerte {
