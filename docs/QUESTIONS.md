@@ -743,3 +743,36 @@ ouverte.
 changement de compte a été demandé ? C'est l'usage des banques, et c'est utile précisément
 quand le SMS est intercepté. Nous ne l'avons pas fait pour ne pas multiplier les messages
 avant d'avoir un fournisseur ; la décision devrait être prise en même temps que le branchement.
+
+---
+
+## Q31 🟡 — L'acceptation en ligne d'un devis : ce qu'elle vaut
+
+_(métier et juridique — défaut prudent appliqué, à confirmer)_
+
+Le client peut désormais accepter son devis depuis le lien reçu. Trois choix ont été faits
+sans certitude juridique.
+
+**Un clic vaut acceptation, sans code SMS.** Le cahier des charges parle de « signature SMS ».
+Nous ne l'avons pas mise : le lien est déjà envoyé au mobile ou au courriel du client, donc
+celui qui clique a prouvé qu'il détient ce canal — un code renvoyé au même canal ne prouverait
+rien de plus. Un second facteur n'aurait de sens que s'il passait par un **autre** canal que
+celui du lien, ce qui suppose d'avoir les deux. **À trancher** : faut-il exiger le code quand
+le client a renseigné les deux, et s'en passer sinon ?
+
+**Le lien se consomme à l'acceptation.** Accepter ne se refait pas, et un lien qui traîne dans
+une boîte mail ne doit pas pouvoir réengager son destinataire. Conséquence : le client ne peut
+plus revoir son devis par ce lien une fois accepté. **À trancher** : faut-il lui en adresser
+un second, en lecture seule, au moment de l'acceptation ?
+
+**Il n'y a pas de bouton « Refuser ».** Un devis qu'on ne veut pas se laisse expirer, ou se
+discute avec l'entreprise ; un refus d'un clic transformerait une négociation en fin de
+non-recevoir. Le statut `refuse` existe en base et reste disponible côté professionnel.
+**À trancher** avec Arcel : est-ce le bon arbitrage commercial, ou faut-il permettre au client
+de refuser en donnant un motif, ce qui renseignerait le professionnel ?
+
+**Ce qui n'est pas tranché non plus** : aucun écrit ne matérialise l'acceptation au-delà du
+statut en base et de la date. Pas d'horodatage opposable, pas d'adresse IP conservée, pas
+d'exemplaire figé du document accepté. Pour un devis de quelques centaines d'euros, c'est
+probablement suffisant ; pour un chantier, probablement pas. La question se posera en même
+temps que le PDF.

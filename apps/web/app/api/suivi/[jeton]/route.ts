@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@lerenom/db';
-import { consommeLien, creeLien, resoudLien } from '@lerenom/liens';
+import { consommeLien, creeLien, resoudLienDeDemande } from '@lerenom/liens';
 import { recrediteApresAnnulation } from '../../../../lib/recredit';
 import {
   COMMENTAIRE_MAX,
@@ -78,7 +78,7 @@ export async function POST(
     return NextResponse.json({ erreur: 'Action inconnue.' }, { status: 400 });
   }
 
-  const resolution = await resoudLien(jeton);
+  const resolution = await resoudLienDeDemande(jeton);
   if (resolution.issue !== 'valide') {
     return NextResponse.json(
       { erreur: 'Ce lien n’est plus valide.', etat: resolution.issue },

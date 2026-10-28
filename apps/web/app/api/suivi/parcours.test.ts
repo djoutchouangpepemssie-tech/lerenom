@@ -10,7 +10,7 @@
 
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { nettoieLesDonneesDeTest, prisma } from '@lerenom/db';
-import { creeLien, resoudLien } from '@lerenom/liens';
+import { creeLien, resoudLienDeDemande } from '@lerenom/liens';
 import { expirationLien } from '@lerenom/core';
 import { empreinteJeton, tireJeton } from '@lerenom/securite';
 import { suiviDeLaDemande } from '@/lib/suivi';
@@ -133,7 +133,7 @@ afterAll(async () => {
 
 describe('le lien de suivi', () => {
   it('se résout, et désigne la bonne demande', async () => {
-    const resolution = await resoudLien(jetonSuivi);
+    const resolution = await resoudLienDeDemande(jetonSuivi);
     expect(resolution.issue).toBe('valide');
     if (resolution.issue !== 'valide') return;
     expect(resolution.lien.demandeId).toBe(demandeId);
@@ -147,11 +147,11 @@ describe('le lien de suivi', () => {
   });
 
   it('refuse un jeton mal formé sans toucher la base', async () => {
-    expect(await resoudLien('pas-un-jeton')).toEqual({ issue: 'inconnu' });
+    expect(await resoudLienDeDemande('pas-un-jeton')).toEqual({ issue: 'inconnu' });
   });
 
   it('refuse un jeton bien formé mais inconnu', async () => {
-    expect(await resoudLien(tireJeton())).toEqual({ issue: 'inconnu' });
+    expect(await resoudLienDeDemande(tireJeton())).toEqual({ issue: 'inconnu' });
   });
 
   it('refuse un lien expiré', async () => {
@@ -164,7 +164,7 @@ describe('le lien de suivi', () => {
         expireLe: new Date(Date.now() - 1_000),
       },
     });
-    expect(await resoudLien(jeton)).toEqual({ issue: 'expire' });
+    expect(await resoudLienDeDemande(jeton)).toEqual({ issue: 'expire' });
   });
 
   it('ouvre les liens de suivi longtemps, bien après la fenêtre d’annulation', () => {

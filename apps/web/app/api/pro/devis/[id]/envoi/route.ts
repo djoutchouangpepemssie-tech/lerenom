@@ -2,7 +2,13 @@ import { NextResponse } from 'next/server';
 import { envoieDevis } from '@/lib/devis-pro';
 import { proConnecte } from '@/lib/session-pro';
 
-/** L'envoi d'un devis : il reçoit son numéro et devient immuable. */
+/**
+ * L'envoi d'un devis : il reçoit son numéro, devient immuable, et part chez le client.
+ *
+ * La réponse dit **par où** il est parti. Un envoi silencieux laisserait le professionnel
+ * croire que son client a reçu quelque chose alors que celui-ci n'a peut-être ni courriel ni
+ * mobile enregistré.
+ */
 
 export const dynamic = 'force-dynamic';
 
@@ -27,5 +33,5 @@ export async function POST(
     );
   }
 
-  return NextResponse.json({ numero: resultat.numero });
+  return NextResponse.json({ numero: resultat.numero, canaux: resultat.canaux });
 }

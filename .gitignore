@@ -14,6 +14,7 @@ coverage/
 .jeton-devis
 .jeton-facture
 .jeton-facture-emise
+.jeton-devis-client
 .env.local
 .env.*.local
 !.env.exemple

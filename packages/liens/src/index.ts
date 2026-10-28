@@ -28,7 +28,22 @@ export interface LienCree {
 }
 
 /**
- * Crée un lien pour une demande.
+ * L'adresse que chaque action ouvre.
+ *
+ * Toutes les actions du client tournaient autour d'une demande, et tous les liens menaient
+ * donc au suivi. Un devis remis par un professionnel à son propre client n'a pas de demande
+ * derrière lui : il a sa page.
+ */
+function cheminDeLAction(action: ActionLien): string {
+  return action === 'signer_devis' ? 'devis' : 'suivi';
+}
+
+/**
+ * Crée un lien.
+ *
+ * `demandeId` vaut `null` pour ce qui ne découle pas d'une demande — un devis qu'un
+ * professionnel établit directement pour un client à lui. La colonne l'a toujours permis ;
+ * seule cette fonction l'interdisait.
  *
  * Si un lien de la même action existe déjà et reste valide, **on ne le remplace pas** : un
  * client qui reçoit deux SMS ne doit pas voir le premier lien mourir. Mais on ne peut pas non
@@ -36,7 +51,7 @@ export interface LienCree {
  * second, également valide. Les deux ouvrent la même page ; le premier expirera de lui-même.
  */
 export async function creeLien(
-  demandeId: string,
+  demandeId: string | null,
   action: ActionLien,
   cibleId?: string,
 ): Promise<LienCree> {
@@ -54,13 +69,19 @@ export async function creeLien(
     select: { id: true },
   });
 
-  return { id: lien.id, jeton, url: `${adresseDuSite()}/suivi/${jeton}`, expireLe };
+  return {
+    id: lien.id,
+    jeton,
+    url: `${adresseDuSite()}/${cheminDeLAction(action)}/${jeton}`,
+    expireLe,
+  };
 }
 
 export interface LienResolu {
   readonly id: string;
   readonly action: ActionLien;
-  readonly demandeId: string;
+  /** `null` pour un lien qui ne découle pas d'une demande : un devis direct, par exemple. */
+  readonly demandeId: string | null;
   readonly cibleId: string | null;
   readonly expireLe: Date;
   readonly utiliseLe: Date | null;
@@ -93,12 +114,34 @@ export async function resoudLien(jeton: string): Promise<ResolutionLien> {
     },
   });
 
-  if (lien === null || lien.demandeId === null) return { issue: 'inconnu' };
+  if (lien === null) return { issue: 'inconnu' };
 
   const etat: EtatLien = decideLien(lien);
   if (etat.issue !== 'valide') return { issue: etat.issue };
 
-  return { issue: 'valide', lien: { ...lien, demandeId: lien.demandeId } };
+  return { issue: 'valide', lien };
+}
+
+/**
+ * Comme `resoudLien`, mais pour les liens qui portent forcément une demande.
+ *
+ * Le suivi, l'annulation, le dépôt d'avis n'ont pas de sens sans elle : plutôt que de faire
+ * vérifier à chaque appelant que `demandeId` n'est pas nul, cette variante le garantit par
+ * le type — et traite un lien sans demande comme inconnu, puisque pour ces pages il l'est.
+ */
+export async function resoudLienDeDemande(
+  jeton: string,
+): Promise<
+  | { readonly issue: 'valide'; readonly lien: LienResolu & { readonly demandeId: string } }
+  | { readonly issue: 'inconnu' }
+  | { readonly issue: 'expire' }
+  | { readonly issue: 'deja-utilise' }
+> {
+  const resolution = await resoudLien(jeton);
+  if (resolution.issue !== 'valide') return resolution;
+  const { demandeId } = resolution.lien;
+  if (demandeId === null) return { issue: 'inconnu' };
+  return { issue: 'valide', lien: { ...resolution.lien, demandeId } };
 }
 
 /**

@@ -71,6 +71,8 @@ export function EditeurDevis({ devis }: { readonly devis: DevisComplet }) {
   const [enCours, setEnCours] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [refus, setRefus] = useState<{ texte: string; manquants: readonly string[] } | null>(null);
+  /** Par où le devis vient de partir. `[]` veut dire : nulle part, faute de coordonnées. */
+  const [parti, setParti] = useState<readonly string[] | null>(null);
 
   const document = useMemo(() => {
     const converties: readonly LigneDocument[] = lignes.map((ligne, rang) => ({
@@ -175,6 +177,7 @@ export function EditeurDevis({ devis }: { readonly devis: DevisComplet }) {
 
   async function envoie(): Promise<void> {
     setEnCours(true);
+    setParti(null);
     try {
       // On enregistre avant d'envoyer : le serveur juge le devis tel qu'il est en base, pas
       // tel qu'il est à l'écran.
@@ -182,6 +185,10 @@ export function EditeurDevis({ devis }: { readonly devis: DevisComplet }) {
 
       const reponse = await fetch(`/api/pro/devis/${devis.id}/envoi`, { method: 'POST' });
       if (reponse.ok) {
+        // Par où c'est parti — et surtout, quand ce n'est parti nulle part. Un envoi
+        // silencieux laisserait croire que le client a reçu quelque chose.
+        const corps = (await reponse.json()) as { canaux?: readonly string[] };
+        setParti(corps.canaux ?? []);
         router.refresh();
         return;
       }
@@ -200,8 +207,11 @@ export function EditeurDevis({ devis }: { readonly devis: DevisComplet }) {
   /**
    * La signature déclarée par le professionnel.
    *
-   * Tant qu'aucun lien client n'existe, c'est lui qui sait : le client a signé sur papier, ou
-   * dit oui au téléphone. Le geste prépare les factures et l'emmène les voir.
+   * Le client peut désormais accepter en ligne, depuis le lien qu'il a reçu. Cette
+   * déclaration reste utile pour tout ce qui se passe hors écran : une signature sur papier,
+   * un accord au téléphone. Les deux chemins préparent les mêmes factures, par la même
+   * fonction — deux façons de signer qui prépareraient des factures différentes seraient
+   * pires que pas de signature du tout.
    */
   async function declareSigne(): Promise<void> {
     setEnCours(true);
@@ -420,6 +430,17 @@ export function EditeurDevis({ devis }: { readonly devis: DevisComplet }) {
             </div>
           </div>
         </Carte>
+
+        {parti !== null && (
+          <p
+            role="status"
+            className={`mt-7 text-sm font-semibold ${parti.length === 0 ? 'text-alerte' : 'text-encre-70'}`}
+          >
+            {parti.length === 0
+              ? 'Le devis est enregistré et numéroté, mais il n’est parti nulle part : ce client n’a ni courriel ni mobile. Ajoutez-lui des coordonnées, puis transmettez-lui le lien.'
+              : `Envoyé à votre client par ${parti.includes('email') && parti.includes('sms') ? 'courriel et SMS' : parti.includes('email') ? 'courriel' : 'SMS'}.`}
+          </p>
+        )}
 
         {!fige && (
           <div className="mt-7 flex flex-wrap gap-3">

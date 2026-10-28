@@ -1,9 +1,11 @@
 import { prisma } from '@lerenom/db';
+import { creeLien } from '@lerenom/liens';
 import {
   TAUX_TVA,
   UNITES,
   calculeTotaux,
   devisConforme,
+  formatEuros,
   prochainNumero,
   type ConformiteDevis,
   type LigneDocument,
@@ -348,16 +350,101 @@ export async function enregistreDevis(
 }
 
 export type ResultatEnvoi =
-  | { readonly ok: true; readonly numero: string }
+  | {
+      readonly ok: true;
+      readonly numero: string;
+      /** Par où le devis est parti. Vide quand le client n'a ni courriel ni mobile. */
+      readonly canaux: readonly ('email' | 'sms')[];
+    }
   | { readonly ok: false; readonly message: string; readonly manquants?: readonly string[] };
 
 /**
- * Envoie un devis : il reçoit son numéro et devient immuable.
+ * Envoie un devis : il reçoit son numéro, devient immuable, et **part chez le client**.
+ *
+ * Il ne partait nulle part. Le bouton disait « Envoyer au client », le statut passait à
+ * `envoye`, le numéro était attribué — et le client n'apprenait jamais que le devis
+ * existait. Un verbe dans une interface est une promesse ; celle-là n'était pas tenue.
+ *
+ * Le devis part par un lien à usage limité, comme tout ce que Le Renom adresse à un client :
+ * il n'y a pas de compte client, et un lien reçu est la seule clé. Ce lien-ci porte l'action
+ * `signer_devis` — il ouvre la page du devis, et lui seul.
  *
  * Le numéro est tiré **dans la transaction**, à partir du dernier numéro de la série : deux
  * envois simultanés ne doivent pas produire deux fois le même, et la contrainte d'unicité de
  * la base est le dernier rempart si la fenêtre se referme mal.
  */
+/**
+ * Met le devis en route vers son client : un lien, puis un courriel et un SMS.
+ *
+ * Les messages s'empilent dans `messages_sortants`, comme tout ce que la plateforme adresse :
+ * aucun fournisseur n'est encore branché, et le jour où il le sera, rien ici ne changera.
+ *
+ * Un échec d'envoi ne remonte pas en échec d'envoi du devis. Le devis **est** envoyé : il
+ * porte son numéro et il est immuable. Revenir en arrière sur cet état parce qu'un message
+ * n'a pas pu être mis en file créerait un trou dans la numérotation pour une panne qui se
+ * rattrape. L'écran dit par où c'est parti, et le dit aussi quand ce n'est parti nulle part.
+ */
+async function adresseLeDevisAuClient(
+  entrepriseId: string,
+  devisId: string,
+  numero: string,
+): Promise<readonly ('email' | 'sms')[]> {
+  const devis = await prisma.devis.findFirst({
+    where: { id: devisId, entrepriseId },
+    select: {
+      totalTTC: true,
+      client: { select: { nom: true, email: true, telephone: true } },
+      entreprise: { select: { nom: true } },
+    },
+  });
+  if (devis?.client == null) return [];
+  const { client } = devis;
+  if (client.email === null && client.telephone === null) return [];
+
+  // Pas de demande derrière : ce devis est établi par le professionnel pour son propre
+  // client. La colonne l'a toujours permis.
+  const lien = await creeLien(null, 'signer_devis', devisId);
+  const montant = formatEuros(Number(devis.totalTTC));
+  const entreprise = devis.entreprise.nom;
+
+  const messages: {
+    canal: 'email' | 'sms';
+    destinataire: string;
+    sujet: string | null;
+    corps: string;
+  }[] = [];
+
+  if (client.email !== null) {
+    messages.push({
+      canal: 'email',
+      destinataire: client.email,
+      sujet: `Votre devis ${numero} — ${entreprise}`,
+      corps: `Bonjour,\n\n${entreprise} vous adresse le devis ${numero}, d'un montant de ${montant} TTC.\n\nVous pouvez le consulter et l'accepter ici :\n${lien.url}\n\nCe lien vous est personnel.`,
+    });
+  }
+  if (client.telephone !== null) {
+    messages.push({
+      canal: 'sms',
+      destinataire: client.telephone,
+      sujet: null,
+      corps: `${entreprise} vous adresse le devis ${numero} (${montant} TTC) : ${lien.url}`,
+    });
+  }
+
+  await prisma.messageSortant.createMany({
+    data: messages.map((message) => ({
+      canal: message.canal,
+      modele: 'devis-envoye',
+      destinataire: message.destinataire,
+      sujet: message.sujet,
+      corps: message.corps,
+      statut: 'en_attente' as const,
+    })),
+  });
+
+  return messages.map((message) => message.canal);
+}
+
 export async function envoieDevis(entrepriseId: string, devisId: string): Promise<ResultatEnvoi> {
   const devis = await devisDuPro(entrepriseId, devisId);
   if (devis === null) return { ok: false, message: 'Ce devis n’existe pas.' };
@@ -395,7 +482,8 @@ export async function envoieDevis(entrepriseId: string, devisId: string): Promis
       return attribue;
     });
 
-    return { ok: true, numero };
+    const canaux = await adresseLeDevisAuClient(entrepriseId, devisId, numero);
+    return { ok: true, numero, canaux };
   } catch (erreur) {
     if (
       typeof erreur === 'object' &&

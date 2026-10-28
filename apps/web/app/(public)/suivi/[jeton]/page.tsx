@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { Accent, Carte, Conteneur, Section } from '@lerenom/ui';
-import { resoudLien } from '@lerenom/liens';
+import { resoudLienDeDemande } from '@lerenom/liens';
 import { FormulaireAvis } from '@/composants/FormulaireAvis';
 import { ParcoursIntervention } from '@/composants/ParcoursIntervention';
 import { SuiviDemande } from '@/composants/SuiviDemande';
@@ -49,7 +49,7 @@ export default async function PageSuivi({
   readonly params: Promise<{ readonly jeton: string }>;
 }) {
   const { jeton } = await params;
-  const resolution = await resoudLien(jeton);
+  const resolution = await resoudLienDeDemande(jeton);
 
   if (resolution.issue === 'inconnu') {
     return (

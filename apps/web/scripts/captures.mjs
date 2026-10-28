@@ -59,6 +59,11 @@ function cheminDeLaFactureEmise() {
   return valeur === null ? null : `/pro/espace/factures/${valeur}`;
 }
 
+function cheminDuDevisClient() {
+  const valeur = jeton('devis-client');
+  return valeur === null ? null : `/devis/${valeur}`;
+}
+
 function cheminDeSuivi() {
   const valeur = jeton('suivi');
   return valeur === null ? null : `/suivi/${valeur}`;
@@ -253,6 +258,11 @@ const PAGES = [
       await onglet.getByText('Annuler définitivement cette demande ?').waitFor();
       await onglet.waitForTimeout(200);
     },
+  },
+  {
+    nom: 'devis-client',
+    chemin: cheminDuDevisClient,
+    titre: 'Le devis reçu par le client',
   },
   { nom: 'pro-inscription', chemin: '/pro/inscription', titre: 'Inscription professionnelle' },
   {

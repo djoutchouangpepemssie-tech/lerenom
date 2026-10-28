@@ -11,13 +11,14 @@
 import process from 'node:process';
 import path from 'node:path';
 import { writeFile } from 'node:fs/promises';
-import { randomBytes, scrypt } from 'node:crypto';
+import { createHmac, randomBytes, scrypt } from 'node:crypto';
 import { PrismaPg } from '@prisma/adapter-pg';
 import {
   calculeTotaux,
   prepareFactureAcompte,
   prepareFactureSolde,
   prochainNumero,
+  type TauxTva,
 } from '@lerenom/core';
 import { PrismaClient } from '../src/genere/client.js';
 
@@ -32,6 +33,15 @@ if (process.env['NODE_ENV'] === 'production') {
 const prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString }) });
 
 const SLUG_PRO = 'plomberie-martin-paris-11-80000000100017';
+
+/** Le secret qui signe les liens : le même que celui du serveur, sinon le lien n'ouvre rien. */
+function secretVerification(): string {
+  const valeur = process.env['SECRET_VERIFICATION'];
+  if (valeur === undefined || valeur.length < 32) {
+    throw new Error('SECRET_VERIFICATION est absent ou trop court. Voir .env.exemple.');
+  }
+  return valeur;
+}
 const EMAIL = 'demo@lerenom.exemple';
 const MOT_DE_PASSE = 'le chat dort sur le toit';
 
@@ -199,6 +209,7 @@ async function main(): Promise<void> {
 
   const devisId = await semeDevisDeDemonstration(entreprise.id);
   await semeFacturesDeDemonstration(entreprise.id);
+  await semeDevisEnvoyeAuClient(entreprise.id);
 
   process.stdout.write(
     `Compte de démonstration prêt.\n  adresse     : ${EMAIL}\n  mot de passe : ${MOT_DE_PASSE}\n  devis       : ${devisId}\n`,
@@ -525,3 +536,97 @@ async function semeFacturesDeDemonstration(entrepriseId: string): Promise<string
 
 await main();
 await prisma.$disconnect();
+
+/**
+ * Un devis envoyé, et le lien tel que le client l'a reçu.
+ *
+ * C'est la seule façon de photographier la page du client : elle n'est accessible que par un
+ * jeton, et ce jeton n'existe en clair qu'au moment où on le fabrique.
+ */
+async function semeDevisEnvoyeAuClient(entrepriseId: string): Promise<void> {
+  const client = await prisma.clientPro.findFirstOrThrow({ where: { entrepriseId } });
+  const annee = new Date().getFullYear();
+
+  await prisma.lienAction.deleteMany({ where: { action: 'signer_devis', cibleId: { not: null } } });
+
+  const existant = await prisma.devis.findFirst({
+    where: { entrepriseId, statut: 'envoye' },
+    select: { id: true },
+  });
+
+  const lignes = [
+    {
+      rang: 0,
+      type: 'prestation' as const,
+      designation: 'Remplacement du mitigeur thermostatique',
+      detail: 'Fourniture et pose, modèle à cartouche céramique',
+      unite: 'forfait' as const,
+      quantite: 1,
+      prixUnitaireHT: 240,
+      tauxTva: 10 as TauxTva,
+    },
+    {
+      rang: 1,
+      type: 'prestation' as const,
+      designation: 'Main-d’œuvre',
+      detail: null,
+      unite: 'heure' as const,
+      quantite: 2,
+      prixUnitaireHT: 58,
+      tauxTva: 10 as TauxTva,
+    },
+  ];
+
+  const totaux = calculeTotaux({
+    lignes: lignes.map((ligne) => ({
+      id: String(ligne.rang),
+      type: ligne.type,
+      designation: ligne.designation,
+      unite: ligne.unite,
+      quantite: ligne.quantite,
+      prixUnitaireHT: ligne.prixUnitaireHT,
+      tauxTva: ligne.tauxTva,
+    })),
+    remisePourcent: 0,
+  });
+
+  const devisId =
+    existant?.id ??
+    (
+      await prisma.devis.create({
+        data: {
+          entrepriseId,
+          clientId: client.id,
+          type: 'estimatif',
+          statut: 'envoye',
+          numero: prochainNumero('DV', annee, 'DV-' + String(annee) + '-0001'),
+          envoyeLe: new Date(Date.now() - 2 * 86_400_000),
+          remisePourcent: 0,
+          acomptePourcent: 30,
+          validiteJours: 30,
+          fraisDeplacementTTC: 0,
+          devisPayant: false,
+          piecesRemplaceesGardees: true,
+          mentionRetractation: false,
+          totalHT: totaux.totalHT,
+          totalTVA: totaux.totalTVA,
+          totalTTC: totaux.totalTTC,
+          lignes: { create: lignes },
+        },
+        select: { id: true },
+      })
+    ).id;
+
+  const jeton = randomBytes(32).toString('base64url');
+  await prisma.lienAction.create({
+    data: {
+      jeton: createHmac('sha256', secretVerification()).update(`lien:${jeton}`).digest('hex'),
+      action: 'signer_devis',
+      cibleId: devisId,
+      expireLe: new Date(Date.now() + 30 * 86_400_000),
+    },
+  });
+
+  const racine = path.resolve(import.meta.dirname, '../../..');
+  await writeFile(path.join(racine, '.jeton-devis-client'), `${jeton}\n`, 'utf8');
+}

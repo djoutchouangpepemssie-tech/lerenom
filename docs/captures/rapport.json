@@ -510,26 +510,6 @@
     "erreursConsole": []
   },
   {
-    "page": "Espace pro — mes devis",
-    "largeur": 390,
-    "fichier": "pro-devis-liste-390.png",
-    "defilementHorizontal": false,
-    "largeurDocument": 390,
-    "largeurFenetre": 390,
-    "debordements": [],
-    "erreursConsole": []
-  },
-  {
-    "page": "Espace pro — éditeur de devis",
-    "largeur": 390,
-    "fichier": "pro-devis-editeur-390.png",
-    "defilementHorizontal": false,
-    "largeurDocument": 390,
-    "largeurFenetre": 390,
-    "debordements": [],
-    "erreursConsole": []
-  },
-  {
     "page": "Espace pro — ma fiche, complétude en hausse",
     "largeur": 390,
     "fichier": "pro-fiche-completee-390.png",
@@ -643,26 +623,6 @@
     "page": "Espace pro — mes agences",
     "largeur": 1440,
     "fichier": "pro-agences-1440.png",
-    "defilementHorizontal": false,
-    "largeurDocument": 1440,
-    "largeurFenetre": 1440,
-    "debordements": [],
-    "erreursConsole": []
-  },
-  {
-    "page": "Espace pro — mes devis",
-    "largeur": 1440,
-    "fichier": "pro-devis-liste-1440.png",
-    "defilementHorizontal": false,
-    "largeurDocument": 1440,
-    "largeurFenetre": 1440,
-    "debordements": [],
-    "erreursConsole": []
-  },
-  {
-    "page": "Espace pro — éditeur de devis",
-    "largeur": 1440,
-    "fichier": "pro-devis-editeur-1440.png",
     "defilementHorizontal": false,
     "largeurDocument": 1440,
     "largeurFenetre": 1440,
@@ -813,6 +773,66 @@
     "page": "Espace pro — changer de compte bancaire",
     "largeur": 1440,
     "fichier": "pro-rib-saisie-1440.png",
+    "defilementHorizontal": false,
+    "largeurDocument": 1440,
+    "largeurFenetre": 1440,
+    "debordements": [],
+    "erreursConsole": []
+  },
+  {
+    "page": "Espace pro — mes devis",
+    "largeur": 390,
+    "fichier": "pro-devis-liste-390.png",
+    "defilementHorizontal": false,
+    "largeurDocument": 390,
+    "largeurFenetre": 390,
+    "debordements": [],
+    "erreursConsole": []
+  },
+  {
+    "page": "Espace pro — éditeur de devis",
+    "largeur": 390,
+    "fichier": "pro-devis-editeur-390.png",
+    "defilementHorizontal": false,
+    "largeurDocument": 390,
+    "largeurFenetre": 390,
+    "debordements": [],
+    "erreursConsole": []
+  },
+  {
+    "page": "Espace pro — mes devis",
+    "largeur": 1440,
+    "fichier": "pro-devis-liste-1440.png",
+    "defilementHorizontal": false,
+    "largeurDocument": 1440,
+    "largeurFenetre": 1440,
+    "debordements": [],
+    "erreursConsole": []
+  },
+  {
+    "page": "Espace pro — éditeur de devis",
+    "largeur": 1440,
+    "fichier": "pro-devis-editeur-1440.png",
+    "defilementHorizontal": false,
+    "largeurDocument": 1440,
+    "largeurFenetre": 1440,
+    "debordements": [],
+    "erreursConsole": []
+  },
+  {
+    "page": "Le devis reçu par le client",
+    "largeur": 390,
+    "fichier": "devis-client-390.png",
+    "defilementHorizontal": false,
+    "largeurDocument": 390,
+    "largeurFenetre": 390,
+    "debordements": [],
+    "erreursConsole": []
+  },
+  {
+    "page": "Le devis reçu par le client",
+    "largeur": 1440,
+    "fichier": "devis-client-1440.png",
     "defilementHorizontal": false,
     "largeurDocument": 1440,
     "largeurFenetre": 1440,

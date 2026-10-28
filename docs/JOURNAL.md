@@ -1302,6 +1302,74 @@ le code rejoué, et le confrère qui n'en confirme aucun.
 
 ---
 
+## Phase 5 bis · Le devis arrive chez le client
+
+« Envoyer au client » attribuait un numéro, rendait le devis immuable, basculait son statut —
+et n'envoyait rien. Le client n'apprenait jamais que le devis existait.
+
+Ce n'était pas un oubli isolé : c'est le troisième de la même famille, après la facture sans
+avoir et la facture sans RIB saisissable. **Un verbe dans une interface est une promesse**, et
+trois promesses non tenues en trois phases valent une règle : avant de livrer un écran, relire
+ce que ses boutons annoncent et vérifier que chacun le fait.
+
+### Ce qui part, et par où
+
+Un courriel et un SMS, selon les coordonnées du client, portant un lien à usage limité — la
+mécanique qui dessert déjà tout ce que Le Renom adresse à un client, puisqu'il n'y a pas de
+compte client. Le lien porte l'action `signer_devis`, qui existait dans le schéma depuis le
+début sans que rien ne la crée.
+
+La réponse dit **par où c'est parti**, et surtout quand ce n'est parti nulle part : un client
+sans courriel ni mobile existe, et l'écran le dit plutôt que de laisser croire à un envoi.
+Le devis reste envoyé pour autant — il porte son numéro et il est immuable. Revenir sur cet
+état parce qu'un message n'a pas pu être mis en file creuserait un trou dans la numérotation
+pour une panne qui se rattrape.
+
+### Un mécanisme qui n'avait, lui non plus, de spécifique que son nom
+
+`creeLien` exigeait une demande. La colonne était facultative depuis toujours ; seule la
+fonction l'interdisait. Or un devis qu'un professionnel établit pour son propre client n'a
+pas de demande derrière lui.
+
+C'est la deuxième fois en deux phases : après le sel du code de vérification, le lien. Dans
+les deux cas, un mécanisme général portait le nom du premier usage qu'on en avait fait, et
+ce nom aurait fait réécrire à côté ce qui existait déjà. Les appelants qui ont besoin d'une
+demande utilisent désormais `resoudLienDeDemande`, qui le garantit **par le type** plutôt que
+par un contrôle répété à chaque appel.
+
+### La page du client
+
+Elle porte le document entier : les lignes, les totaux, l'acompte chiffré en euros — pas en
+pourcentage —, les mentions obligatoires, et qui s'engage, SIRET compris. Un client n'a pas
+de compte où aller chercher le reste : ce qu'il ne voit pas ici, il ne le voit pas.
+
+Les totaux y sont **recalculés à la lecture**. Non par défiance envers la colonne stockée,
+mais parce que la version que le client a sous les yeux doit être celle que le code sait
+justifier ligne à ligne. Un écart se verrait ici plutôt que dans une réclamation.
+
+L'acceptation passe par la même fonction que la signature déclarée par le professionnel.
+Deux façons de signer qui prépareraient des factures différentes seraient pires que pas de
+signature du tout.
+
+Une règle s'ajoute côté client : **un devis périmé ne s'accepte pas**, même si son lien vit
+encore. Le lien dure trente jours, la validité du devis quinze : deux durées indépendantes,
+et c'est la plus courte qui doit gagner. Un professionnel qui déclare une signature sait ce
+qu'il fait ; un client peut ouvrir un vieux courriel.
+
+### Ce que les captures ont attrapé
+
+L'adresse de l'entreprise affichait « 75011 Paris 11e Arrondissement » — le nom brut de la
+table — et le téléphone « +33199000010 », la forme qui sert à appeler. Les deux utilitaires
+existaient. Un devis est un document, pas un extrait de base.
+
+### La vérification
+
+847 tests verts, 86 captures sans un débordement. Les 13 tests du parcours client portent sur
+l'étroitesse du lien : il n'ouvre que son devis, il ne vaut pas pour une autre action, il ne
+sert qu'une fois, et il n'accepte rien de périmé.
+
+---
+
 ## Phases 5 à 11 · à venir
 
 Agenda et documents du pro, monétisation Stripe, back-office, personnalisation, avis et

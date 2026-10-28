@@ -9,7 +9,7 @@
 
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { nettoieLesDonneesDeTest, prisma } from '@lerenom/db';
-import { creeLien, resoudLien } from '@lerenom/liens';
+import { creeLien, resoudLienDeDemande } from '@lerenom/liens';
 import { POST as agit } from './[jeton]/route';
 
 const MARQUE = 'test-confirmation';
@@ -125,7 +125,7 @@ describe('réponse « oui »', () => {
     expect(suivi.declarePar).toBe('client');
 
     // Le jeton rendu ouvre bien le dépôt d'avis, et rien d'autre.
-    const resolu = await resoudLien(corps.jetonAvis ?? '');
+    const resolu = await resoudLienDeDemande(corps.jetonAvis ?? '');
     expect(resolu.issue).toBe('valide');
     if (resolu.issue !== 'valide') return;
     expect(resolu.lien.action).toBe('deposer_avis');
