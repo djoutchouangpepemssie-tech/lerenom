@@ -363,10 +363,55 @@ fabrique un lien de démonstration et l'écrit à la racine ; le script de captu
 seul. Sans lui, la page n'est pas photographiée **et le script le dit** au lieu de l'ignorer
 en silence. 36 captures, aucun débordement.
 
+### Les avis : un seul chemin, et il est vérifiable
+
+La charte publique engage Le Renom sur trois points. Ils sont désormais tenus par le code, pas
+par la bonne volonté.
+
+**Un avis ne peut venir que d'une intervention réellement effectuée.** Le point de départ n'est
+pas l'acceptation mais l'étape `travaux_realises` : un professionnel qui a accepté sans jamais
+intervenir ne récolte pas d'avis. L'invitation part quinze jours après, une fois et une seule,
+et le délai vient des paramètres (`joursDemandeAvis`) — Arcel peut le changer sans déploiement.
+Il n'existe aucun autre chemin : ni formulaire libre, ni import. C'est ce qui permet d'écrire
+« avis vérifié » sans mentir, et ce que l'article L111-7-2 attend d'une plateforme.
+
+**Aucun avis n'est publié d'emblée.** Il entre `en_attente` et crée une tâche à valider. Le
+module `packages/core/src/avis.ts` ne modère pas : il **signale**. Un numéro de téléphone, une
+adresse, un lien, une injure probable, un texte tout en capitales, une accusation grave
+(« arnaque », « vol ») font remonter l'avis en tête de la pile — mais rien n'est jamais refusé
+automatiquement. Un automate qui trancherait seul finirait par refuser un client mécontent et
+honnête, et la charte promet exactement l'inverse.
+
+**Un avis négatif est publié comme un autre**, et le formulaire le dit au client avant qu'il
+écrive, plutôt que de le laisser le découvrir.
+
+Deux détails qui comptent :
+
+- le lien d'invitation **porte l'entreprise visée**. Le client ne choisit pas qui il note dans
+  une liste déroulante : on ne devine pas, et il ne doit pas pouvoir noter un professionnel qui
+  n'est jamais venu chez lui. Un test le vérifie ;
+- **une demande, un avis.** Le lien est à usage unique : on ne revient pas changer sa note une
+  semaine plus tard. Deux envois simultanés franchissent pourtant le garde du lien avant qu'il
+  ne se ferme — c'est la contrainte d'unicité en base qui tranche alors, et la réponse reste
+  aimable : un double clic n'est pas une faute du client. Les deux cas sont testés.
+
+### Trouvé en écrivant les tests
+
+Le premier jet affirmait que redéposer un avis répondait « déjà déposé ». C'était faux : le
+lien étant consommé, la porte se ferme **avant** qu'on examine la saisie, et la réponse est un 410. Le comportement du code était le bon ; c'est l'attente du test qui était fausse. Le test
+dit maintenant ce qui se passe vraiment, et un second test couvre le cas de course qui, lui,
+atteint bien la réponse aimable.
+
+40 captures, aucun débordement. Le formulaire est photographié vide et rempli, aux deux
+largeurs, via un lien de démonstration que `demo:suivi` fabrique.
+
 ### Reste pour clore la phase 4
 
-Le raccordement d'un opérateur SMS (le message attend dans `messages_sortants`), le dépôt
-d'avis après intervention, les contestations et l'anti-fraude.
+Le raccordement d'un opérateur SMS (les messages attendent dans `messages_sortants`), la
+modération des avis au back-office, les contestations et l'anti-fraude. **Et surtout :**
+l'étape « travaux réalisés » ne peut être déclarée que par le professionnel, depuis un espace
+pro qui n'existe pas encore. Tant qu'il manque, aucune invitation ne peut partir en conditions
+réelles — la mécanique est complète et testée, mais elle attend son déclencheur.
 
 ---
 

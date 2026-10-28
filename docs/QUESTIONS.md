@@ -341,3 +341,53 @@ vous recontactent »_.
 quinze minutes suivant l'acceptation, avant tout contact ? Ce serait équitable pour le pro, et
 la table `recredits` existe déjà pour cela. Mais c'est aussi une porte ouverte aux abus, et le
 coût réel pour Le Renom n'est pas nul.
+
+---
+
+## Q19 🔴 — Qui déclare que les travaux sont réalisés ?
+
+_(§ avis — le cahier des charges dit « quinze jours après les travaux », sans dire qui le dit)_
+
+Toute la chaîne des avis part de l'étape `travaux_realises`. Aujourd'hui, **seul le
+professionnel peut la déclarer**, depuis un espace pro qui n'existe pas encore. Conséquence
+concrète : la mécanique d'invitation est complète et testée, mais aucune invitation ne peut
+partir en conditions réelles tant que cet espace n'est pas livré.
+
+**Défaut appliqué** : la déclaration vient du pro, et d'elle seule.
+
+**Le problème est réel et il faut le trancher** : un professionnel qui ne déclare jamais ses
+travaux n'a jamais d'avis — donc jamais de mauvais avis. L'intérêt du pro et celui de la
+plateforme divergent ici, et c'est exactement le genre d'asymétrie qui vide un système d'avis
+de sa substance.
+
+**Trois pistes**, par ordre de prudence croissante :
+
+1. **Relance au client** : X jours après l'acceptation, si rien n'a été déclaré, demander au
+   client lui-même si l'intervention a eu lieu. Sa réponse vaut déclaration. C'est le plus
+   simple, et le client est le mieux placé pour savoir.
+2. **Déclaration présumée** : passé un délai long (30 jours ?) sans déclaration ni annulation,
+   considérer l'intervention comme effectuée et inviter. Risque : inviter sur une intervention
+   qui n'a jamais eu lieu, ce qui abîmerait la mention « avis vérifié ».
+3. **Indicateur au pro** : afficher publiquement le taux de déclaration d'un professionnel, et
+   le faire entrer dans le score. Le silence devient coûteux sans devenir impossible.
+
+La piste 1 me paraît la bonne, et elle est compatible avec les deux autres. **Elle n'est pas
+implémentée** : elle crée un message de plus vers le client, et ce n'est pas à moi d'en décider.
+
+---
+
+## Q20 🟡 — Que faire d'un avis dont le commentaire contient des coordonnées ?
+
+_(§ avis — non tranché)_
+
+`signauxDeModeration` repère les numéros, adresses électroniques et liens dans un commentaire.
+Le formulaire prévient le client : _« ces informations ne sont pas publiées »_.
+
+**Défaut appliqué** : l'avis est enregistré tel quel, signalé, et c'est un humain qui tranche
+au back-office.
+
+**À trancher** : le relecteur doit-il pouvoir **caviarder** le passage (publier l'avis amputé
+du numéro) ou seulement refuser l'avis en entier ? Caviarder respecte mieux l'auteur — son avis
+compte, et il n'a pas voulu mal faire — mais c'est modifier le propos de quelqu'un, ce qu'une
+plateforme d'avis doit faire avec la plus grande prudence. S'il est retenu, le caviardage doit
+être visible (« [coordonnées retirées] ») et jamais silencieux.

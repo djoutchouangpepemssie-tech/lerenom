@@ -13,6 +13,7 @@ import { avanceCascade, expire } from './distribution.ts';
 import { connexion, fermeFiles, fileNuit, programmeEcheance } from '@lerenom/files';
 import type { TacheCascade, TacheEcheance } from '@lerenom/files';
 import { perimeLesDemandes, recalculeScores } from './scores.ts';
+import { inviteAuxAvis } from './avis.ts';
 
 const options = { connection: connexion(), concurrency: 8 };
 
@@ -51,6 +52,7 @@ const workerNuit = new Worker<{ travail: string }>(
   async (tache) => {
     if (tache.data.travail === 'scores') return { scores: await recalculeScores() };
     if (tache.data.travail === 'peremption') return { perimees: await perimeLesDemandes() };
+    if (tache.data.travail === 'invitations-avis') return await inviteAuxAvis();
     throw new Error(`Travail de nuit inconnu : ${tache.data.travail}`);
   },
   { connection: connexion(), concurrency: 1 },
@@ -78,6 +80,14 @@ await fileNuit().upsertJobScheduler(
   'peremption-horaire',
   { pattern: '7 * * * *', tz: 'Europe/Paris' },
   { name: 'nuit', data: { travail: 'peremption' } },
+);
+
+// Les invitations à déposer un avis partent le matin : un SMS à trois heures du matin est une
+// faute de goût, et il ne sera pas lu.
+await fileNuit().upsertJobScheduler(
+  'invitations-avis',
+  { pattern: '20 10 * * *', tz: 'Europe/Paris' },
+  { name: 'nuit', data: { travail: 'invitations-avis' } },
 );
 
 console.warn('[worker] Le Renom · cascade, échéances et travaux de nuit en écoute.');

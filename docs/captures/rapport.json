@@ -150,6 +150,26 @@
     "erreursConsole": []
   },
   {
+    "page": "Dépôt d’un avis",
+    "largeur": 390,
+    "fichier": "avis-390.png",
+    "defilementHorizontal": false,
+    "largeurDocument": 390,
+    "largeurFenetre": 390,
+    "debordements": [],
+    "erreursConsole": []
+  },
+  {
+    "page": "Dépôt d’un avis — rempli",
+    "largeur": 390,
+    "fichier": "avis-rempli-390.png",
+    "defilementHorizontal": false,
+    "largeurDocument": 390,
+    "largeurFenetre": 390,
+    "debordements": [],
+    "erreursConsole": []
+  },
+  {
     "page": "Suivi — annulation",
     "largeur": 390,
     "fichier": "suivi-annulation-390.png",
@@ -323,6 +343,26 @@
     "page": "Suivi de la demande",
     "largeur": 1440,
     "fichier": "suivi-1440.png",
+    "defilementHorizontal": false,
+    "largeurDocument": 1440,
+    "largeurFenetre": 1440,
+    "debordements": [],
+    "erreursConsole": []
+  },
+  {
+    "page": "Dépôt d’un avis",
+    "largeur": 1440,
+    "fichier": "avis-1440.png",
+    "defilementHorizontal": false,
+    "largeurDocument": 1440,
+    "largeurFenetre": 1440,
+    "debordements": [],
+    "erreursConsole": []
+  },
+  {
+    "page": "Dépôt d’un avis — rempli",
+    "largeur": 1440,
+    "fichier": "avis-rempli-1440.png",
     "defilementHorizontal": false,
     "largeurDocument": 1440,
     "largeurFenetre": 1440,

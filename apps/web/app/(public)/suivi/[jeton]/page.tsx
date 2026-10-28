@@ -1,7 +1,9 @@
 import type { Metadata } from 'next';
 import { Accent, Carte, Conteneur, Section } from '@lerenom/ui';
 import { resoudLien } from '@lerenom/liens';
+import { FormulaireAvis } from '@/composants/FormulaireAvis';
 import { SuiviDemande } from '@/composants/SuiviDemande';
+import { contexteAvis } from '@/lib/avis';
 import { suiviDeLaDemande } from '@/lib/suivi';
 
 /**
@@ -72,6 +74,51 @@ export default async function PageSuivi({
         titre="Ce lien a déjà servi"
         texte="L’action qu’il portait a été effectuée. Si ce n’est pas vous, répondez au SMS reçu : nous vérifierons."
       />
+    );
+  }
+
+  // Le lien d'invitation à l'avis mène au formulaire, pas au suivi : une action, un écran.
+  if (resolution.lien.action === 'deposer_avis') {
+    const contexte = await contexteAvis(resolution.lien.demandeId, resolution.lien.cibleId);
+
+    if (contexte === null) {
+      return (
+        <Impasse
+          titre="Cet avis n’est plus possible"
+          texte="L’intervention concernée est introuvable. Si vous pensez qu’il s’agit d’une erreur, répondez au SMS reçu."
+        />
+      );
+    }
+
+    if (contexte.droit.issue === 'deja-depose') {
+      return (
+        <Impasse
+          titre="Votre avis a déjà été déposé"
+          texte="Merci : il est relu avant publication, comme tous les avis. Vous serez prévenu de sa publication, ou de son refus et de son motif."
+        />
+      );
+    }
+
+    if (contexte.droit.issue !== 'peut-deposer') {
+      return (
+        <Impasse
+          titre="Cet avis n’est pas encore possible"
+          texte="Un avis ne peut être déposé qu’après une intervention réellement effectuée. C’est ce qui nous permet d’écrire « avis vérifié » sans mentir."
+        />
+      );
+    }
+
+    return (
+      <Section fond="creme" className="py-12 md:py-16">
+        <Conteneur>
+          <FormulaireAvis
+            jeton={jeton}
+            reference={contexte.reference}
+            prenom={contexte.prenom}
+            cible={{ nom: contexte.nomPro, ville: contexte.villePro }}
+          />
+        </Conteneur>
+      </Section>
     );
   }
 

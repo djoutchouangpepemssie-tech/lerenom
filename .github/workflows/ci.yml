@@ -148,7 +148,7 @@ jobs:
               SELECT count(*) INTO n_distributions FROM distributions;
               SELECT count(*) INTO n_demandes
                 FROM demandes WHERE client_telephone LIKE '%612000042'
-                   OR client_telephone LIKE '%69999999%';
+                   OR client_telephone LIKE '%6999999%';
               IF n_distributions <> 0 THEN
                 RAISE EXCEPTION '% distributions laissées derrière eux', n_distributions;
               END IF;

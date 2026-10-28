@@ -18,25 +18,31 @@ const BASE = process.argv[2] ?? 'http://127.0.0.1:3100';
 const SORTIE = path.resolve(import.meta.dirname, '../../../docs/captures');
 
 /**
- * Le jeton de la page de suivi de démonstration.
+ * Les jetons des pages client de démonstration.
  *
- * Cette page n'a pas d'adresse devinable : elle s'ouvre avec un jeton qui n'existe en clair
- * qu'une fois. `pnpm --filter @lerenom/db demo:suivi` en fabrique un et l'écrit à la racine ;
- * sans lui, la page ne peut pas être photographiée, et le script le dit au lieu de l'ignorer.
+ * Ces pages n'ont pas d'adresse devinable : elles s'ouvrent avec un jeton qui n'existe en clair
+ * qu'une fois. `pnpm --filter @lerenom/db demo:suivi` en fabrique et les écrit à la racine ;
+ * sans eux, ces pages ne peuvent pas être photographiées, et le script le dit au lieu de
+ * l'ignorer.
  */
-function jetonDeSuivi() {
-  const variable = process.env.JETON_SUIVI;
+function jeton(nom) {
+  const variable = process.env[`JETON_${nom.toUpperCase()}`];
   if (variable !== undefined && variable !== '') return variable.trim();
 
-  const fichier = path.resolve(import.meta.dirname, '../../../.jeton-suivi');
+  const fichier = path.resolve(import.meta.dirname, `../../../.jeton-${nom}`);
   if (!existsSync(fichier)) return null;
   const contenu = readFileSync(fichier, 'utf8').trim();
   return contenu === '' ? null : contenu;
 }
 
 function cheminDeSuivi() {
-  const jeton = jetonDeSuivi();
-  return jeton === null ? null : `/suivi/${jeton}`;
+  const valeur = jeton('suivi');
+  return valeur === null ? null : `/suivi/${valeur}`;
+}
+
+function cheminDAvis() {
+  const valeur = jeton('avis');
+  return valeur === null ? null : `/suivi/${valeur}`;
 }
 
 /**
@@ -140,6 +146,32 @@ const PAGES = [
     nom: 'suivi',
     titre: 'Suivi de la demande',
     chemin: cheminDeSuivi,
+  },
+  {
+    nom: 'avis',
+    titre: 'Dépôt d’un avis',
+    chemin: cheminDAvis,
+  },
+  {
+    nom: 'avis-rempli',
+    titre: 'Dépôt d’un avis — rempli',
+    chemin: cheminDAvis,
+    // Noté et commenté, sans envoyer : la démonstration doit rester rejouable.
+    scenario: async (onglet) => {
+      await onglet.getByRole('radio', { name: '4 sur 5' }).first().click();
+      const criteres = onglet.getByRole('radiogroup');
+      await criteres.nth(1).getByRole('radio', { name: '5 sur 5' }).click();
+      await criteres.nth(2).getByRole('radio', { name: '3 sur 5' }).click();
+      await criteres.nth(3).getByRole('radio', { name: '4 sur 5' }).click();
+      await criteres.nth(4).getByRole('radio', { name: '4 sur 5' }).click();
+      await onglet
+        .getByLabel('Votre commentaire (facultatif)')
+        .fill(
+          'Intervention le jour même, travail soigné et chantier laissé propre. ' +
+            'Un peu de retard le matin, prévenu par SMS.',
+        );
+      await onglet.waitForTimeout(200);
+    },
   },
   {
     nom: 'suivi-annulation',

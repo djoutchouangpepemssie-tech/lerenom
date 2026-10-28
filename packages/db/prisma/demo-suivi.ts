@@ -1,10 +1,11 @@
 /**
- * Prépare la démonstration de la page de suivi client, et imprime son lien.
+ * Prépare la démonstration des pages client, et imprime leurs liens.
  *
  * La page de suivi n'a pas d'adresse devinable : elle s'ouvre avec un jeton qui n'existe en
  * clair qu'une fois, au moment où on le met dans le SMS. Pour la relire — et pour la
  * photographier — il faut donc en fabriquer un. Ce script le fait sur la demande de
  * démonstration, avec deux professionnels fictifs qui ont accepté et un qui n'a pas répondu.
+ * Il en fabrique deux : la page de suivi, et l'invitation à déposer un avis.
  *
  * Il est idempotent : relancé, il remet la demande dans cet état et tire un nouveau jeton.
  *
@@ -92,21 +93,48 @@ async function main(): Promise<void> {
     });
   }
 
-  const jeton = randomBytes(32).toString('base64url');
-  await prisma.lienAction.create({
-    data: {
-      demandeId: demande.id,
-      jeton: createHmac('sha256', secret()).update(`lien:${jeton}`).digest('hex'),
-      action: 'voir_pros',
-      expireLe: new Date(Date.now() + 90 * 24 * 3_600_000),
-    },
-  });
+  // Lié dans une constante : la fermeture ci-dessous perdrait le rétrécissement de type.
+  const demandeId = demande.id;
 
-  // Le jeton est aussi écrit sur disque, pour que le script de captures le retrouve seul.
-  const fichier = path.resolve(import.meta.dirname, '../../../.jeton-suivi');
-  await writeFile(fichier, `${jeton}\n`, 'utf8');
+  /** Crée un lien et rend son jeton en clair — qui n'existe qu'ici. */
+  async function lien(action: 'voir_pros' | 'deposer_avis', cibleId?: string): Promise<string> {
+    const jeton = randomBytes(32).toString('base64url');
+    await prisma.lienAction.create({
+      data: {
+        demandeId,
+        jeton: createHmac('sha256', secret()).update(`lien:${jeton}`).digest('hex'),
+        action,
+        ...(cibleId !== undefined ? { cibleId } : {}),
+        expireLe: new Date(Date.now() + 90 * 24 * 3_600_000),
+      },
+    });
+    return jeton;
+  }
 
-  process.stdout.write(`${jeton}\n`);
+  const jetonSuivi = await lien('voir_pros');
+
+  // Pour l'invitation à l'avis, il faut des travaux déclarés réalisés : sans eux, le
+  // formulaire refuse de s'ouvrir, et c'est précisément la règle qu'il protège.
+  const premier = pros.find((p) => p.slug === ACCEPTENT[0]);
+  let jetonAvis = '';
+  if (premier !== undefined) {
+    await prisma.suiviDemande.deleteMany({ where: { demandeId: demande.id } });
+    await prisma.suiviDemande.createMany({
+      data: [
+        { demandeId: demande.id, entrepriseId: premier.id, etape: 'acceptee' },
+        { demandeId: demande.id, entrepriseId: premier.id, etape: 'travaux_realises' },
+      ],
+    });
+    await prisma.avis.deleteMany({ where: { demandeId: demande.id } });
+    jetonAvis = await lien('deposer_avis', premier.id);
+  }
+
+  // Les jetons sont aussi écrits sur disque, pour que le script de captures les retrouve seuls.
+  const racine = path.resolve(import.meta.dirname, '../../..');
+  await writeFile(path.join(racine, '.jeton-suivi'), `${jetonSuivi}\n`, 'utf8');
+  await writeFile(path.join(racine, '.jeton-avis'), `${jetonAvis}\n`, 'utf8');
+
+  process.stdout.write(`suivi : ${jetonSuivi}\navis  : ${jetonAvis}\n`);
 }
 
 await main();
