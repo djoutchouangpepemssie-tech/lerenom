@@ -1,14 +1,32 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "ui": "stream",
+  "//": "Turbo ne transmet aux tâches que les variables déclarées : c'est ce qui rend son cache fiable, puisqu'une variable changée invalide le cache. La contrepartie est qu'une variable oubliée ici est simplement absente à l'exécution de la tâche — sans erreur, sans avertissement. C'est ainsi que la construction du site a cherché DATABASE_URL en vain alors qu'elle était bien déclarée sur le service.",
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**", ".next/**", "!.next/cache/**"]
+      "outputs": ["dist/**", ".next/**", "!.next/cache/**"],
+      "env": [
+        "DATABASE_URL",
+        "REDIS_URL",
+        "SECRET_VERIFICATION",
+        "LERENOM_URL",
+        "LERENOM_ENV",
+        "NODE_ENV",
+        "TZ"
+      ]
     },
-    "dev": { "cache": false, "persistent": true },
-    "lint": { "dependsOn": ["^build"] },
-    "typecheck": { "dependsOn": ["^build"], "env": ["DATABASE_URL"] },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "lint": {
+      "dependsOn": ["^build"]
+    },
+    "typecheck": {
+      "dependsOn": ["^build"],
+      "env": ["DATABASE_URL"]
+    },
     "test": {
       "dependsOn": ["^build"],
       "env": ["DATABASE_URL", "REDIS_URL", "SECRET_VERIFICATION", "LERENOM_ENV"]
@@ -17,6 +35,9 @@
       "dependsOn": ["^build"],
       "env": ["DATABASE_URL", "REDIS_URL", "SECRET_VERIFICATION", "LERENOM_ENV"]
     },
-    "captures": { "cache": false, "dependsOn": ["^build"] }
+    "captures": {
+      "cache": false,
+      "dependsOn": ["^build"]
+    }
   }
 }
