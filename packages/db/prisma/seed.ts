@@ -670,7 +670,55 @@ async function semeDemonstration(idsMetier: Map<string, string>): Promise<void> 
 
 /* ------------------------------------------------------------------------- */
 
+/**
+ * Le semis est-il déjà fait ?
+ *
+ * Il est écrit en `upsert`, donc rejouable sans dommage — mais il repose 1 285 communes et
+ * 479 prestations à chaque passage. Comme il tourne désormais avant chaque déploiement, ce
+ * contrôle évite une minute perdue à réécrire ce qui est déjà là.
+ *
+ * `FORCE_SEMIS=1` le force malgré tout : c'est ce qu'on veut après avoir changé le jeu de
+ * données, sans quoi les corrections ne s'appliqueraient jamais.
+ */
+async function dejaSeme(): Promise<boolean> {
+  if (process.env['FORCE_SEMIS'] === '1') return false;
+
+  // Les comptes attendus viennent des fichiers de données eux-mêmes, jamais de nombres
+  // recopiés : un catalogue enrichi doit déclencher un nouveau semis, pas passer inaperçu.
+  const catalogue = lit<FichierCatalogue>('catalogue.json');
+  const attendus = {
+    communes: lit<FichierCommunes>('communes-ile-de-france.json').communes.length,
+    univers: catalogue.univers.length,
+    metiers: catalogue.univers.reduce((somme, u) => somme + u.metiers.length, 0),
+    prestations: catalogue.univers.reduce(
+      (somme, u) => somme + u.metiers.reduce((n, m) => n + m.prestations.length, 0),
+      0,
+    ),
+  };
+
+  const [communes, univers, metiers, prestations, parametres] = await Promise.all([
+    prisma.commune.count(),
+    prisma.univers.count(),
+    prisma.metier.count(),
+    prisma.prestation.count(),
+    prisma.parametre.count(),
+  ]);
+
+  return (
+    communes === attendus.communes &&
+    univers === attendus.univers &&
+    metiers === attendus.metiers &&
+    prestations === attendus.prestations &&
+    parametres > 0
+  );
+}
+
 async function main(): Promise<void> {
+  if (await dejaSeme()) {
+    console.log('Semis déjà fait : rien à reposer. FORCE_SEMIS=1 pour le refaire.');
+    return;
+  }
+
   console.log('Semis de la base Le Renom');
   await semeGeographie();
   const idsMetier = await semeCatalogue();

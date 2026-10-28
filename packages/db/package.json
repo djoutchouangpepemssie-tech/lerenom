@@ -11,6 +11,7 @@
     "generer": "prisma generate",
     "migrer": "prisma migrate dev",
     "pousser": "prisma db push",
+    "sql": "node --experimental-strip-types prisma/applique-sql.ts",
     "semer": "node --experimental-strip-types prisma/seed.ts",
     "demo:suivi": "node --experimental-strip-types prisma/demo-suivi.ts",
     "demo:pro": "node --experimental-strip-types prisma/demo-pro.ts",
@@ -24,7 +25,9 @@
     "@prisma/client-runtime-utils": "^7.10.1"
   },
   "devDependencies": {
-    "prisma": "^7.10.1",
-    "@types/node": "^22.19.1"
+    "@types/node": "^22.19.1",
+    "@types/pg": "^8.11.11",
+    "pg": "^8.14.1",
+    "prisma": "^7.10.1"
   }
 }
