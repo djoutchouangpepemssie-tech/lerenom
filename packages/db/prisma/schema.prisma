@@ -1400,7 +1400,18 @@ model Rib {
   bic       String
   banque    String?
 
+  /// Un changement de compte bancaire ne vaut qu'une fois confirmé par un code envoyé au
+  /// numéro **déjà connu** du professionnel. C'est la parade à la fraude la plus courante sur
+  /// ce genre de plateforme : prendre la main sur un espace pour y détourner les virements.
   confirmeParSmsLe DateTime? @map("confirme_par_sms_le")
+  /// Le code est stocké haché : une fuite de la base ne doit pas permettre de valider un
+  /// changement de RIB à la place de son titulaire.
+  codeConfirmationHash String? @map("code_confirmation_hash")
+  codeExpireLe DateTime? @map("code_expire_le")
+  tentativesConfirmation Int @default(0) @map("tentatives_confirmation")
+
+  /// Un seul RIB actif par entreprise à la fois — l'unicité est tenue par un index partiel,
+  /// déclaré dans `sql/postgis.sql` : Prisma ne sait pas exprimer une unicité conditionnelle.
   actif            Boolean   @default(false)
   remplaceLe DateTime? @map("remplace_le")
 

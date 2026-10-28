@@ -1223,6 +1223,85 @@ de plus, surtout sur ce qui doit être refusé — y compris par la base elle-m�
 
 ---
 
+## Phase 5 · Le compte bancaire
+
+Les factures affichaient un RIB que seul le semis savait poser. Aucun écran n'en proposait la
+saisie : un vrai professionnel n'avait aucun moyen d'indiquer où le payer. Même constat que
+pour l'avoir — le produit promettait une chose qu'il ne permettait pas.
+
+### La règle qui gouverne tout le reste
+
+Détourner les encaissements est la fraude la plus banale sur ce genre de plateforme. L'escroc
+qui prend la main sur un espace professionnel n'a rien à y voler : il veut seulement que les
+virements des clients arrivent chez lui. Trois décisions en découlent.
+
+**Le code part au mobile déjà enregistré**, jamais à un numéro fourni dans la même requête —
+qui ne prouverait rien, puisque l'escroc l'aurait écrit lui-même. Un test garde exactement
+ce point, en envoyant un numéro dans le corps de la requête et en vérifiant que le SMS part
+quand même à l'autre.
+
+**L'ancien compte reste actif tant que le code n'est pas saisi.** Un attaquant qui n'aboutit
+pas ne doit même pas pouvoir couper les encaissements de sa victime : échouer ne doit rien
+coûter à celui qu'on attaque.
+
+**Sans mobile enregistré, on refuse** — et l'écran le dit _avant_ la saisie, pas après. Une
+confirmation sans second canal n'est pas une confirmation ; et faire taper un IBAN pour le
+rejeter ensuite est la séquence qui fait perdre confiance au moment précis où on en demande.
+
+Aucun SMS ne part réellement : les messages s'empilent dans `messages_sortants`, comme toutes
+les notifications de la plateforme, en attendant un fournisseur. Le changement de compte est
+donc inutilisable en production, et c'est volontaire — mieux vaut une porte verrouillée dont
+on n'a pas encore la clé qu'une porte ouverte. C'est consigné en Q30.
+
+### Un mécanisme qui n'avait de spécifique que son nom
+
+Le code à usage unique existait déjà, pour vérifier le mobile des clients : tirage, hachage
+salé, limite de tentatives, expiration. Son sel s'appelait `demandeId`. Ce nom laissait croire
+que le mécanisme ne sortait pas des demandes, et aurait fait réécrire ailleurs ce qui existait
+déjà. Il s'appelle `sel` ; rien d'autre n'a changé, et le même code sert maintenant aux deux.
+
+### Le trou trouvé en cours de route
+
+En rendant les avoirs immuables, j'avais cassé la suppression d'une entreprise. En réparant
+cela proprement, j'ai relu le déclencheur des factures — et vu qu'il ne portait que sur
+`UPDATE`.
+
+Autrement dit : une facture émise ne pouvait pas être modifiée, mais rien n'empêchait de
+l'**effacer**. Ce qui revient au même en pire, puisqu'il ne reste alors rien à opposer. Une
+sonde en SQL l'a confirmé en trois lignes avant toute correction. Un garde-fou qui ferme une
+porte et laisse l'autre ouverte ne garde rien.
+
+La suppression est désormais refusée, avec la même exception de cascade que pour les avoirs,
+et trois tests la couvrent — y compris celui qui vérifie qu'une facture **non** émise, elle,
+se supprime toujours : un verrou qui bloque tout ne protège rien de particulier.
+
+### Ce que ce verrou a coûté, et pourquoi on l'a payé
+
+Le semis de démonstration effaçait ses factures à chaque passage pour les reconstruire. Il ne
+le peut plus. La tentation était de desserrer le verrou ; c'eût été exactement l'erreur, car
+**un jeu d'essai qui peut effacer ce que la production ne peut pas effacer n'éprouve plus les
+mêmes règles que le produit**. Le semis constate désormais ce qui existe au lieu de le refaire.
+
+### Ce que les captures ont attrapé
+
+Le numéro masqué se coupait en fin de ligne : « au • • • • • • • • / 92 ». Un numéro de
+téléphone ne se coupe pas, masqué ou non — séparateurs insécables.
+
+### Une porte de validation qui mentait, deux fois
+
+Elle déclarait le worker en échec dès que la machine n'avait pas les secrets de production ;
+on lui en fabriquait un à cette étape-là. Les nouveaux tests en ont eu besoin à leur tour, et
+la porte a de nouveau échoué pour la même raison. Le secret est maintenant fabriqué **une
+fois, en haut** : deux étapes qui ne s'accordent pas sur un secret ne s'accordent sur rien.
+
+### La vérification
+
+834 tests verts, 82 captures sans un débordement. Les 20 tests du compte bancaire portent
+surtout sur ce qui doit échouer : le code qui ne vaut que pour un compte, l'essai de trop,
+le code rejoué, et le confrère qui n'en confirme aucun.
+
+---
+
 ## Phases 5 à 11 · à venir
 
 Agenda et documents du pro, monétisation Stripe, back-office, personnalisation, avis et

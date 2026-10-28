@@ -95,12 +95,16 @@ async function main(): Promise<void> {
       motDePasseHash: await hache(MOT_DE_PASSE),
       tentativesConnexion: 0,
       derniereTentativeLe: null,
+      telephone: '+33199000092',
     },
     create: {
       entrepriseId: entreprise.id,
       email: EMAIL,
       nom: 'Julien Martin',
       roleDansEntreprise: 'Gérant',
+      // Un numéro de la plage réservée à la fiction : c'est à lui que partirait le code de
+      // confirmation d'un changement de compte bancaire.
+      telephone: '+33199000092',
       motDePasseHash: await hache(MOT_DE_PASSE),
       emailVerifieLe: new Date(),
     },
@@ -320,9 +324,39 @@ async function semeDevisDeDemonstration(entrepriseId: string): Promise<string> {
  * calculerait de son côté finirait par illustrer autre chose que le produit.
  */
 async function semeFacturesDeDemonstration(entrepriseId: string): Promise<string> {
+  // Les documents déjà émis ne se refont pas.
+  //
+  // Ce script était rejouable en effaçant tout. Il ne peut plus l'être pour les factures
+  // émises et leurs avoirs : la base les retient, comme elle le ferait en production. Ce
+  // n'est pas une gêne à contourner — un jeu d'essai qui peut effacer ce que la production
+  // ne peut pas effacer n'éprouve plus les mêmes règles que le produit.
+  //
+  // Le script se contente donc de constater ce qui existe. Pour repartir de zéro, il faut
+  // refaire la base : `pnpm --filter @lerenom/db semer` après l'avoir vidée.
+  const dejaEmise = await prisma.facture.findFirst({
+    where: { entrepriseId, statut: { in: ['emise', 'payee', 'annulee_par_avoir'] } },
+    select: { id: true },
+  });
+  if (dejaEmise !== null) {
+    const solde = await prisma.facture.findFirstOrThrow({
+      where: { entrepriseId, statut: 'prete' },
+      select: { id: true },
+      orderBy: { creeLe: 'desc' },
+    });
+    const racineExistante = path.resolve(import.meta.dirname, '../../..');
+    await writeFile(path.join(racineExistante, '.jeton-facture'), `${solde.id}\n`, 'utf8');
+    await writeFile(
+      path.join(racineExistante, '.jeton-facture-emise'),
+      `${dejaEmise.id}\n`,
+      'utf8',
+    );
+    return solde.id;
+  }
+
   await prisma.facture.deleteMany({ where: { entrepriseId } });
   await prisma.devis.deleteMany({ where: { entrepriseId, statut: 'signe' } });
-  await prisma.rib.deleteMany({ where: { entrepriseId } });
+  // Les RIB non plus : des factures émises les désignent. On ne garde que l'absence d'actif.
+  await prisma.rib.deleteMany({ where: { entrepriseId, factures: { none: {} } } });
 
   const client = await prisma.clientPro.findFirstOrThrow({ where: { entrepriseId } });
 

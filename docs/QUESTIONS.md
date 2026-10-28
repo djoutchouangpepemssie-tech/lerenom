@@ -709,3 +709,37 @@ l'avoir _de remboursement_ ? Le premier solde une facture que le client n'a pas 
 second constate une somme à lui rendre. Comptablement les écritures diffèrent. Nous ne
 distinguons pas, faute de savoir si la plateforme doit tenir cette comptabilité ou seulement
 produire les documents.
+
+---
+
+## Q30 🟡 — Le changement de compte bancaire : ce qui est fait, ce qui manque
+
+_(sécurité — défaut prudent appliqué, deux points à trancher)_
+
+Détourner les encaissements d'un artisan est la fraude la plus banale sur ce genre de
+plateforme : l'escroc n'a rien à voler dans l'espace professionnel, il veut seulement que les
+virements des clients arrivent chez lui. Le schéma prévoyait `confirmeParSmsLe` sans dire ce
+qui l'alimente.
+
+**Appliqué** : un changement de compte n'est effectif qu'après saisie d'un code envoyé au
+mobile **déjà enregistré**. Pas à un numéro fourni dans la même requête, ce qui ne prouverait
+rien. Et l'ancien compte reste actif tant que le code n'est pas saisi — un attaquant qui
+n'aboutit pas ne doit même pas pouvoir couper les encaissements de sa victime.
+
+**Premier point à trancher : le professionnel sans mobile enregistré.** Le défaut appliqué est
+de refuser, en expliquant pourquoi, plutôt que d'accepter sur la foi du seul mot de passe. Une
+confirmation sans second canal n'est pas une confirmation. Mais cela bloque un artisan qui n'a
+pas renseigné de numéro et veut être payé : faut-il un autre second canal (courrier postal,
+pièce d'identité, appel d'Arcel) ou l'obligation de renseigner un mobile à l'inscription ?
+
+**Second point : aucun SMS ne part réellement.** Les messages s'empilent dans
+`messages_sortants` avec le statut `en_attente`, comme toutes les autres notifications de la
+plateforme — aucun fournisseur n'est branché. Le jour où il le sera, ce code fonctionnera sans
+modification ; d'ici là, le changement de compte est **inutilisable en production**, et c'est
+volontaire : mieux vaut une porte verrouillée dont on n'a pas encore la clé qu'une porte
+ouverte.
+
+**Ce qui n'est pas non plus tranché** : faut-il prévenir par e-mail, en plus du SMS, qu'un
+changement de compte a été demandé ? C'est l'usage des banques, et c'est utile précisément
+quand le SMS est intercepté. Nous ne l'avons pas fait pour ne pas multiplier les messages
+avant d'avoir un fournisseur ; la décision devrait être prise en même temps que le branchement.

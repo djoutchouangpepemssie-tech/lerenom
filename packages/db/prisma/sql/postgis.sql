@@ -56,11 +56,38 @@ CREATE UNIQUE INDEX IF NOT EXISTS exclusivites_active_idx
   ON exclusivites (metier_id, commune_id)
   WHERE active;
 
+-- Un seul relevé bancaire actif par entreprise.
+--
+-- C'est le compte sur lequel les clients virent l'argent : deux comptes actifs en même temps
+-- et plus personne ne peut dire lequel figure sur la prochaine facture. Index partiel, pour
+-- la même raison que ci-dessus — Prisma ne sait pas l'exprimer.
+CREATE UNIQUE INDEX IF NOT EXISTS ribs_actif_idx
+  ON ribs (entreprise_id)
+  WHERE actif;
+
 -- Une facture émise ne se modifie pas : une erreur se corrige par un avoir. Le déclencheur
 -- rend la règle vraie dans la base, pas seulement dans le code.
 CREATE OR REPLACE FUNCTION interdit_modification_facture_emise()
 RETURNS trigger AS $$
 BEGIN
+  -- La suppression, d'abord. Le déclencheur ne portait que sur `UPDATE` : une facture émise
+  -- ne pouvait pas être modifiée, mais rien n'empêchait de l'effacer — ce qui revient au
+  -- même en pire, puisqu'il ne reste alors rien à opposer. Un garde-fou qui ferme une porte
+  -- et laisse l'autre ouverte ne garde rien.
+  --
+  -- L'exception est la même que pour les avoirs : dans une suppression en cascade,
+  -- PostgreSQL efface l'entreprise avant ses factures, donc elle est déjà absente ici. Un
+  -- effacement demandé par son dirigeant, ou un nettoyage de jeu de test, passe ; la
+  -- suppression d'une facture seule, non.
+  IF TG_OP = 'DELETE' THEN
+    IF OLD.statut IN ('emise', 'payee', 'annulee_par_avoir')
+       AND EXISTS (SELECT 1 FROM entreprises WHERE id = OLD.entreprise_id) THEN
+      RAISE EXCEPTION
+        'Une facture émise ne peut être ni modifiée ni supprimée : corrigez-la par un avoir.';
+    END IF;
+    RETURN OLD;
+  END IF;
+
   IF OLD.statut IN ('emise', 'payee') THEN
     -- Les montants et le numéro d'une facture émise ne bougent plus, quoi qu'il arrive au
     -- statut. La version précédente ne vérifiait rien dès lors que la facture passait à
@@ -90,7 +117,7 @@ $$ LANGUAGE plpgsql;
 
 DROP TRIGGER IF EXISTS factures_immuables ON factures;
 CREATE TRIGGER factures_immuables
-  BEFORE UPDATE ON factures
+  BEFORE UPDATE OR DELETE ON factures
   FOR EACH ROW EXECUTE FUNCTION interdit_modification_facture_emise();
 
 -- Un avoir ne se modifie ni ne se supprime.

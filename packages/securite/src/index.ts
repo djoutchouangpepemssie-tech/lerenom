@@ -26,13 +26,19 @@ export function tireCode(): string {
 }
 
 /**
- * Empreinte du code, liée à la demande et au secret du serveur.
+ * Empreinte du code, liée à ce qu'il vérifie et au secret du serveur.
  *
- * Le sel est l'identifiant de la demande : deux visiteurs qui tirent le même code n'ont pas la
- * même empreinte, et une empreinte volée ne sert pas sur une autre demande.
+ * Le sel est l'identifiant de l'objet vérifié — une demande quand on confirme le mobile d'un
+ * client, un relevé bancaire quand on confirme un changement de compte. Deux personnes qui
+ * tirent le même code n'ont donc pas la même empreinte, et une empreinte volée ne sert pas
+ * ailleurs.
+ *
+ * Le paramètre s'appelait `demandeId`. Il n'a jamais rien eu de propre aux demandes : ce nom
+ * laissait croire que le mécanisme n'en sortait pas, et aurait fait réécrire ailleurs ce qui
+ * existait déjà.
  */
-export function empreinteCode(code: string, demandeId: string, secret: string): string {
-  return createHmac('sha256', secret).update(`${demandeId}:${code}`).digest('hex');
+export function empreinteCode(code: string, sel: string, secret: string): string {
+  return createHmac('sha256', secret).update(`${sel}:${code}`).digest('hex');
 }
 
 /** Compare deux empreintes hexadécimales à temps constant. */
@@ -43,16 +49,21 @@ export function empreintesEgales(attendue: string, proposee: string): boolean {
   return a.length === b.length && a.length > 0 && timingSafeEqual(a, b);
 }
 
-/** Confronte un code saisi à l'état de la demande, règles du cœur comprises. */
+/**
+ * Confronte un code saisi à l'état de ce qu'il vérifie, règles du cœur comprises.
+ *
+ * `sel` est l'identifiant de l'objet : la demande dont on vérifie le mobile, le relevé
+ * bancaire dont on confirme le changement.
+ */
 export function verifieCode(
-  etat: EtatVerification & { readonly demandeId: string },
+  etat: EtatVerification & { readonly sel: string },
   codeSaisi: string,
   secret: string,
   maintenant: Date = new Date(),
 ): ResultatVerification {
   const correspond =
     etat.empreinte !== null &&
-    empreintesEgales(etat.empreinte, empreinteCode(codeSaisi, etat.demandeId, secret));
+    empreintesEgales(etat.empreinte, empreinteCode(codeSaisi, etat.sel, secret));
 
   return decideVerification(etat, correspond, maintenant);
 }

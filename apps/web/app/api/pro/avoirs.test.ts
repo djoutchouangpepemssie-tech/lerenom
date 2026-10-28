@@ -269,6 +269,37 @@ describe('ce que la base refuse elle-même', () => {
     ).rejects.toThrow(/avoir/i);
   });
 
+  it('une facture émise ne se supprime pas non plus', async () => {
+    // Le déclencheur ne portait que sur `UPDATE` : la facture ne pouvait pas être modifiée,
+    // mais rien n'empêchait de l'effacer — ce qui revient au même en pire, puisqu'il ne
+    // reste alors rien à opposer. Une porte fermée et l'autre ouverte ne gardent rien.
+    const facture = await factureEmise();
+    await expect(prisma.facture.delete({ where: { id: facture.id } })).rejects.toThrow(/avoir/i);
+  });
+
+  it('une facture non émise se supprime : rien n’a encore été remis au client', async () => {
+    const devisId = ((await (await cree()).json()) as { id: string }).id;
+    await enregistreDevis(saisieDevis(), contexte(devisId));
+    await envoie(vide(), contexte(devisId));
+    await signe(vide(), contexte(devisId));
+    const prete = (await listeFactures(entrepriseId))[0];
+    if (prete === undefined) throw new Error('facture manquante');
+
+    await prisma.factureLigne.deleteMany({ where: { factureId: prete.id } });
+    await expect(prisma.facture.delete({ where: { id: prete.id } })).resolves.toBeDefined();
+  });
+
+  it('supprimer l’entreprise emporte ses factures émises et ses avoirs', async () => {
+    // L'effacement d'une société entière n'est pas la correction d'une erreur comptable : le
+    // verrou ne doit pas confondre les deux. La cascade les distingue — PostgreSQL efface la
+    // ligne parente avant ses enfants.
+    const facture = await factureEmise();
+    await crediteRoute(saisieAvoir(30), contexte(facture.id));
+
+    await expect(prisma.entreprise.delete({ where: { id: entrepriseId } })).resolves.toBeDefined();
+    expect(await prisma.facture.count({ where: { id: facture.id } })).toBe(0);
+  });
+
   it('une facture émise ne redevient pas un brouillon', async () => {
     const facture = await factureEmise();
     await expect(

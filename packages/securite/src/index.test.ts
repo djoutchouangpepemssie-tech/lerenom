@@ -15,7 +15,7 @@ const MAINTENANT = new Date('2026-10-27T12:05:00Z');
 
 function etat(code = '123456') {
   return {
-    demandeId: DEMANDE,
+    sel: DEMANDE,
     empreinte: empreinteCode(code, DEMANDE, SECRET),
     expireLe: new Date('2026-10-27T12:15:00Z'),
     tentatives: 0,
@@ -115,9 +115,10 @@ describe('verifieCode', () => {
   });
 
   it('refuse le bon code présenté sur une autre demande', () => {
-    expect(
-      verifieCode({ ...etat(), demandeId: 'dem_autre' }, '123456', SECRET, MAINTENANT),
-    ).toEqual({ issue: 'code-faux', tentativesRestantes: TENTATIVES_MAX - 1 });
+    expect(verifieCode({ ...etat(), sel: 'dem_autre' }, '123456', SECRET, MAINTENANT)).toEqual({
+      issue: 'code-faux',
+      tentativesRestantes: TENTATIVES_MAX - 1,
+    });
   });
 
   it('accepte un code à zéros de tête sans le confondre avec sa valeur numérique', () => {

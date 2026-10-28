@@ -378,6 +378,28 @@ const PAGES = [
     },
   },
   {
+    nom: 'pro-rib',
+    chemin: '/pro/espace/rib',
+    titre: 'Espace pro — mon compte bancaire',
+    connexionPro: true,
+  },
+  {
+    nom: 'pro-rib-saisie',
+    chemin: '/pro/espace/rib',
+    titre: 'Espace pro — changer de compte bancaire',
+    connexionPro: true,
+    // Le formulaire est rempli sans être envoyé : aucun SMS ne part, et la capture montre
+    // l'écran au moment où il demande une relecture de l'IBAN.
+    scenario: async (onglet) => {
+      await onglet.getByRole('button', { name: 'Changer de compte' }).click();
+      await onglet.getByLabel('Titulaire du compte').waitFor();
+      await onglet.getByLabel('Titulaire du compte').fill('Plomberie Martin');
+      await onglet.getByLabel('IBAN').fill('FR7630004000031234567890143');
+      await onglet.getByLabel('BIC').fill('BNPAFRPP');
+      await onglet.waitForTimeout(200);
+    },
+  },
+  {
     nom: 'pro-fiche-completee',
     chemin: '/pro/espace/fiche',
     titre: 'Espace pro — ma fiche, complétude en hausse',

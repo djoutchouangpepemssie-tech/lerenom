@@ -32,6 +32,7 @@ export default async function DispositionEspacePro({
     { href: '/pro/espace/agences', libelle: 'Mes agences' },
     { href: '/pro/espace/devis', libelle: 'Mes devis' },
     { href: '/pro/espace/factures', libelle: 'Mes factures' },
+    { href: '/pro/espace/rib', libelle: 'Mon compte bancaire' },
   ];
 
   return (

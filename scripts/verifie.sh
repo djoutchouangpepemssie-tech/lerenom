@@ -32,6 +32,17 @@ etape() {
   fi
 }
 
+# Les secrets, une fois pour toutes les étapes.
+#
+# Plusieurs d'entre elles en ont besoin : le worker refuse de démarrer sans, et les tests qui
+# tirent un code de vérification aussi — à juste titre, un service à moitié configuré est pire
+# qu'un service qui refuse de partir. Mais cette porte vérifie que le **code** tient, pas que
+# la machine du développeur détient les secrets de production. On en fabrique un éphémère.
+#
+# Il est exporté une fois, en haut : chaque étape qui le fabriquerait pour elle-même en aurait
+# un différent, et deux étapes qui ne s'accordent pas sur un secret ne s'accordent sur rien.
+export SECRET_VERIFICATION="${SECRET_VERIFICATION:-$(head -c 32 /dev/urandom | od -An -tx1 | tr -d ' \n')}"
+
 etape "Formatage" pnpm run format:verifie
 etape "Lint" pnpm run lint
 etape "Types" pnpm run typecheck
@@ -49,12 +60,7 @@ else
   # lit ce qu'il a écrit. Chaîner `timeout` à un `grep` masquerait le résultat derrière le
   # code de sortie de `timeout`.
   journal="$(mktemp)"
-  # Le worker exige ses secrets pour démarrer, et c'est bien : un service qui tourne à moitié
-  # configuré est pire qu'un service qui refuse de partir. Mais ici on vérifie qu'il *démarre*,
-  # pas que la machine du développeur détient les secrets de production. On lui en fabrique un
-  # le temps du contrôle — ce que ferait n'importe qui à la main.
-  SECRET_VERIFICATION="${SECRET_VERIFICATION:-$(head -c 32 /dev/urandom | od -An -tx1 | tr -d ' \n')}" \
-    timeout 20 pnpm --filter @lerenom/worker start > "$journal" 2>&1 || true
+  timeout 20 pnpm --filter @lerenom/worker start > "$journal" 2>&1 || true
   if grep -q 'en écoute' "$journal"; then
     vert "Démarrage du worker"
   else
