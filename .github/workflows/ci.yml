@@ -9,6 +9,11 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+# Les droits sont donnés explicitement et au minimum : un travail qui n'écrit rien n'a pas
+# besoin d'un jeton qui écrit.
+permissions:
+  contents: read
+
 jobs:
   verifier:
     name: Lint, types, tests et build

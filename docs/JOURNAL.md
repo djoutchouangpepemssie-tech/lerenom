@@ -560,6 +560,57 @@ l'espace, et la revendication d'une fiche existante.
 
 ---
 
+## L'intégration continue n'a jamais tourné · constat du 28 octobre 2026
+
+**Les dix exécutions de l'atelier GitHub ont échoué, toutes, depuis la première.** Il faut le
+dire clairement : aucune des portes de validation annoncées dans ce journal n'a jamais été
+franchie sur GitHub. Elles l'ont été localement, et c'est vérifiable — mais ce n'est pas la
+même garantie.
+
+### Ce que disent les faits
+
+| Observation                                                  | Ce qu'elle élimine                                 |
+| ------------------------------------------------------------ | -------------------------------------------------- |
+| Les dix exécutions échouent en **2 à 4 secondes**            | Un échec de test ou de build prendrait des minutes |
+| `runner_id: 0`, `runner_name: ""`                            | **Aucune machine ne leur a jamais été attribuée**  |
+| Aucun journal téléchargeable (HTTP 404)                      | Rien ne s'est exécuté, il n'y a rien à lire        |
+| Les deux travaux échouent à la même seconde                  | Le problème est en amont des travaux               |
+| Le fichier `ci.yml` est un YAML valide, déclencheurs compris | Ce n'est pas une erreur de syntaxe                 |
+
+Le travail n'a pas échoué : **il n'a jamais démarré**. C'est une condition de compte, pas une
+condition de code, et aucune modification du dépôt ne la lèvera.
+
+### Les deux causes possibles, et où regarder
+
+Le dépôt est **privé**, ce qui est déterminant : un dépôt public dispose de minutes GitHub
+Actions sans limite, un dépôt privé en consomme un quota.
+
+1. **Compte neuf non vérifié.** GitHub bloque l'exécution des ateliers tant que l'adresse
+   électronique du compte n'est pas confirmée. Le compte et le dépôt datent du 27 octobre :
+   c'est l'hypothèse la plus probable. À vérifier dans **Settings → Emails**.
+2. **Minutes épuisées ou limite de dépense à zéro.** Un dépôt privé sur l'offre gratuite
+   dispose de 2 000 minutes par mois ; au-delà, les travaux échouent exactement ainsi, sans
+   journal. À vérifier dans **Settings → Billing and plans → Plans and usage**.
+
+Accessoirement, vérifier que les ateliers sont autorisés : **Settings du dépôt → Actions →
+General → Allow all actions**.
+
+### Ce qui a été fait en attendant
+
+`pnpm run verifie` exécute **exactement** ce que fait l'atelier, dans le même ordre :
+formatage, lint, types, tests, build, puis schéma et semis si une base est joignable. Tant que
+GitHub ne lance rien, c'est la seule porte de validation réelle du projet, et elle devait être
+reproductible — sinon « ça marche chez moi » devient la seule garantie.
+
+Le script **dit** quand il saute les tests d'intégration faute de base, au lieu de laisser
+croire qu'il les a passés. C'est la même règle que partout ailleurs ici : une vérification non
+faite se signale, elle ne se tait pas.
+
+L'atelier a par ailleurs reçu des droits explicites et minimaux (`contents: read`) : un travail
+qui n'écrit rien n'a pas besoin d'un jeton qui écrit.
+
+---
+
 ## Phases 5 à 11 · à venir
 
 Agenda et documents du pro, monétisation Stripe, back-office, personnalisation, avis et

@@ -14,7 +14,8 @@
     "test:couverture": "turbo run test:couverture",
     "format": "prettier --write .",
     "format:verifie": "prettier --check .",
-    "captures": "pnpm --filter @lerenom/web captures"
+    "captures": "pnpm --filter @lerenom/web captures",
+    "verifie": "bash scripts/verifie.sh"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
