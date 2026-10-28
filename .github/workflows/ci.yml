@@ -106,6 +106,12 @@ jobs:
       - name: Générer le client Prisma
         run: pnpm --filter @lerenom/db build
 
+      # Sur une base vierge ce fichier n'a rien à faire : ses instructions sont gardées par
+      # `to_regclass`. Il est joué quand même, dans le même ordre qu'en local et qu'au
+      # déploiement — un ordre qui ne diffère pas d'un environnement à l'autre.
+      - name: Poser les contraintes préalables au schéma
+        run: psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f packages/db/prisma/sql/avant-schema.sql
+
       - name: Créer le schéma
         run: pnpm --filter @lerenom/db pousser
 

@@ -225,6 +225,29 @@ factures dans l'espace pro avec RIB figé à l'émission · garantie Exclusif (m
 3 mois, fiche complète, 80 % de réponse) · aucun contenu SEO visible · 18 univers / 69 métiers /
 479 prestations · 3 pros au maximum par demande, jamais de revente après 72 h.
 
+### Une règle née de trois erreurs identiques
+
+Trois fois, une **valeur stockée en base s'est retrouvée fausse** parce qu'un seul chemin la
+calculait et qu'un autre écrivait sans elle :
+
+| Valeur              | Qui l'avait faussée                                | Ce qu'elle décidait         |
+| ------------------- | -------------------------------------------------- | --------------------------- |
+| `fiches.completude` | Le semis, avec des valeurs au jugé                 | Le classement naturel       |
+| `agences.latitude`  | Personne — le géocodage absent                     | L'éligibilité aux demandes  |
+| `devis.total_ttc`   | Le semis, qui posait les lignes sans les totaliser | Le montant affiché en liste |
+
+La règle qui en découle, et qui s'applique désormais à toute valeur dérivée stockée :
+
+1. **une seule fonction la calcule**, dans `packages/core`, et tout chemin d'écriture l'appelle
+   — l'application, le semis, les travaux de nuit, les scripts de démonstration ;
+2. **un test la vérifie sur une donnée non triviale.** Comparer deux champs tous deux à `null`,
+   comme le faisait le test des coordonnées d'agence, ne prouve rien et endort la vigilance ;
+3. **le commentaire se place là où l'on serait tenté de l'oublier** — dans le semis, pas
+   seulement dans le module de calcul.
+
+Une valeur dérivée est stockée pour épargner un calcul à la lecture, jamais pour devenir une
+seconde source de vérité.
+
 ---
 
 ## 6. Risques techniques identifiés et parades

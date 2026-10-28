@@ -49,7 +49,12 @@ else
   # lit ce qu'il a écrit. Chaîner `timeout` à un `grep` masquerait le résultat derrière le
   # code de sortie de `timeout`.
   journal="$(mktemp)"
-  timeout 20 pnpm --filter @lerenom/worker start > "$journal" 2>&1 || true
+  # Le worker exige ses secrets pour démarrer, et c'est bien : un service qui tourne à moitié
+  # configuré est pire qu'un service qui refuse de partir. Mais ici on vérifie qu'il *démarre*,
+  # pas que la machine du développeur détient les secrets de production. On lui en fabrique un
+  # le temps du contrôle — ce que ferait n'importe qui à la main.
+  SECRET_VERIFICATION="${SECRET_VERIFICATION:-$(head -c 32 /dev/urandom | od -An -tx1 | tr -d ' \n')}" \
+    timeout 20 pnpm --filter @lerenom/worker start > "$journal" 2>&1 || true
   if grep -q 'en écoute' "$journal"; then
     vert "Démarrage du worker"
   else
@@ -67,7 +72,17 @@ if [ -z "${DATABASE_URL:-}" ]; then
 elif ! pg_isready -q 2>/dev/null; then
   printf '\n\033[0;33m! Base injoignable : tests d’intégration non exécutés.\033[0m\n'
 else
+  # Avant le schéma : ce que Prisma refuserait d'ajouter lui-même. `db push` demande un
+  # drapeau de perte de données pour poser une contrainte d'unicité sur une table déjà
+  # peuplée — drapeau qui autoriserait aussi des suppressions non voulues. On pose donc la
+  # contrainte en SQL, avec le nom que Prisma attend, et `db push` ne voit plus de différence.
+  etape "Avant-schéma" pnpm --filter @lerenom/db sql:avant
   etape "Schéma" pnpm --filter @lerenom/db pousser
+  # Les garde-fous SQL — immuabilité des factures émises, unicité des exclusivités actives,
+  # journal d'audit en écriture seule — ne sont pas exprimables en Prisma. Ils n'étaient
+  # appliqués qu'au déploiement : localement, aucun test ne pouvait les éprouver, et un
+  # garde-fou que personne n'exerce est un garde-fou dont personne ne sait s'il tient.
+  etape "Garde-fous SQL" pnpm --filter @lerenom/db sql
   etape "Semis" pnpm --filter @lerenom/db semer
 fi
 

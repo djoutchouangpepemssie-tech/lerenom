@@ -136,9 +136,39 @@ export function apresRecredit(demandesAccepteesCeMois: number): number {
   return Math.max(0, demandesAccepteesCeMois - 1);
 }
 
-/** Formate un montant à la française : 12 €, 94,80 €. */
+/**
+ * Formate un montant à la française : 12 €, 94,80 €, 1 122 €.
+ *
+ * Les milliers sont séparés par une **espace fine insécable** (U+202F), et l'espace qui
+ * précède le symbole l'est aussi : c'est la règle typographique française, et l'insécabilité
+ * évite qu'un montant se coupe en fin de ligne — « 1 122 » puis « € » à la ligne suivante est
+ * illisible sur une facture.
+ *
+ * Le groupement est fait à la main plutôt que par `Intl` : le séparateur que `Intl` choisit
+ * pour `fr-FR` a changé selon les versions de Node, et un document comptable ne doit pas
+ * s'écrire différemment selon la machine qui le produit.
+ */
 export function formatEuros(montant: number): string {
-  const entier = Number.isInteger(montant);
-  const texte = entier ? String(montant) : montant.toFixed(2).replace('.', ',');
-  return `${texte} €`;
+  // Une espace **insécable** (U+00A0), pas une espace fine insécable (U+202F).
+  //
+  // La typographie française prescrit la fine, et c'est ce que ce code utilisait. Sur la
+  // capture de la facture, « 1122 € » : le séparateur était bien dans la chaîne, invisible à
+  // l'écran. Mesure faite dans la police du site : la fine rend 1,6 px contre 3,2 px pour
+  // l'insécable — Manrope ne dessine pas la fine et le navigateur la réduit presque à rien.
+  //
+  // Un séparateur de milliers qu'on ne voit pas ne sépare rien : sur une facture, « 1122 »
+  // et « 1 122 » ne se lisent pas à la même vitesse. L'insécable se voit, ne coupe pas en fin
+  // de ligne, et aucune police n'a d'excuse pour ne pas la dessiner. La règle typographique
+  // sert la lecture ; quand son application la dessert, c'est la lecture qui gagne.
+  const INSECABLE = '\u00a0';
+  const negatif = montant < 0;
+  const absolu = Math.abs(montant);
+  const entier = Number.isInteger(absolu);
+  const texte = entier ? String(absolu) : absolu.toFixed(2).replace('.', ',');
+
+  const [partieEntiere = '', decimales] = texte.split(',');
+  const groupee = partieEntiere.replace(/\B(?=(\d{3})+(?!\d))/g, INSECABLE);
+  const nombre = decimales === undefined ? groupee : `${groupee},${decimales}`;
+
+  return `${negatif ? '−' : ''}${nombre}${INSECABLE}€`;
 }

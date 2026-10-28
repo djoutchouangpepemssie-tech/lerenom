@@ -70,7 +70,7 @@ describe('coutAcceptation', () => {
     const cout = coutAcceptation('premium', 'partagee', 5, P);
     expect(cout?.montantHT).toBe(12);
     expect(cout?.consommeForfait).toBe(false);
-    expect(cout?.libelleBouton).toBe('Accepter — 12 €');
+    expect(cout?.libelleBouton).toBe('Accepter — 12\u00a0€');
   });
 
   it('facture 9 € à l’Exclusif au-delà de ses 15 demandes', () => {
@@ -144,9 +144,41 @@ describe('apresRecredit', () => {
 });
 
 describe('formatEuros', () => {
-  it('écrit les entiers sans décimale et les décimaux à la française', () => {
-    expect(formatEuros(12)).toBe('12 €');
-    expect(formatEuros(94.8)).toBe('94,80 €');
-    expect(formatEuros(0)).toBe('0 €');
+  // Insécable et non fine insécable : la fine ne se voit pas dans la police du site (1,6 px
+  // contre 3,2 px, mesuré). Voir le commentaire dans `quotas.ts`.
+  const INSECABLE = '\u00a0';
+
+  it('écrit un entier sans décimale', () => {
+    expect(formatEuros(12)).toBe(`12${INSECABLE}€`);
+    expect(formatEuros(0)).toBe(`0${INSECABLE}€`);
+  });
+
+  it('écrit deux décimales avec une virgule', () => {
+    expect(formatEuros(94.8)).toBe(`94,80${INSECABLE}€`);
+  });
+
+  it('sépare les milliers par une espace fine insécable', () => {
+    // Sur une facture, « 1122 € » se lit mal et « 1 122 » coupé en fin de ligne encore moins.
+    expect(formatEuros(1122)).toBe(`1${INSECABLE}122${INSECABLE}€`);
+    expect(formatEuros(1234567)).toBe(`1${INSECABLE}234${INSECABLE}567${INSECABLE}€`);
+  });
+
+  it('groupe aussi devant les décimales', () => {
+    expect(formatEuros(1122.5)).toBe(`1${INSECABLE}122,50${INSECABLE}€`);
+  });
+
+  it('ne groupe pas en dessous de mille', () => {
+    expect(formatEuros(999)).toBe(`999${INSECABLE}€`);
+  });
+
+  it('écrit un montant négatif avec un vrai signe moins', () => {
+    // Le trait d'union n'est pas un signe moins : sur un avoir, la différence se voit.
+    expect(formatEuros(-50)).toBe(`−50${INSECABLE}€`);
+  });
+
+  it('n’utilise jamais d’espace sécable', () => {
+    for (const montant of [1122, 1122.5, -1122]) {
+      expect(formatEuros(montant)).not.toContain(' ');
+    }
   });
 });

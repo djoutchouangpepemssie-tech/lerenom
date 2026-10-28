@@ -49,6 +49,11 @@ function cheminDuDevis() {
   return valeur === null ? null : `/pro/espace/devis/${valeur}`;
 }
 
+function cheminDeLaFacture() {
+  const valeur = jeton('facture');
+  return valeur === null ? null : `/pro/espace/factures/${valeur}`;
+}
+
 function cheminDeSuivi() {
   const valeur = jeton('suivi');
   return valeur === null ? null : `/suivi/${valeur}`;
@@ -333,6 +338,18 @@ const PAGES = [
     nom: 'pro-devis-editeur',
     chemin: cheminDuDevis,
     titre: 'Espace pro — éditeur de devis',
+    connexionPro: true,
+  },
+  {
+    nom: 'pro-factures-liste',
+    chemin: '/pro/espace/factures',
+    titre: 'Espace pro — mes factures',
+    connexionPro: true,
+  },
+  {
+    nom: 'pro-facture',
+    chemin: cheminDeLaFacture,
+    titre: 'Espace pro — une facture prête à émettre',
     connexionPro: true,
   },
   {

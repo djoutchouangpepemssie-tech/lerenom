@@ -13,7 +13,12 @@ import path from 'node:path';
 import { writeFile } from 'node:fs/promises';
 import { randomBytes, scrypt } from 'node:crypto';
 import { PrismaPg } from '@prisma/adapter-pg';
-import { calculeTotaux } from '@lerenom/core';
+import {
+  calculeTotaux,
+  prepareFactureAcompte,
+  prepareFactureSolde,
+  prochainNumero,
+} from '@lerenom/core';
 import { PrismaClient } from '../src/genere/client.js';
 
 const connectionString = process.env['DATABASE_URL'];
@@ -189,6 +194,7 @@ async function main(): Promise<void> {
   }
 
   const devisId = await semeDevisDeDemonstration(entreprise.id);
+  await semeFacturesDeDemonstration(entreprise.id);
 
   process.stdout.write(
     `Compte de démonstration prêt.\n  adresse     : ${EMAIL}\n  mot de passe : ${MOT_DE_PASSE}\n  devis       : ${devisId}\n`,
@@ -304,6 +310,164 @@ async function semeDevisDeDemonstration(entrepriseId: string): Promise<string> {
   await writeFile(path.join(racine, '.jeton-devis'), `${devis.id}\n`, 'utf8');
 
   return devis.id;
+}
+
+/**
+ * Un devis signé et ses deux factures, pour que les écrans de facturation montrent quelque
+ * chose de réaliste : un acompte déjà émis, un solde encore à émettre.
+ *
+ * Les montants passent par les mêmes fonctions que l'application. Un jeu d'essai qui
+ * calculerait de son côté finirait par illustrer autre chose que le produit.
+ */
+async function semeFacturesDeDemonstration(entrepriseId: string): Promise<string> {
+  await prisma.facture.deleteMany({ where: { entrepriseId } });
+  await prisma.devis.deleteMany({ where: { entrepriseId, statut: 'signe' } });
+  await prisma.rib.deleteMany({ where: { entrepriseId } });
+
+  const client = await prisma.clientPro.findFirstOrThrow({ where: { entrepriseId } });
+
+  await prisma.rib.create({
+    data: {
+      entrepriseId,
+      titulaire: 'Plomberie Martin',
+      // IBAN de test, jamais attribué : la clé de contrôle est juste, le compte n'existe pas.
+      iban: 'FR7630001007941234567890185',
+      bic: 'BDFEFRPPXXX',
+      banque: 'Banque fictive des artisans',
+      actif: true,
+      confirmeParSmsLe: new Date(),
+    },
+  });
+
+  const lignes = [
+    {
+      id: 'l1',
+      type: 'prestation' as const,
+      designation: 'Remplacement du chauffe-eau',
+      detail: 'Cumulus 200 L, dépose de l’ancien comprise',
+      unite: 'forfait' as const,
+      quantite: 1,
+      prixUnitaireHT: 890,
+      tauxTva: 10 as const,
+    },
+    {
+      id: 'l2',
+      type: 'prestation' as const,
+      designation: 'Main-d’œuvre',
+      unite: 'heure' as const,
+      quantite: 4,
+      prixUnitaireHT: 58,
+      tauxTva: 10 as const,
+    },
+  ];
+  const document = { lignes, remisePourcent: 0, acomptePourcent: 30 as const };
+  const totaux = calculeTotaux(document);
+  const annee = new Date().getFullYear();
+
+  const devis = await prisma.devis.create({
+    data: {
+      entrepriseId,
+      clientId: client.id,
+      numero: prochainNumero('DV', annee, null),
+      statut: 'signe',
+      type: 'definitif',
+      acomptePourcent: 30,
+      validiteJours: 30,
+      fraisDeplacementTTC: 0,
+      piecesRemplaceesGardees: true,
+      totalHT: totaux.totalHT,
+      totalTVA: totaux.totalTVA,
+      totalTTC: totaux.totalTTC,
+      envoyeLe: new Date(Date.now() - 6 * 86_400_000),
+      signeLe: new Date(Date.now() - 4 * 86_400_000),
+      lignes: {
+        create: lignes.map((ligne, rang) => ({
+          rang,
+          type: ligne.type,
+          designation: ligne.designation,
+          detail: ligne.detail ?? null,
+          unite: ligne.unite,
+          quantite: ligne.quantite,
+          prixUnitaireHT: ligne.prixUnitaireHT,
+          tauxTva: ligne.tauxTva,
+        })),
+      },
+    },
+    select: { id: true },
+  });
+
+  const acompte = prepareFactureAcompte(document);
+  const solde = prepareFactureSolde(document, acompte?.montantAPayerTTC ?? 0);
+  const rib = await prisma.rib.findFirstOrThrow({ where: { entrepriseId, actif: true } });
+
+  if (acompte !== null) {
+    const emiseLe = new Date(Date.now() - 4 * 86_400_000);
+    const echeance = new Date(emiseLe);
+    echeance.setDate(echeance.getDate() + 30);
+    await prisma.facture.create({
+      data: {
+        entrepriseId,
+        clientId: client.id,
+        devisId: devis.id,
+        type: 'acompte',
+        statut: 'emise',
+        numero: prochainNumero('FA', annee, null),
+        acompteDejaFactureTTC: 0,
+        totalHT: acompte.totaux.totalHT,
+        totalTVA: acompte.totaux.totalTVA,
+        totalTTC: acompte.totaux.totalTTC,
+        montantAPayerTTC: acompte.montantAPayerTTC,
+        ribId: rib.id,
+        emiseLe,
+        echeanceLe: echeance,
+        lignes: {
+          create: acompte.lignes.map((ligne, rang) => ({
+            rang,
+            type: ligne.type,
+            designation: ligne.designation,
+            detail: ligne.detail ?? null,
+            unite: ligne.unite ?? null,
+            quantite: ligne.quantite ?? null,
+            prixUnitaireHT: ligne.prixUnitaireHT ?? null,
+            tauxTva: ligne.tauxTva ?? null,
+          })),
+        },
+      },
+    });
+  }
+
+  const soldeEnregistre = await prisma.facture.create({
+    data: {
+      entrepriseId,
+      clientId: client.id,
+      devisId: devis.id,
+      type: 'solde',
+      statut: 'prete',
+      acompteDejaFactureTTC: solde.acompteDejaFactureTTC,
+      totalHT: solde.totaux.totalHT,
+      totalTVA: solde.totaux.totalTVA,
+      totalTTC: solde.totaux.totalTTC,
+      montantAPayerTTC: solde.montantAPayerTTC,
+      lignes: {
+        create: solde.lignes.map((ligne, rang) => ({
+          rang,
+          type: ligne.type,
+          designation: ligne.designation,
+          detail: ligne.detail ?? null,
+          unite: ligne.unite ?? null,
+          quantite: ligne.quantite ?? null,
+          prixUnitaireHT: ligne.prixUnitaireHT ?? null,
+          tauxTva: ligne.tauxTva ?? null,
+        })),
+      },
+    },
+    select: { id: true },
+  });
+
+  const racine = path.resolve(import.meta.dirname, '../../..');
+  await writeFile(path.join(racine, '.jeton-facture'), `${soldeEnregistre.id}\n`, 'utf8');
+
+  return soldeEnregistre.id;
 }
 
 await main();

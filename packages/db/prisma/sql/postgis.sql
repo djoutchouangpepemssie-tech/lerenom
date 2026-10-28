@@ -84,3 +84,4 @@ CREATE OR REPLACE RULE journal_audit_sans_modification AS
 
 CREATE OR REPLACE RULE journal_audit_sans_suppression AS
   ON DELETE TO journal_audit DO INSTEAD NOTHING;
+

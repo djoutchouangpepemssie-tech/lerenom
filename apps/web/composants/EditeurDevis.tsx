@@ -197,6 +197,33 @@ export function EditeurDevis({ devis }: { readonly devis: DevisComplet }) {
     }
   }
 
+  /**
+   * La signature déclarée par le professionnel.
+   *
+   * Tant qu'aucun lien client n'existe, c'est lui qui sait : le client a signé sur papier, ou
+   * dit oui au téléphone. Le geste prépare les factures et l'emmène les voir.
+   */
+  async function declareSigne(): Promise<void> {
+    setEnCours(true);
+    setRefus(null);
+    try {
+      const reponse = await fetch(`/api/pro/devis/${devis.id}/signature`, { method: 'POST' });
+      if (reponse.ok) {
+        router.push('/pro/espace/factures');
+        return;
+      }
+      const retour = (await reponse.json()) as { erreur?: string };
+      setRefus({
+        texte: retour.erreur ?? 'Ce devis n’a pas pu être déclaré signé.',
+        manquants: [],
+      });
+    } catch {
+      setRefus({ texte: 'Nous n’avons pas pu joindre nos serveurs.', manquants: [] });
+    } finally {
+      setEnCours(false);
+    }
+  }
+
   async function dupliquer(): Promise<void> {
     setEnCours(true);
     try {
@@ -248,14 +275,22 @@ export function EditeurDevis({ devis }: { readonly devis: DevisComplet }) {
               Il ne se modifie plus : votre client en a reçu un exemplaire, et le changer sous ses
               yeux ne serait pas une correction. Dupliquez-le pour en établir une nouvelle version.
             </p>
-            <Bouton
-              aspect="contour"
-              className="mt-4"
-              onClick={() => void dupliquer()}
-              disabled={enCours}
-            >
-              Dupliquer en nouveau brouillon
-            </Bouton>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {devis.statut === 'envoye' && (
+                <Bouton aspect="or" onClick={() => void declareSigne()} disabled={enCours}>
+                  Mon client l’a signé
+                </Bouton>
+              )}
+              <Bouton aspect="contour" onClick={() => void dupliquer()} disabled={enCours}>
+                Dupliquer en nouveau brouillon
+              </Bouton>
+            </div>
+            {devis.statut === 'envoye' && (
+              <p className="text-encre-55 mt-3 text-sm">
+                Déclarer la signature prépare vos factures — l’acompte, puis le solde qui le déduit.
+                Elles resteront modifiables jusqu’à leur émission.
+              </p>
+            )}
           </div>
         )}
 

@@ -282,6 +282,7 @@ model Entreprise {
   clients        ClientPro[]
   devis          Devis[]
   factures       Facture[]
+  avoirs         Avoir[]
   ribs           Rib[]
   parametresDocuments ParametresDocuments?
   creneaux       Creneau[]
@@ -1185,7 +1186,9 @@ model Devis {
   demande      Demande?   @relation(fields: [demandeId], references: [id], onDelete: SetNull)
 
   /// Attribué à l'envoi, pas à la création : un brouillon abandonné ne laisse pas de trou.
-  numero String? @unique
+  /// Unique **par entreprise** : chaque société tient sa propre série, et deux artisans
+  /// émettront tous deux un « DV-2026-0001 ». Une unicité globale refuserait le second.
+  numero String?
   statut StatutDevis @default(brouillon)
   type   TypeDevis   @default(estimatif)
 
@@ -1218,6 +1221,7 @@ model Devis {
   creeLe DateTime @default(now()) @map("cree_le")
   modifieLe DateTime @updatedAt @map("modifie_le")
 
+  @@unique([entrepriseId, numero])
   @@index([entrepriseId, statut])
   @@map("devis")
 }
@@ -1270,7 +1274,9 @@ model Facture {
   devis        Devis?     @relation(fields: [devisId], references: [id], onDelete: SetNull)
 
   /// Attribué à l'émission, pour une numérotation continue sans trou ni doublon.
-  numero String?     @unique
+  /// Unique **par entreprise**, comme pour les devis : la continuité d'une série de
+  /// factures s'apprécie société par société.
+  numero String?
   type   TypeFacture @default(solde)
   statut StatutFacture @default(prete)
 
@@ -1301,6 +1307,7 @@ model Facture {
   creeLe DateTime @default(now()) @map("cree_le")
   modifieLe DateTime @updatedAt @map("modifie_le")
 
+  @@unique([entrepriseId, numero])
   @@index([entrepriseId, statut])
   @@map("factures")
 }
@@ -1340,16 +1347,23 @@ model FactureLigne {
 
 model Avoir {
   id        String  @id @default(cuid())
+  /// Rattaché à l'entreprise autant qu'à la facture : c'est elle qui tient la série des
+  /// numéros d'avoir, et c'est par elle qu'on les liste.
+  entrepriseId String @map("entreprise_id")
+  entreprise   Entreprise @relation(fields: [entrepriseId], references: [id], onDelete: Cascade)
   factureId String @map("facture_id")
   facture   Facture @relation(fields: [factureId], references: [id], onDelete: Restrict)
 
-  numero     String   @unique
+  /// Unique **par entreprise** : deux sociétés émettront chacune un « AV-2026-0001 ».
+  numero     String
   motif      String   @db.Text
   montantTTC Decimal  @db.Decimal(12, 2) @map("montant_ttc")
   emisLe DateTime @default(now()) @map("emis_le")
   pdfUrl String? @map("pdf_url")
 
+  @@unique([entrepriseId, numero])
   @@index([factureId])
+  @@index([entrepriseId])
   @@map("avoirs")
 }
 

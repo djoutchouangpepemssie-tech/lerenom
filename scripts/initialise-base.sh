@@ -37,6 +37,12 @@ bleu "Client Prisma"
 pnpm --filter @lerenom/db build
 vert "Client généré"
 
+bleu "Avant-schéma"
+# Ce que Prisma refuserait d'ajouter lui-même : la contrainte d'unicité par entreprise sur les
+# numéros de devis et de factures. `db push` exigerait un drapeau de perte de données.
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f packages/db/prisma/sql/avant-schema.sql
+vert "Contraintes préalables posées"
+
 bleu "Schéma"
 pnpm --filter @lerenom/db pousser
 vert "Schéma posé"

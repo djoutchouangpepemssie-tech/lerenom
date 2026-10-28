@@ -1057,6 +1057,95 @@ semis les calcule désormais avec la même fonction que l'application, et le com
 
 ---
 
+## Phase 4 bis · Les factures
+
+Une facture ne se saisit pas. Elle naît du devis signé, par les mêmes fonctions de calcul —
+une facture tapée à la main à côté d'un devis finit par en différer, et c'est exactement
+l'écart qu'un contrôle relève. Le professionnel déclare la signature (le client a signé sur
+papier, ou dit oui au téléphone) ; deux factures naissent alors quand le devis prévoit un
+acompte : l'appel de fonds, puis le solde qui le déduit.
+
+Trois propriétés rendent une facture opposable, et chacune a son test.
+
+**Une facture émise ne se modifie pas.** Pas « le code l'empêche » : _la base_ l'interdit, par
+déclencheur. Un contrôle applicatif se contourne dès qu'on écrit en SQL. Le test le prouve en
+tentant la modification interdite par Prisma et en attendant le refus de PostgreSQL. Une
+erreur se corrige par un avoir, jamais par une retouche.
+
+**Le RIB est figé à l'émission.** Un professionnel qui change de banque ne doit pas voir ses
+anciennes factures désigner un compte qu'il n'a plus — sinon un client qui paie une facture de
+l'an dernier paie sur le mauvais compte. Tant que la facture n'est pas émise, l'écran montre
+le RIB actif du jour, en disant que c'est celui qui sera figé.
+
+**Le numéro est attribué à l'émission**, comme pour les devis : une facture préparée puis
+abandonnée ne laisse pas de trou dans la série.
+
+### Le défaut le plus grave de la phase
+
+`numero` était `@unique` — unique **sur toute la plateforme**. Or chaque société repart à
+`0001` chaque année. Le deuxième artisan à émettre sa première facture de l'année aurait vu
+sa requête refusée, en production, avec un message incompréhensible. La contrainte est
+désormais `@@unique([entrepriseId, numero])`, sur les devis, les factures et les avoirs — ces
+derniers ont gagné au passage le `entrepriseId` qui leur manquait.
+
+Ce défaut n'a été vu ni par un test ni par une relecture : il a fallu se demander, devant le
+schéma, _ce qui se passe quand deux entreprises font la même chose le même jour_. C'est une
+question à se poser devant chaque contrainte d'unicité.
+
+### Un ordre de déploiement qui n'existait nulle part
+
+Poser cette contrainte sur une base déjà peuplée fait exiger à `prisma db push` un drapeau de
+perte de données — drapeau qui autoriserait aussi la suppression de colonnes, et qu'on ne met
+pas dans une commande de déploiement. Les contraintes sont donc posées en SQL, sous le nom
+exact que Prisma attend : il ne voit ensuite plus aucune différence.
+
+Mais ce SQL doit passer **avant** le schéma, alors que les garde-fous passent après. Cet ordre
+vivait dans une case du tableau de bord de l'hébergeur : invisible dans le dépôt, versionné
+nulle part, relu par personne. Il vit maintenant dans `scripts/pre-deploiement.sh`, joué à
+l'identique en local, en intégration continue et au déploiement. Les quatre étapes y sont
+commentées une à une, parce qu'un ordre d'exécution sans justification se fait réordonner par
+le premier qui passe.
+
+### Ce que les captures ont attrapé
+
+Sur la facture, « 1122 € ». Le séparateur de milliers _était_ dans la chaîne : `formatEuros`
+pose une espace fine insécable, comme le veut la typographie française, et un test l'exigeait.
+Mesure faite dans la police du site : cette fine rend **1,6 px** contre 3,2 px pour une espace
+insécable ordinaire. Manrope ne la dessine pas ; le navigateur la réduit à presque rien.
+
+Un séparateur qu'on ne voit pas ne sépare rien. Sur une facture, « 1122 » et « 1 122 » ne se
+lisent pas à la même vitesse. La règle typographique sert la lecture ; quand son application
+la dessert, c'est la lecture qui gagne — insécable partout, et le pourquoi écrit à côté du
+code pour que personne ne « corrige » en sens inverse.
+
+Et la barre d'onglets de l'espace pro montrait « tre » collé au bord gauche. Un mot tranché
+net ressemble à un défaut d'affichage ; rien ne disait qu'il suffisait de faire glisser. La
+barre s'estompe désormais du côté où il reste des onglets, et seulement de ce côté-là.
+
+Aucun des deux n'était visible dans un test. Les deux sautaient aux yeux sur l'image.
+
+### Un piège de l'outillage, pas du produit
+
+Trois captures échouaient : les boutons attendus n'existaient pas sur la page. Les jetons de
+démonstration sont **signés** par `SECRET_VERIFICATION` ; ceux du dépôt avaient été fabriqués
+avec un autre secret que celui du serveur photographié. Les pages s'affichaient donc en état
+« lien invalide ». Rien de cassé dans le produit — mais une heure perdue à chercher au mauvais
+endroit, et la leçon vaut d'être écrite : un jeton signé ne vaut que par le secret du service
+qui le relit.
+
+La porte de validation, elle, mentait d'une autre façon : elle déclarait le worker en échec
+dès que la machine n'avait pas les secrets de production. Elle vérifie qu'il _démarre_ ; elle
+lui en fabrique un éphémère, comme le ferait n'importe qui à la main.
+
+### La vérification
+
+758 tests verts, 74 captures sans un seul débordement. Les 18 tests de la facture portent,
+là encore, surtout sur les refus : la base qui rejette la modification d'une facture émise,
+l'ancien RIB qui survit au changement de banque, l'acompte et le solde dont la somme retombe
+au centime sur le total du devis, et la facture d'un confrère qu'on ne lit ni n'émet.
+
+---
+
 ## Phases 5 à 11 · à venir
 
 Agenda et documents du pro, monétisation Stripe, back-office, personnalisation, avis et
