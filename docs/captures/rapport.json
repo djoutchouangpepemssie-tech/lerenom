@@ -280,6 +280,16 @@
     "erreursConsole": []
   },
   {
+    "page": "Espace pro — mon périmètre",
+    "largeur": 390,
+    "fichier": "pro-perimetre-390.png",
+    "defilementHorizontal": false,
+    "largeurDocument": 390,
+    "largeurFenetre": 390,
+    "debordements": [],
+    "erreursConsole": []
+  },
+  {
     "page": "Espace pro — ma fiche, complétude en hausse",
     "largeur": 390,
     "fichier": "pro-fiche-completee-390.png",
@@ -583,6 +593,16 @@
     "page": "Espace pro — ma fiche",
     "largeur": 1440,
     "fichier": "pro-fiche-1440.png",
+    "defilementHorizontal": false,
+    "largeurDocument": 1440,
+    "largeurFenetre": 1440,
+    "debordements": [],
+    "erreursConsole": []
+  },
+  {
+    "page": "Espace pro — mon périmètre",
+    "largeur": 1440,
+    "fichier": "pro-perimetre-1440.png",
     "defilementHorizontal": false,
     "largeurDocument": 1440,
     "largeurFenetre": 1440,
