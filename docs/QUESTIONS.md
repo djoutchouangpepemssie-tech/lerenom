@@ -650,3 +650,35 @@ technique : combien de temps conserver les devis envoyés, et si un devis expir�
 tout seul au statut `expire` à l'échéance de sa validité. Le champ existe, le travail de nuit
 pourrait le faire ; nous ne l'avons pas branché faute de savoir si l'expiration automatique a
 des conséquences contractuelles.
+
+---
+
+## Q28 🟢 — L'espace des milliers : la règle typographique contre la lisibilité
+
+_(présentation — tranchée, consignée parce qu'elle s'écarte d'une norme)_
+
+La typographie française prescrit une **espace fine insécable** (U+202F) entre les groupes de
+chiffres et devant le symbole monétaire. C'est ce que `formatEuros` posait, et un test
+l'exigeait explicitement.
+
+Sur la capture de la facture, le total s'affichait « 1122 € ». Mesure faite dans la police du
+site : U+202F rend **1,6 px** là où U+00A0 en rend 3,2. Manrope ne dessine pas la fine ; le
+navigateur la réduit à presque rien. Le séparateur était dans la chaîne, absent de l'écran.
+
+**Décision appliquée : espace insécable ordinaire (U+00A0) partout dans les montants.** Elle
+se voit, elle ne coupe pas en fin de ligne, et aucune police n'a d'excuse pour ne pas la
+dessiner. Sur une facture, « 1122 » et « 1 122 » ne se lisent pas à la même vitesse : la règle
+typographique sert la lecture, et quand son application la dessert, c'est la lecture qui doit
+gagner.
+
+**Ce qui rouvrirait la question** : un changement de police de texte. Si la future police
+dessine correctement la fine, revenir à U+202F serait le choix juste — la décision tient à
+Manrope, pas au principe. Le commentaire dans `quotas.ts` le dit à l'endroit où quelqu'un
+serait tenté de « corriger » en sens inverse.
+
+**Ce qui n'est pas tranché** : le même arbitrage se posera pour les autres nombres du site
+(populations, surfaces, nombres de pages), qui passent aujourd'hui par
+`toLocaleString('fr-FR')` — donc par le séparateur que choisit le navigateur, sans que
+personne l'ait décidé. Une seule fonction de formatage des nombres, comme il n'y a qu'un
+`formatEuros`, serait plus cohérente ; nous ne l'avons pas faite faute d'avoir recensé tous
+les usages.
