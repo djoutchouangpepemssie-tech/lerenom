@@ -307,6 +307,12 @@ const PAGES = [
     connexionPro: true,
   },
   {
+    nom: 'pro-perimetre',
+    chemin: '/pro/espace/perimetre',
+    titre: 'Espace pro — mon périmètre',
+    connexionPro: true,
+  },
+  {
     nom: 'pro-fiche-completee',
     chemin: '/pro/espace/fiche',
     titre: 'Espace pro — ma fiche, complétude en hausse',

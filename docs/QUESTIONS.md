@@ -557,3 +557,30 @@ du professionnel. Il ne récompense pas la bonne volonté, il classe l'informati
 endroit, en clair — un seul fichier à relire pour les discuter. Le jeu de démonstration donne
 désormais 72 % aux fiches soignées, 45 % aux intermédiaires et 40 % aux minimales, et chacun de
 ces chiffres se vérifie champ par champ.
+
+---
+
+## Q25 🟢 — Modifier son périmètre : deux refus plutôt qu'une correction
+
+_(métier — tranché, consigné pour pouvoir être discuté)_
+
+L'inscription fixe un périmètre une fois ; la vie d'une entreprise le fait bouger. L'écran
+« Mon périmètre » permet d'ouvrir une ville, d'ajouter un métier ou de se replier. Deux
+situations ont demandé une décision.
+
+**1. Dépasser le plafond de sa formule est refusé, pas corrigé.** À l'inscription, les villes
+au-delà du plafond étaient retirées automatiquement — c'était acceptable, parce que l'écran
+les nommait avant la validation et que le professionnel les voyait partir. Ici, personne ne
+regarde par-dessus son épaule : retirer une ville à sa place reviendrait à lui faire perdre
+une zone sans qu'il s'en aperçoive. Le refus donne le compte exact et laisse le choix entre
+retirer ou changer de formule.
+
+**2. Une ville qui porte un emplacement payé ne se retire pas.** Une exclusivité ou un
+emplacement en cours y est rattaché ; supprimer la zone laisserait un emplacement vendu sans
+ville où l'honorer. L'écran la montre verrouillée, le refus la nomme, et il invite à nous
+écrire.
+
+**Ce que ce second refus laisse ouvert** : il n'existe aujourd'hui aucune procédure pour
+mettre fin à un emplacement ou à une exclusivité avant son terme. Le message renvoie donc vers
+un contact humain qui n'a pas d'écran. C'est volontaire — résilier un emplacement payé engage
+un remboursement au prorata, et cette règle-là n'est pas écrite. Elle le sera avec Stripe.

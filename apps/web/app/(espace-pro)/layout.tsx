@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { Conteneur } from '@lerenom/ui';
 import { BoutonDeconnexion } from '@/composants/BoutonDeconnexion';
 import { Logo } from '@/composants/Logo';
+import { OngletsPro } from '@/composants/OngletsPro';
 import { proConnecte } from '@/lib/session-pro';
 
 /**
@@ -27,6 +28,7 @@ export default async function DispositionEspacePro({
     { href: '/pro/espace', libelle: 'Tableau de bord' },
     { href: '/pro/espace/demandes', libelle: 'Mes demandes' },
     { href: '/pro/espace/fiche', libelle: 'Ma fiche' },
+    { href: '/pro/espace/perimetre', libelle: 'Mon périmètre' },
   ];
 
   return (
@@ -46,17 +48,7 @@ export default async function DispositionEspacePro({
             <BoutonDeconnexion nom={pro.nom} />
           </div>
 
-          <nav aria-label="Espace professionnel" className="flex gap-1 overflow-x-auto pb-1">
-            {onglets.map((onglet) => (
-              <Link
-                key={onglet.href}
-                href={onglet.href}
-                className="text-encre-70 hover:text-encre hover:border-or rounded-t-[var(--radius-douce)] border-b-2 border-transparent px-3 py-2 text-sm whitespace-nowrap transition-colors"
-              >
-                {onglet.libelle}
-              </Link>
-            ))}
-          </nav>
+          <OngletsPro onglets={onglets} />
         </Conteneur>
       </header>
 

@@ -891,6 +891,51 @@ puis « 12 h – 18 h » décrivent une journée continue, pas une pause.
 
 ---
 
+## Périmètre · ouvrir une ville sans nous écrire
+
+L'inscription fixe un périmètre une fois. Jusqu'ici, ouvrir une ville ou ajouter un métier
+demandait de nous écrire. L'écran « Mon périmètre » règle cela — et il a demandé deux
+décisions, consignées en Q25.
+
+### On ne retire rien à la place du professionnel
+
+À l'inscription, les villes au-delà du plafond de la formule étaient **retirées
+automatiquement**. C'était acceptable : l'écran les nommait avant la validation, et le
+professionnel les voyait partir.
+
+Ici, personne ne regarde par-dessus son épaule. Dépasser son plafond est donc **refusé avec le
+compte exact**, pas corrigé d'autorité : lui retirer une zone sans qu'il s'en aperçoive serait
+lui faire perdre des demandes en silence. L'écran le dit avant l'enregistrement, et le bouton
+reste désactivé tant que la sélection déborde.
+
+### Une ville qui porte un emplacement payé ne se retire pas
+
+Une exclusivité ou un emplacement en cours est rattaché à une commune. Supprimer la zone
+laisserait un emplacement vendu sans ville où l'honorer. La ville s'affiche verrouillée, avec
+sa mention, et le refus la nomme.
+
+Ce que ce refus laisse ouvert est écrit en Q25 : il n'existe aucune procédure pour mettre fin
+à un emplacement avant son terme, parce que la règle de remboursement au prorata n'est pas
+écrite. Elle le sera avec Stripe. Le message renvoie donc vers un contact humain, et le dit.
+
+### Deux défauts vus sur les captures
+
+**Une jauge pleine là où il n'y a pas de limite.** En formule Exclusif, le plafond est `null` ;
+la jauge calculait alors son maximum sur le nombre de villes choisies et affichait une barre
+pleine — c'est-à-dire « vous êtes à votre limite » à quelqu'un qui n'en a aucune. Remplacée par
+un simple compte.
+
+**Aucun onglet n'indiquait la page courante.** Avec deux onglets cela passait ; avec quatre,
+dont un qui sort du cadre sur téléphone, ne pas savoir où l'on se trouve devient un inconfort
+réel. Les onglets marquent désormais la page courante — soulignée _et_ `aria-current`, parce
+que la couleur seule ne suffit ni à un lecteur d'écran ni à qui distingue mal les contrastes —
+et la barre se déplace pour amener l'onglet courant dans la vue.
+
+22 tests, dont les deux qui comptent : le plafond refusé n'écrit rien, et une ville verrouillée
+ne se retire pas.
+
+---
+
 ## Phases 5 à 11 · à venir
 
 Agenda et documents du pro, monétisation Stripe, back-office, personnalisation, avis et
