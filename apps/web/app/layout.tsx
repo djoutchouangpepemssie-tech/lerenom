@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { DM_Serif_Display, Manrope } from 'next/font/google';
 import './globals.css';
+import { baseDuSite } from '@/lib/site';
 
 /*
  * Polices auto-hébergées par next/font : aucun appel à un serveur de polices au chargement,
@@ -27,7 +28,10 @@ export const metadata: Metadata = {
   },
   description:
     'Le Renom référence les entreprises de toute l’Île-de-France. Trouvez un professionnel par métier et par ville, consultez ses avis vérifiés et demandez jusqu’à 3 devis gratuitement.',
-  metadataBase: new URL('https://lerenom.fr'),
+  // Jamais écrite en dur : une préproduction qui annonce les adresses canoniques de la
+  // production présente deux sites réclamant les mêmes pages, et c'est une erreur dont on
+  // paie les conséquences des mois plus tard.
+  metadataBase: new URL(baseDuSite()),
 };
 
 export const viewport: Viewport = {

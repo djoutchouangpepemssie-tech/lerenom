@@ -790,6 +790,54 @@ pour vérifier que l'anneau et la liste bougent bien à la frappe.
 
 ---
 
+## Référencement technique · le plan du site et ce qu'on refuse aux moteurs
+
+Il manquait `robots.ts` et `sitemap.ts`. Les écrire a surtout servi à découvrir deux choses.
+
+### Ce qu'on refuse compte plus que ce qu'on publie
+
+`/suivi/` est refusé aux moteurs, et ce n'est pas une question de référencement : **ces
+adresses portent un jeton secret**. C'est lui qui donne accès au suivi d'une demande, à ses
+coordonnées et au dépôt d'un avis, sans compte à créer. Une seule adresse de suivi indexée
+serait une fuite de données personnelles. Le fichier robots n'y suffit pas — ce n'est qu'une
+convention que rien n'oblige à respecter : les pages concernées portaient déjà `noindex`, et
+un test vérifie maintenant que le plan du site n'en annonce aucune.
+
+Hors production, **tout** est refusé. Une préproduction indexée vole son référencement à la
+production, et l'erreur ne se voit qu'une fois ses effets produits. En l'absence de
+`LERENOM_ENV`, on refuse aussi : se tromper dans ce sens-là se répare, dans l'autre beaucoup
+moins.
+
+### Une adresse écrite en dur, et deux fichiers figés à la construction
+
+`metadataBase` valait `https://lerenom.fr`, en dur, alors que `LERENOM_URL` existe et désigne
+l'adresse réelle de chaque environnement. Une préproduction annonçait donc les adresses
+canoniques de la production — deux sites réclamant les mêmes pages.
+
+Pire, et découvert en regardant la sortie réelle plutôt qu'en relisant le code : `robots.txt`
+annonçait **`Host: http://localhost:3000`**. Il était statique, donc figé au moment de la
+construction, où `LERENOM_URL` n'existe pas encore. Un robots.txt qui renvoie les moteurs vers
+une machine de développement.
+
+Le plan du site portait le même piège, en plus discret : il lit la base, et sans `LERENOM_ENV`
+il sortait avant toute requête — donc la construction passait. Avec la variable, c'est-à-dire
+en production, elle aurait échoué, puisque le réseau privé de l'hébergeur n'existe pas pendant
+la construction. Un défaut qui ne se montre que là où il coûte le plus cher. Les deux fichiers
+sont désormais rendus à l'exécution.
+
+### Le plan lui-même
+
+1 730 adresses : les pages fixes, les 69 métiers, les 8 départements, les 1 285 villes, les
+345 croisements métier × ville des villes ouvertes, et les fiches d'entreprises.
+
+Les croisements ne sont listés que pour les villes **ouvertes**. Le produit cartésien complet
+ferait près de 89 000 adresses — au-delà de la limite d'un fichier unique, et sans intérêt :
+une page de ville d'annuaire, sans professionnel référencé, n'a rien à proposer au visiteur qui
+l'atteindrait depuis un moteur. Les villes y figurent toutes, parce qu'une page de ville dit
+quelque chose d'utile même sans croisement.
+
+---
+
 ## Phases 5 à 11 · à venir
 
 Agenda et documents du pro, monétisation Stripe, back-office, personnalisation, avis et
