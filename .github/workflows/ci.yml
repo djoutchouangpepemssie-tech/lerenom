@@ -101,8 +101,10 @@ jobs:
       - name: Installer les dépendances
         run: pnpm install --frozen-lockfile
 
+      # Le client Prisma est produit par la construction du paquet : une seule commande, la
+      # même que sur Vercel et en local. Deux façons de générer finiraient par diverger.
       - name: Générer le client Prisma
-        run: pnpm --filter @lerenom/db generer
+        run: pnpm --filter @lerenom/db build
 
       - name: Créer le schéma
         run: pnpm --filter @lerenom/db pousser
