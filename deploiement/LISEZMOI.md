@@ -58,16 +58,24 @@ postgres -c ssl=on \
 
 ## L'initialisation de la base
 
-Elle se fait en **pré-déploiement** du service `web`, parce que c'est le seul endroit qui
-tourne à l'exécution — donc sur le réseau privé — avant que le site ne serve une requête :
+Elle se fait **pendant la construction** du service `web`, et le choix n'est pas arbitraire :
+le pré-déploiement tourne _après_ la construction, alors que c'est la construction elle-même
+qui a besoin des tables — elle pré-rend les pages publiques, qui lisent la base. Initialiser
+en pré-déploiement revenait à poser le schéma après que la construction a échoué faute de
+schéma.
+
+C'est aussi pour cela que la construction utilise l'URL publique : le réseau privé ne lui est
+pas accessible.
 
 ```
+pnpm --filter @lerenom/db build && \
 pnpm --filter @lerenom/db pousser && \
 pnpm --filter @lerenom/db sql && \
-pnpm --filter @lerenom/db semer
+pnpm --filter @lerenom/db semer && \
+pnpm run build
 ```
 
-Les trois commandes sont **rejouables** : `pousser` aligne le schéma, `sql` pose des
+Les commandes d'initialisation sont **rejouables** : `pousser` aligne le schéma, `sql` pose des
 garde-fous en `IF NOT EXISTS` ou `OR REPLACE`, et le semis se contente de vérifier les
 comptes attendus quand tout est déjà là. Un déploiement ordinaire ne coûte donc que quelques
 secondes de contrôle. `FORCE_SEMIS=1` force la réécriture, après un changement du jeu de
@@ -80,6 +88,12 @@ d'exécution.
 
 Voir `docs/DEPLOIEMENT.md`. Les secrets ne sont pas dans ce dépôt : ils vivent dans les
 variables du projet Railway.
+
+Les URL de base et de Redis sont écrites **en clair** sur chaque service, et non par référence
+croisée (`${{postgres.DATABASE_URL}}`). Une référence vers un autre service ne se résout pas
+toujours pendant la construction, et son absence ne se voit qu'au moment où la construction
+échoue — en annonçant une variable absente qui est pourtant bien déclarée. Écrire la valeur
+coûte une mise à jour si le mandataire change ; la référence coûtait une enquête.
 
 ## Configuration as code
 
