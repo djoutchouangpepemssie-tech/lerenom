@@ -502,11 +502,18 @@ async function main() {
   }
 
   await navigateur.close();
-  await writeFile(
-    path.join(SORTIE, 'rapport.json'),
-    `${JSON.stringify(rapport, null, 2)}\n`,
-    'utf8',
-  );
+
+  // Avec un filtre, le rapport des captures non rejouées est **conservé**. L'écraser par le
+  // sous-ensemble du jour produirait un rapport partiel qui se présente comme complet —
+  // c'est-à-dire un rapport qui ment, et c'est pire que pas de rapport du tout.
+  const chemineRapport = path.join(SORTIE, 'rapport.json');
+  let complet = rapport;
+  if (FILTRE !== '' && existsSync(chemineRapport)) {
+    const precedent = JSON.parse(readFileSync(chemineRapport, 'utf8'));
+    const refait = new Set(rapport.map((ligne) => ligne.fichier));
+    complet = [...precedent.filter((ligne) => !refait.has(ligne.fichier)), ...rapport];
+  }
+  await writeFile(chemineRapport, `${JSON.stringify(complet, null, 2)}\n`, 'utf8');
 
   if (manquantes.size > 0) {
     console.error(
