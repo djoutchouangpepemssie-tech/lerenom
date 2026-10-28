@@ -400,11 +400,13 @@ async function semeFacturesDeDemonstration(entrepriseId: string): Promise<string
   const solde = prepareFactureSolde(document, acompte?.montantAPayerTTC ?? 0);
   const rib = await prisma.rib.findFirstOrThrow({ where: { entrepriseId, actif: true } });
 
+  let acompteId: string | null = null;
   if (acompte !== null) {
     const emiseLe = new Date(Date.now() - 4 * 86_400_000);
     const echeance = new Date(emiseLe);
     echeance.setDate(echeance.getDate() + 30);
-    await prisma.facture.create({
+    const enregistre = await prisma.facture.create({
+      select: { id: true },
       data: {
         entrepriseId,
         clientId: client.id,
@@ -432,6 +434,20 @@ async function semeFacturesDeDemonstration(entrepriseId: string): Promise<string
             tauxTva: ligne.tauxTva ?? null,
           })),
         },
+      },
+    });
+    acompteId = enregistre.id;
+
+    // Un avoir partiel sur cette facture émise : l'écran de correction n'a de sens que s'il
+    // montre à la fois ce qui a déjà été crédité et ce qu'il reste.
+    await prisma.avoir.create({
+      data: {
+        entrepriseId,
+        factureId: enregistre.id,
+        numero: prochainNumero('AV', annee, null),
+        motif: 'Déplacement facturé en double : la seconde visite était couverte par la garantie.',
+        montantTTC: 45,
+        emisLe: new Date(Date.now() - 2 * 86_400_000),
       },
     });
   }
@@ -466,6 +482,9 @@ async function semeFacturesDeDemonstration(entrepriseId: string): Promise<string
 
   const racine = path.resolve(import.meta.dirname, '../../..');
   await writeFile(path.join(racine, '.jeton-facture'), `${soldeEnregistre.id}\n`, 'utf8');
+  if (acompteId !== null) {
+    await writeFile(path.join(racine, '.jeton-facture-emise'), `${acompteId}\n`, 'utf8');
+  }
 
   return soldeEnregistre.id;
 }

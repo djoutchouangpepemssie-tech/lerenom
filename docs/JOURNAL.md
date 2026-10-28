@@ -1146,6 +1146,83 @@ au centime sur le total du devis, et la facture d'un confrère qu'on ne lit ni n
 
 ---
 
+## Phase 4 ter · Les avoirs
+
+Chaque écran de facture promettait qu'« une erreur se corrige par un avoir ». L'avoir
+n'existait pas. Une promesse affichée sans mécanisme derrière est une dette qui se découvre
+le jour où quelqu'un en a besoin — c'est-à-dire au pire moment.
+
+L'avoir corrige en **ajoutant** un document plutôt qu'en retouchant : il constate une dette de
+l'artisan envers son client, porte son numéro dans sa propre série, et laisse la facture
+telle qu'elle a été remise. Les deux se lisent ensemble.
+
+### Les trois règles, et pourquoi elles tiennent
+
+**On ne crédite que ce qui a été facturé.** La somme des avoirs d'une facture ne peut pas
+dépasser son montant. Le test qui compte n'est pas celui du premier avoir trop gros — c'est
+celui de deux avoirs acceptables séparément et excessifs ensemble, parce que c'est ainsi que
+le dépassement arriverait vraiment.
+
+**Un avoir est définitif dès sa création.** Pas de brouillon, pas d'étape d'émission : un
+document de correction qu'on pourrait corriger ne vaudrait pas mieux que la facture qu'il
+rectifie.
+
+**Tout se passe dans une transaction.** Lire le reste créditable, prendre le numéro suivant,
+écrire, éventuellement annuler la facture : hors transaction, deux avoirs simultanés
+liraient le même « reste » et le dépasseraient à eux deux. La contrainte d'unicité par
+entreprise reste le dernier filet.
+
+### Deux trous dans un garde-fou que je venais d'écrire
+
+En relisant le déclencheur d'immuabilité des factures pour y brancher l'annulation, deux
+défauts ont sauté aux yeux.
+
+Le premier : la condition était `OLD.statut IN ('emise','payee') AND NEW.statut <>
+'annulee_par_avoir'`. Autrement dit, il suffisait d'annuler une facture **et** d'en réécrire
+les totaux dans la même instruction pour contourner tout le dispositif. Une porte de sortie
+doit être étroite, sinon elle n'est qu'un autre chemin. Les montants, le numéro, la date
+d'émission et le RIB d'une facture émise ne bougent désormais plus, quoi qu'il arrive au
+statut — seul le statut vit, et jamais vers l'arrière.
+
+Le second : rien ne protégeait les avoirs eux-mêmes. Ils en ont maintenant leur propre
+déclencheur.
+
+### Une distinction qu'il a fallu faire, pas desserrer
+
+Ce déclencheur a immédiatement cassé la suppression d'une entreprise : ses avoirs partent en
+cascade, et le verrou les retenait. La tentation était de n'interdire que la modification.
+Mais supprimer un avoir **pour corriger une erreur** et supprimer **toute une société** —
+effacement demandé par son dirigeant, nettoyage d'un jeu de test — sont deux actes
+différents, et un verrou qui les confond protège mal.
+
+PostgreSQL les distingue de lui-même : dans une cascade, la ligne parente est effacée avant
+ses enfants, donc l'entreprise est déjà absente quand le déclencheur s'exécute pour un avoir
+emporté par elle. Un avoir supprimé seul, lui, a toujours son entreprise en face.
+
+Cette propriété a été **vérifiée sur une table temporaire avant d'écrire la moindre ligne qui
+en dépende**, plutôt que supposée depuis un souvenir de documentation. Elle est maintenant
+tenue par deux tests.
+
+### Ce que les captures ont attrapé, encore
+
+Le montant pré-rempli du formulaire s'écrivait « 325.26 », avec un point, au milieu d'une page
+qui emploie la virgule partout ailleurs. Un champ pré-rempli enseigne la syntaxe attendue :
+celui-là enseignait la mauvaise.
+
+Plus sérieux, et sur un écran livré deux phases plus tôt : une facture d'acompte passait de
+« TVA 112,20 € » à « À payer 370,26 € » sans rien pour expliquer le saut. Les lignes décrivent
+la commande entière, l'acompte n'en réclame qu'une part — mais un client qui lit la facture ne
+pouvait pas refaire le calcul. Une ligne « Acompte demandé · 30 % — sur 1 234,20 € TTC » le
+rétablit. Aucun test ne pouvait voir cela : le montant était juste, c'est son explication qui
+manquait.
+
+### La vérification
+
+791 tests verts, 78 captures sans un débordement. Les 16 tests des avoirs portent, une fois
+de plus, surtout sur ce qui doit être refusé — y compris par la base elle-même.
+
+---
+
 ## Phases 5 à 11 · à venir
 
 Agenda et documents du pro, monétisation Stripe, back-office, personnalisation, avis et

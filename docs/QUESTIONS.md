@@ -682,3 +682,30 @@ serait tenté de « corriger » en sens inverse.
 personne l'ait décidé. Une seule fonction de formatage des nombres, comme il n'y a qu'un
 `formatEuros`, serait plus cohérente ; nous ne l'avons pas faite faute d'avoir recensé tous
 les usages.
+
+---
+
+## Q29 🟡 — Combien de caractères fait une explication ?
+
+_(métier — défaut prudent appliqué, à trancher avec un comptable)_
+
+Un avoir porte un motif, qui figure sur le document et sert à expliquer, parfois un an plus
+tard, pourquoi la somme due a changé. « Erreur » n'explique rien. Mais aucune règle ne dit
+combien de caractères fait une explication.
+
+**Défaut appliqué : vingt caractères minimum**, de quoi écrire « Erreur de quantité » et pas
+seulement « erreur. » C'est un garde-fou contre le remplissage machinal, pas une mesure de la
+qualité : personne ne peut vérifier qu'un motif dit vrai, et vingt caractères de charabia
+passeraient tout aussi bien. Le seuil ne prétend qu'à décourager le geste réflexe.
+
+**Ce qui reste à trancher** : un comptable saura dire si l'administration attend une mention
+d'une forme particulière — référence à la facture corrigée, nature de l'erreur, mention
+« avoir » explicite — auquel cas ce n'est plus une longueur qu'il faut contrôler mais un
+contenu. Si une telle exigence existe, le champ libre devrait devenir un choix de motif
+normalisé plus un commentaire.
+
+**Ce qui n'est pas non plus tranché** : faut-il un avoir _de régularisation_ distinct de
+l'avoir _de remboursement_ ? Le premier solde une facture que le client n'a pas payée, le
+second constate une somme à lui rendre. Comptablement les écritures diffèrent. Nous ne
+distinguons pas, faute de savoir si la plateforme doit tenir cette comptabilité ou seulement
+produire les documents.

@@ -8,7 +8,6 @@ import {
   devisConforme,
   montantLigneHT,
   numerotationContinue,
-  prepareAvoir,
   prepareFactureAcompte,
   prepareFactureSolde,
   prochainNumero,
@@ -339,23 +338,6 @@ describe('facture préparée automatiquement à la signature', () => {
       solde.totaux.totalTTC,
       10,
     );
-  });
-});
-
-describe('prepareAvoir', () => {
-  it('crée un avoir motivé : le seul moyen de corriger une facture émise', () => {
-    const avoir = prepareAvoir('FA-2026-0012', 120.5, '  Erreur de quantité  ');
-    expect(avoir).toEqual({
-      factureNumero: 'FA-2026-0012',
-      motif: 'Erreur de quantité',
-      montantTTC: 120.5,
-    });
-  });
-
-  it('refuse un avoir sans motif ou sans montant', () => {
-    expect(prepareAvoir('FA-2026-0012', 0, 'Erreur')).toBeNull();
-    expect(prepareAvoir('FA-2026-0012', -10, 'Erreur')).toBeNull();
-    expect(prepareAvoir('FA-2026-0012', 100, '   ')).toBeNull();
   });
 });
 

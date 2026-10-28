@@ -61,12 +61,27 @@ CREATE UNIQUE INDEX IF NOT EXISTS exclusivites_active_idx
 CREATE OR REPLACE FUNCTION interdit_modification_facture_emise()
 RETURNS trigger AS $$
 BEGIN
-  IF OLD.statut IN ('emise', 'payee') AND NEW.statut <> 'annulee_par_avoir' THEN
+  IF OLD.statut IN ('emise', 'payee') THEN
+    -- Les montants et le numéro d'une facture émise ne bougent plus, quoi qu'il arrive au
+    -- statut. La version précédente ne vérifiait rien dès lors que la facture passait à
+    -- `annulee_par_avoir` : il suffisait d'annuler et de réécrire les totaux dans la même
+    -- instruction pour contourner tout le dispositif. Une porte de sortie doit être
+    -- étroite, sinon elle n'est qu'un autre chemin.
     IF NEW.total_ttc IS DISTINCT FROM OLD.total_ttc
        OR NEW.total_ht IS DISTINCT FROM OLD.total_ht
-       OR NEW.numero IS DISTINCT FROM OLD.numero THEN
+       OR NEW.total_tva IS DISTINCT FROM OLD.total_tva
+       OR NEW.montant_a_payer_ttc IS DISTINCT FROM OLD.montant_a_payer_ttc
+       OR NEW.numero IS DISTINCT FROM OLD.numero
+       OR NEW.emise_le IS DISTINCT FROM OLD.emise_le
+       OR NEW.rib_id IS DISTINCT FROM OLD.rib_id THEN
       RAISE EXCEPTION
         'Une facture émise ne peut être ni modifiée ni supprimée : corrigez-la par un avoir.';
+    END IF;
+
+    -- Le statut, lui, continue de vivre : une facture émise se paie, et se fait annuler par
+    -- un avoir. Elle ne redevient jamais un brouillon.
+    IF NEW.statut NOT IN ('emise', 'payee', 'annulee_par_avoir') THEN
+      RAISE EXCEPTION 'Une facture émise ne peut pas redevenir un brouillon.';
     END IF;
   END IF;
   RETURN NEW;
@@ -77,6 +92,37 @@ DROP TRIGGER IF EXISTS factures_immuables ON factures;
 CREATE TRIGGER factures_immuables
   BEFORE UPDATE ON factures
   FOR EACH ROW EXECUTE FUNCTION interdit_modification_facture_emise();
+
+-- Un avoir ne se modifie ni ne se supprime.
+--
+-- Il n'a pas de brouillon : il est définitif dès sa création. Un document de correction
+-- qu'on pourrait corriger ne vaudrait pas mieux que la facture qu'il rectifie — et comme il
+-- porte un numéro dans une série continue, le supprimer y ferait un trou.
+CREATE OR REPLACE FUNCTION interdit_modification_avoir()
+RETURNS trigger AS $$
+BEGIN
+  -- Supprimer un avoir **pour corriger une erreur** est interdit. Supprimer toute
+  -- l'entreprise — effacement demandé par son dirigeant, nettoyage d'un jeu de test — est un
+  -- autre acte, et le verrou ne doit pas le confondre avec le premier.
+  --
+  -- La cascade les distingue d'elle-même : PostgreSQL efface la ligne parente avant ses
+  -- enfants, donc l'entreprise est déjà absente quand ce déclencheur s'exécute pour un avoir
+  -- emporté par elle. Un avoir supprimé seul, lui, a toujours son entreprise en face.
+  -- (Vérifié plutôt que supposé : voir le test « un avoir ne se supprime pas ».)
+  IF TG_OP = 'DELETE'
+     AND NOT EXISTS (SELECT 1 FROM entreprises WHERE id = OLD.entreprise_id) THEN
+    RETURN OLD;
+  END IF;
+
+  RAISE EXCEPTION
+    'Un avoir est définitif : il ne se modifie ni ne se supprime. Émettez-en un autre.';
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS avoirs_immuables ON avoirs;
+CREATE TRIGGER avoirs_immuables
+  BEFORE UPDATE OR DELETE ON avoirs
+  FOR EACH ROW EXECUTE FUNCTION interdit_modification_avoir();
 
 -- Le journal d'audit ne se corrige pas : une correction est une nouvelle ligne.
 CREATE OR REPLACE RULE journal_audit_sans_modification AS

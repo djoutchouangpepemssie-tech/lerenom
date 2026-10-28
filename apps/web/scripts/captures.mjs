@@ -54,6 +54,11 @@ function cheminDeLaFacture() {
   return valeur === null ? null : `/pro/espace/factures/${valeur}`;
 }
 
+function cheminDeLaFactureEmise() {
+  const valeur = jeton('facture-emise');
+  return valeur === null ? null : `/pro/espace/factures/${valeur}`;
+}
+
 function cheminDeSuivi() {
   const valeur = jeton('suivi');
   return valeur === null ? null : `/suivi/${valeur}`;
@@ -351,6 +356,26 @@ const PAGES = [
     chemin: cheminDeLaFacture,
     titre: 'Espace pro — une facture prête à émettre',
     connexionPro: true,
+  },
+  {
+    nom: 'pro-facture-avoir',
+    chemin: cheminDeLaFactureEmise,
+    titre: 'Espace pro — une facture émise et son avoir',
+    connexionPro: true,
+  },
+  {
+    nom: 'pro-avoir-saisie',
+    chemin: cheminDeLaFactureEmise,
+    titre: 'Espace pro — émettre un avoir',
+    connexionPro: true,
+    // Le formulaire s'ouvre et se remplit, sans être validé : la démonstration reste
+    // rejouable, et la capture montre l'écran au moment où il demande une décision.
+    scenario: async (onglet) => {
+      await onglet.getByRole('button', { name: 'Émettre un avoir' }).click();
+      await onglet.getByLabel('Motif').waitFor();
+      await onglet.getByLabel('Motif').fill('Pièce reprise par le fournisseur, non posée.');
+      await onglet.waitForTimeout(200);
+    },
   },
   {
     nom: 'pro-fiche-completee',

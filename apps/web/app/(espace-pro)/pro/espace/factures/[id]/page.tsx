@@ -4,6 +4,8 @@ import { notFound } from 'next/navigation';
 import { Carte } from '@lerenom/ui';
 import { LIBELLES_UNITE, formatEuros } from '@lerenom/core';
 import { BoutonEmission } from '@/composants/BoutonEmission';
+import { FormulaireAvoir } from '@/composants/FormulaireAvoir';
+import { etatCreditFacture } from '@/lib/avoirs-pro';
 import { factureDuPro } from '@/lib/factures-pro';
 import { dateEtHeure } from '@/lib/affichage';
 import { proConnecte } from '@/lib/session-pro';
@@ -29,6 +31,10 @@ export default async function PageUneFacture({
   const facture = await factureDuPro(pro.entrepriseId, id);
   if (facture === null) notFound();
 
+  // Les avoirs ne concernent qu'une facture émise : avant l'émission, une erreur se corrige
+  // en modifiant le document, et proposer un avoir brouillerait cette distinction.
+  const credit = facture.emettable ? null : await etatCreditFacture(pro.entrepriseId, id);
+
   return (
     <>
       <Link
@@ -44,7 +50,11 @@ export default async function PageUneFacture({
       <p className="text-encre-70 mt-2 max-w-[62ch]">
         {facture.emettable
           ? 'Vérifiez-la avant de l’émettre : une fois émise, elle ne se modifie plus et une erreur se corrige par un avoir.'
-          : `Émise le ${facture.emiseLe === null ? '—' : dateEtHeure(facture.emiseLe)}. Elle ne se modifie plus.`}
+          : `Émise le ${facture.emiseLe === null ? '—' : dateEtHeure(facture.emiseLe)}. ${
+              facture.statut === 'annulee_par_avoir'
+                ? 'Annulée par avoir : elle reste au livre, avec son avoir en face.'
+                : 'Elle ne se modifie plus.'
+            }`}
       </p>
 
       <div className="mt-7 grid max-w-4xl gap-6 lg:grid-cols-[1fr_17rem] lg:items-start">
@@ -96,6 +106,22 @@ export default async function PageUneFacture({
                 </dd>
               </div>
             )}
+            {facture.type === 'acompte' && facture.montantAPayerTTC < facture.totalTTC && (
+              // Sans cette ligne, on passe de « TVA 112,20 € » à « À payer 370,26 € » sans
+              // que rien n'explique le saut : les lignes décrivent la commande entière,
+              // l'acompte n'en réclame qu'une part. Un client qui lit la facture doit
+              // pouvoir refaire le calcul.
+              <div className="flex justify-between gap-3">
+                <dt className="text-encre-55">
+                  Acompte demandé
+                  {facture.totalTTC > 0 &&
+                    ` · ${String(Math.round((facture.montantAPayerTTC / facture.totalTTC) * 100))} %`}
+                </dt>
+                <dd className="text-encre font-semibold">
+                  sur {formatEuros(facture.totalTTC)} TTC
+                </dd>
+              </div>
+            )}
             <div className="border-bordure flex justify-between gap-3 border-t pt-3">
               <dt className="text-encre font-bold">À payer</dt>
               <dd className="text-encre font-[family-name:var(--font-titre)] text-2xl">
@@ -130,6 +156,14 @@ export default async function PageUneFacture({
           </Carte>
 
           {facture.emettable && <BoutonEmission factureId={facture.id} />}
+
+          {credit !== null && (
+            <FormulaireAvoir
+              factureId={facture.id}
+              resteACrediterTTC={credit.resteACrediterTTC}
+              avoirs={credit.avoirs}
+            />
+          )}
         </div>
       </div>
     </>

@@ -299,22 +299,6 @@ export function prepareFactureSolde(
   };
 }
 
-/** Un avoir : le seul moyen de corriger une facture émise, qui n'est ni modifiable ni supprimable. */
-export interface Avoir {
-  readonly factureNumero: string;
-  readonly motif: string;
-  readonly montantTTC: number;
-}
-
-export function prepareAvoir(
-  factureNumero: string,
-  montantTTC: number,
-  motif: string,
-): Avoir | null {
-  if (montantTTC <= 0 || motif.trim().length === 0) return null;
-  return { factureNumero, motif: motif.trim(), montantTTC: euros(centimes(montantTTC)) };
-}
-
 /**
  * Numérotation continue, sans trou ni doublon.
  *

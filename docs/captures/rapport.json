@@ -530,26 +530,6 @@
     "erreursConsole": []
   },
   {
-    "page": "Espace pro — mes factures",
-    "largeur": 390,
-    "fichier": "pro-factures-liste-390.png",
-    "defilementHorizontal": false,
-    "largeurDocument": 390,
-    "largeurFenetre": 390,
-    "debordements": [],
-    "erreursConsole": []
-  },
-  {
-    "page": "Espace pro — une facture prête à émettre",
-    "largeur": 390,
-    "fichier": "pro-facture-390.png",
-    "defilementHorizontal": false,
-    "largeurDocument": 390,
-    "largeurFenetre": 390,
-    "debordements": [],
-    "erreursConsole": []
-  },
-  {
     "page": "Espace pro — ma fiche, complétude en hausse",
     "largeur": 390,
     "fichier": "pro-fiche-completee-390.png",
@@ -690,26 +670,6 @@
     "erreursConsole": []
   },
   {
-    "page": "Espace pro — mes factures",
-    "largeur": 1440,
-    "fichier": "pro-factures-liste-1440.png",
-    "defilementHorizontal": false,
-    "largeurDocument": 1440,
-    "largeurFenetre": 1440,
-    "debordements": [],
-    "erreursConsole": []
-  },
-  {
-    "page": "Espace pro — une facture prête à émettre",
-    "largeur": 1440,
-    "fichier": "pro-facture-1440.png",
-    "defilementHorizontal": false,
-    "largeurDocument": 1440,
-    "largeurFenetre": 1440,
-    "debordements": [],
-    "erreursConsole": []
-  },
-  {
     "page": "Espace pro — ma fiche, complétude en hausse",
     "largeur": 1440,
     "fichier": "pro-fiche-completee-1440.png",
@@ -733,6 +693,86 @@
     "page": "Espace pro — motif de refus",
     "largeur": 1440,
     "fichier": "pro-refus-1440.png",
+    "defilementHorizontal": false,
+    "largeurDocument": 1440,
+    "largeurFenetre": 1440,
+    "debordements": [],
+    "erreursConsole": []
+  },
+  {
+    "page": "Espace pro — mes factures",
+    "largeur": 390,
+    "fichier": "pro-factures-liste-390.png",
+    "defilementHorizontal": false,
+    "largeurDocument": 390,
+    "largeurFenetre": 390,
+    "debordements": [],
+    "erreursConsole": []
+  },
+  {
+    "page": "Espace pro — une facture prête à émettre",
+    "largeur": 390,
+    "fichier": "pro-facture-390.png",
+    "defilementHorizontal": false,
+    "largeurDocument": 390,
+    "largeurFenetre": 390,
+    "debordements": [],
+    "erreursConsole": []
+  },
+  {
+    "page": "Espace pro — une facture émise et son avoir",
+    "largeur": 390,
+    "fichier": "pro-facture-avoir-390.png",
+    "defilementHorizontal": false,
+    "largeurDocument": 390,
+    "largeurFenetre": 390,
+    "debordements": [],
+    "erreursConsole": []
+  },
+  {
+    "page": "Espace pro — mes factures",
+    "largeur": 1440,
+    "fichier": "pro-factures-liste-1440.png",
+    "defilementHorizontal": false,
+    "largeurDocument": 1440,
+    "largeurFenetre": 1440,
+    "debordements": [],
+    "erreursConsole": []
+  },
+  {
+    "page": "Espace pro — une facture prête à émettre",
+    "largeur": 1440,
+    "fichier": "pro-facture-1440.png",
+    "defilementHorizontal": false,
+    "largeurDocument": 1440,
+    "largeurFenetre": 1440,
+    "debordements": [],
+    "erreursConsole": []
+  },
+  {
+    "page": "Espace pro — une facture émise et son avoir",
+    "largeur": 1440,
+    "fichier": "pro-facture-avoir-1440.png",
+    "defilementHorizontal": false,
+    "largeurDocument": 1440,
+    "largeurFenetre": 1440,
+    "debordements": [],
+    "erreursConsole": []
+  },
+  {
+    "page": "Espace pro — émettre un avoir",
+    "largeur": 390,
+    "fichier": "pro-avoir-saisie-390.png",
+    "defilementHorizontal": false,
+    "largeurDocument": 390,
+    "largeurFenetre": 390,
+    "debordements": [],
+    "erreursConsole": []
+  },
+  {
+    "page": "Espace pro — émettre un avoir",
+    "largeur": 1440,
+    "fichier": "pro-avoir-saisie-1440.png",
     "defilementHorizontal": false,
     "largeurDocument": 1440,
     "largeurFenetre": 1440,

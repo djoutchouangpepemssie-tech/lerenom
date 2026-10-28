@@ -13,6 +13,7 @@ coverage/
 .jeton-confirmation
 .jeton-devis
 .jeton-facture
+.jeton-facture-emise
 .env.local
 .env.*.local
 !.env.exemple
