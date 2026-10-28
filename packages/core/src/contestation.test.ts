@@ -7,7 +7,7 @@ import {
   type EtatContestation,
   type FaitsContestation,
   type MotifContestation,
-} from './contestation';
+} from './contestation.ts';
 
 const MAINTENANT = new Date('2026-10-28T10:00:00Z');
 

@@ -11,7 +11,7 @@
  */
 
 import process from 'node:process';
-import { prisma } from './index';
+import { prisma } from './index.ts';
 
 export async function nettoieLesDonneesDeTest(marque: string): Promise<void> {
   if (process.env['NODE_ENV'] === 'production') {

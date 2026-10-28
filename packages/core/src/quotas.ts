@@ -8,8 +8,8 @@
  * Le compteur repart à zéro le 1er de chaque mois, sans report.
  */
 
-import type { Parametres } from './parametres';
-import type { Formule } from './regles-validees';
+import type { Parametres } from './parametres.ts';
+import type { Formule } from './regles-validees.ts';
 
 export type TypeDemande = 'directe' | 'partagee' | 'urgente';
 

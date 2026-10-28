@@ -11,7 +11,7 @@
  * offrir un mois à cause de son propre silence.
  */
 
-import type { Parametres } from './parametres';
+import type { Parametres } from './parametres.ts';
 
 export interface MoisGarantie {
   /** Mois civil au format AAAA-MM. */

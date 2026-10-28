@@ -4,7 +4,7 @@ import {
   LONGUEUR_SECRET_MINIMALE,
   messageConfiguration,
   verifieConfiguration,
-} from './configuration';
+} from './configuration.ts';
 
 const COMPLET = {
   SECRET_VERIFICATION: 'a'.repeat(LONGUEUR_SECRET_MINIMALE),

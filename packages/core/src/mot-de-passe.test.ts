@@ -5,7 +5,7 @@ import {
   LONGUEUR_MOT_DE_PASSE_MINIMALE,
   MESSAGES_FAIBLESSE,
   type FaiblesseMotDePasse,
-} from './mot-de-passe';
+} from './mot-de-passe.ts';
 
 describe('faiblessesMotDePasse', () => {
   it('accepte une phrase de passe ordinaire, sans exiger de caractère spécial', () => {

@@ -13,7 +13,7 @@
 import { prisma } from '@lerenom/db';
 import { confirmationInterventionDue, invitationAvisDue } from '@lerenom/core';
 import { creeLien } from '@lerenom/liens';
-import { parametresEnVigueur } from './parametres';
+import { parametresEnVigueur } from './parametres.ts';
 
 export interface BilanInvitations {
   readonly examinees: number;

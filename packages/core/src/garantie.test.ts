@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { evalueGarantieExclusif } from './garantie';
-import type { DossierGarantie } from './garantie';
-import { PARAMETRES_PAR_DEFAUT } from './parametres';
+import { evalueGarantieExclusif } from './garantie.ts';
+import type { DossierGarantie } from './garantie.ts';
+import { PARAMETRES_PAR_DEFAUT } from './parametres.ts';
 
 const P = PARAMETRES_PAR_DEFAUT;
 

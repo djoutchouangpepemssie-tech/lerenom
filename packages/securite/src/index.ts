@@ -81,5 +81,5 @@ export function empreinteJeton(jeton: string, secret: string): string {
   return createHmac('sha256', secret).update(`lien:${jeton}`).digest('hex');
 }
 
-export * from './configuration';
-export * from './mot-de-passe';
+export * from './configuration.ts';
+export * from './mot-de-passe.ts';

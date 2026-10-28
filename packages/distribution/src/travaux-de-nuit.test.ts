@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { estUnTravailDeNuit, executeTravailDeNuit, TRAVAUX_DE_NUIT } from './travaux-de-nuit';
+import { estUnTravailDeNuit, executeTravailDeNuit, TRAVAUX_DE_NUIT } from './travaux-de-nuit.ts';
 
 describe('travaux de nuit', () => {
   it('connaît les quatre travaux planifiés', () => {

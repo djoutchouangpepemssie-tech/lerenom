@@ -7,7 +7,7 @@ import {
   tireCode,
   tireJeton,
   verifieCode,
-} from './index';
+} from './index.ts';
 
 const SECRET = 'secret-de-test-assez-long-pour-etre-credible';
 const DEMANDE = 'dem_01HZ';

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { boiteEnglobante, couvre, distanceKm, scoreProximite } from './geo';
+import { boiteEnglobante, couvre, distanceKm, scoreProximite } from './geo.ts';
 
 const PARIS_11 = { latitude: 48.8594, longitude: 2.3765 };
 const MONTREUIL = { latitude: 48.8638, longitude: 2.4485 };

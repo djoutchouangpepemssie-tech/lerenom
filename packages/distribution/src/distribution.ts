@@ -25,7 +25,7 @@ import {
   rapproche,
 } from '@lerenom/core';
 import { creeLien } from '@lerenom/liens';
-import { parametresEnVigueur } from './parametres';
+import { parametresEnVigueur } from './parametres.ts';
 
 export interface ResultatDistribution {
   readonly demandeId: string;

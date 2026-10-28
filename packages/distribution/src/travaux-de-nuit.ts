@@ -7,8 +7,8 @@
  * de ne rien faire toutes les nuits sans que personne ne s'en aperçoive.
  */
 
-import { demandeConfirmationIntervention, inviteAuxAvis } from './avis';
-import { perimeLesDemandes, recalculeScores } from './scores';
+import { demandeConfirmationIntervention, inviteAuxAvis } from './avis.ts';
+import { perimeLesDemandes, recalculeScores } from './scores.ts';
 
 /** Les travaux connus, et ce qu'ils font. */
 export const TRAVAUX_DE_NUIT = {

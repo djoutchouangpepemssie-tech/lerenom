@@ -5,7 +5,7 @@ import {
   expirationCode,
   TENTATIVES_MAX,
   type EtatVerification,
-} from './verification';
+} from './verification.ts';
 
 function etat(partiel: Partial<EtatVerification> = {}): EtatVerification {
   return {

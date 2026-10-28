@@ -10,8 +10,8 @@
  * Le worker garde ce qui le concerne : les files, les minuteurs, les travaux de nuit.
  */
 
-export * from './distribution';
-export * from './parametres';
-export * from './avis';
-export * from './scores';
-export * from './travaux-de-nuit';
+export * from './distribution.ts';
+export * from './parametres.ts';
+export * from './avis.ts';
+export * from './scores.ts';
+export * from './travaux-de-nuit.ts';

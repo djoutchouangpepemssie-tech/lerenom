@@ -6,6 +6,11 @@
     "module": "Preserve",
     "moduleDetection": "force",
     "moduleResolution": "bundler",
+    // Les imports relatifs portent leur extension `.ts`. C'est ce qu'exige Node quand il
+    // exécute du TypeScript directement — ce que fait le worker — et les empaqueteurs
+    // l'acceptent sans difficulté. L'inverse n'est pas vrai : sans extension, Node échoue
+    // au démarrage, et rien avant ne le signale puisque Vitest, lui, résout sans extension.
+    "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
     "esModuleInterop": true,
     "isolatedModules": true,

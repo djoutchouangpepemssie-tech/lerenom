@@ -14,9 +14,9 @@ import {
   rayonElargi,
   solliciter,
   statutDemande,
-} from './distribution';
-import type { EtatDistribution, ProCandidat, ProRetenu } from './distribution';
-import { PARAMETRES_PAR_DEFAUT, avecParametres } from './parametres';
+} from './distribution.ts';
+import type { EtatDistribution, ProCandidat, ProRetenu } from './distribution.ts';
+import { PARAMETRES_PAR_DEFAUT, avecParametres } from './parametres.ts';
 
 const P = PARAMETRES_PAR_DEFAUT;
 

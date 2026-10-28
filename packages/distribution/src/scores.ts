@@ -13,7 +13,7 @@ import {
   composanteReactivite,
   scoreQualite,
 } from '@lerenom/core';
-import { parametresEnVigueur } from './parametres';
+import { parametresEnVigueur } from './parametres.ts';
 
 export async function recalculeScores(): Promise<number> {
   const parametres = await parametresEnVigueur();

@@ -63,4 +63,4 @@ export const prisma: PrismaClient = new Proxy({} as PrismaClient, {
   },
 });
 
-export { nettoieLesDonneesDeTest } from './nettoyage-test';
+export { nettoieLesDonneesDeTest } from './nettoyage-test.ts';

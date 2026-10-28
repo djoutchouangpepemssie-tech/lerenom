@@ -12,7 +12,7 @@ import {
   valideAvis,
   type EtatAvis,
   type EtatConfirmation,
-} from './avis';
+} from './avis.ts';
 
 const MAINTENANT = new Date('2026-10-28T10:00:00Z');
 const TRAVAUX = new Date('2026-10-01T10:00:00Z');

@@ -6,8 +6,8 @@
  * et l'argument de vente du passage à la formule supérieure.
  */
 
-import type { Parametres } from './parametres';
-import type { Formule } from './regles-validees';
+import type { Parametres } from './parametres.ts';
+import type { Formule } from './regles-validees.ts';
 
 /** Statut d'ouverture d'une commune aux demandes de devis. */
 export type StatutCommune = 'ouvert' | 'bientot' | 'annuaire';

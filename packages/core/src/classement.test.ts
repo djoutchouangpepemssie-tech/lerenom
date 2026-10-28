@@ -5,9 +5,9 @@ import {
   expliqueRang,
   partAffichage,
   rotationEquitable,
-} from './classement';
-import type { CandidatClassement } from './classement';
-import { PARAMETRES_PAR_DEFAUT, avecParametres } from './parametres';
+} from './classement.ts';
+import type { CandidatClassement } from './classement.ts';
+import { PARAMETRES_PAR_DEFAUT, avecParametres } from './parametres.ts';
 
 const P = PARAMETRES_PAR_DEFAUT;
 

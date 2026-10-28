@@ -7,8 +7,8 @@ import {
   noteCorrigee,
   poidsValides,
   scoreQualite,
-} from './score';
-import { PARAMETRES_PAR_DEFAUT } from './parametres';
+} from './score.ts';
+import { PARAMETRES_PAR_DEFAUT } from './parametres.ts';
 
 const POIDS = PARAMETRES_PAR_DEFAUT.poidsScore;
 

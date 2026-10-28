@@ -8,7 +8,7 @@ import {
   validiteSession,
   verrouDeConnexion,
   type EtatSession,
-} from './connexion';
+} from './connexion.ts';
 
 const MAINTENANT = new Date('2026-10-28T12:00:00Z');
 

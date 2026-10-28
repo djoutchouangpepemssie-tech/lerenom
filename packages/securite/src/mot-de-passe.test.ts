@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { empreinteADurcir, hacheMotDePasse, verifieMotDePasse } from './mot-de-passe';
+import { empreinteADurcir, hacheMotDePasse, verifieMotDePasse } from './mot-de-passe.ts';
 
 const MOT = 'le chat dort sur le toit';
 

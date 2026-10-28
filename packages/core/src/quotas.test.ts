@@ -5,8 +5,8 @@ import {
   etatForfait,
   formatEuros,
   peutRecevoirDemandePartagee,
-} from './quotas';
-import { PARAMETRES_PAR_DEFAUT } from './parametres';
+} from './quotas.ts';
+import { PARAMETRES_PAR_DEFAUT } from './parametres.ts';
 
 const P = PARAMETRES_PAR_DEFAUT;
 

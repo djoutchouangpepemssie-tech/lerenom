@@ -7,7 +7,7 @@ import {
   lienRejouable,
   type ActionLien,
   type LienStocke,
-} from './liens';
+} from './liens.ts';
 
 const MAINTENANT = new Date('2026-10-28T10:00:00Z');
 const TOUTES: readonly ActionLien[] = Object.keys(DUREE_LIEN_JOURS) as ActionLien[];

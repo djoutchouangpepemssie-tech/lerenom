@@ -6,20 +6,20 @@
  * règle, écrivent le résultat et le journalisent. Elles ne décident pas.
  */
 
-export * from './regles-validees';
-export * from './parametres';
-export * from './geo';
-export * from './score';
-export * from './classement';
-export * from './zones';
-export * from './quotas';
-export * from './distribution';
-export * from './garantie';
-export * from './devis';
-export * from './validateurs';
-export * from './verification';
-export * from './liens';
-export * from './avis';
-export * from './contestation';
-export * from './mot-de-passe';
-export * from './connexion';
+export * from './regles-validees.ts';
+export * from './parametres.ts';
+export * from './geo.ts';
+export * from './score.ts';
+export * from './classement.ts';
+export * from './zones.ts';
+export * from './quotas.ts';
+export * from './distribution.ts';
+export * from './garantie.ts';
+export * from './devis.ts';
+export * from './validateurs.ts';
+export * from './verification.ts';
+export * from './liens.ts';
+export * from './avis.ts';
+export * from './contestation.ts';
+export * from './mot-de-passe.ts';
+export * from './connexion.ts';

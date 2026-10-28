@@ -8,8 +8,8 @@
  * rend les règles testables avec des valeurs arbitraires.
  */
 
-import type { Formule } from './regles-validees';
-import { REGLES_VALIDEES } from './regles-validees';
+import type { Formule } from './regles-validees.ts';
+import { REGLES_VALIDEES } from './regles-validees.ts';
 
 export interface PoidsScore {
   /** Qualité des avis (note corrigée par le nombre d'avis). */

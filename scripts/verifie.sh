@@ -38,6 +38,28 @@ etape "Types" pnpm run typecheck
 etape "Tests" pnpm run test
 etape "Build" pnpm run build
 
+# Le worker n'a pas de test propre — c'est du câblage — donc rien ne vérifiait qu'il
+# **démarre**. Il ne démarrait pas : Node exige des extensions explicites là où Vitest n'en
+# demande pas, et l'erreur n'apparaissait qu'en production. On le lance pour de bon.
+bleu "Démarrage du worker"
+if [ -z "${REDIS_URL:-}" ] && ! redis-cli ping > /dev/null 2>&1; then
+  printf '\033[0;33m! Redis injoignable : démarrage du worker non vérifié.\033[0m\n'
+else
+  # Le worker ne s'arrête pas tout seul : on le laisse démarrer, puis on l'interrompt et on
+  # lit ce qu'il a écrit. Chaîner `timeout` à un `grep` masquerait le résultat derrière le
+  # code de sortie de `timeout`.
+  journal="$(mktemp)"
+  timeout 20 pnpm --filter @lerenom/worker start > "$journal" 2>&1 || true
+  if grep -q 'en écoute' "$journal"; then
+    vert "Démarrage du worker"
+  else
+    rouge "Démarrage du worker"
+    sed -n '1,15p' "$journal"
+    echec=1
+  fi
+  rm -f "$journal"
+fi
+
 # Les tests d'intégration ont besoin d'une base et de Redis. Leur absence n'est pas un échec :
 # c'est une couverture moindre, et le script le dit au lieu de faire croire au contraire.
 if [ -z "${DATABASE_URL:-}" ]; then
