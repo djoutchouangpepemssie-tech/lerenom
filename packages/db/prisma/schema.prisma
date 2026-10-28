@@ -818,6 +818,9 @@ model Demande {
   deposeeLe DateTime  @default(now()) @map("deposee_le")
   perimeeLe DateTime? @map("perimee_le")
   clotureeLe DateTime? @map("cloturee_le")
+  /// Annulation par le client, depuis son lien de suivi. Le motif est demandé, jamais exigé.
+  annuleeLe DateTime? @map("annulee_le")
+  motifAnnulation String? @map("motif_annulation")
   modifieeLe DateTime  @updatedAt @map("modifiee_le")
 
   @@index([statut, deposeeLe])
@@ -1628,6 +1631,8 @@ enum TypeAlerte {
   connexion_admin_inhabituelle
   impaye
   envoi_rapport_echoue
+  /// Un message dû à un client ou à un pro n'a pas pu être mis en file : à rattraper à la main.
+  message_non_envoye
 }
 
 enum GraviteAlerte {

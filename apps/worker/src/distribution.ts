@@ -24,6 +24,7 @@ import {
   planifieCascadeUrgente,
   rapproche,
 } from '@lerenom/core';
+import { creeLien } from '@lerenom/liens';
 import { parametresEnVigueur } from './parametres.ts';
 
 export interface ResultatDistribution {
@@ -349,7 +350,7 @@ export async function accepte(distributionId: string): Promise<{
 }> {
   const parametres = await parametresEnVigueur();
 
-  return prisma.$transaction(async (tx) => {
+  const resultat = await prisma.$transaction(async (tx) => {
     // Verrou : deux acceptations simultanées sur une urgence ne peuvent pas passer toutes deux.
     const [verrouillee] = await tx.$queryRaw<{ id: string; demande_id: string; statut: string }[]>`
       SELECT id, demande_id, statut FROM distributions WHERE id = ${distributionId} FOR UPDATE
@@ -455,6 +456,85 @@ export async function accepte(distributionId: string): Promise<{
 
     return { montantHT: cout.montantHT, consommeForfait: cout.consommeForfait };
   });
+
+  // Le client est prévenu **après** la transaction : un envoi de message ne doit jamais
+  // pouvoir faire échouer une acceptation déjà acquise.
+  await previentLeClient(distributionId);
+
+  return resultat;
+}
+
+/**
+ * Prévient le client qu'un professionnel a accepté, et lui donne son lien de suivi.
+ *
+ * Le lien est la seule porte du client : il n'a pas de compte. On lui en crée un à chaque
+ * acceptation plutôt que d'en réutiliser un — le jeton n'est jamais conservé en clair, donc on
+ * ne saurait pas le lui renvoyer. Les deux liens ouvrent la même page.
+ *
+ * Un échec ici ne remonte pas : l'acceptation est acquise, la facturation aussi, et un SMS
+ * manquant se rattrape depuis le back-office. Il laisse en revanche une alerte.
+ */
+async function previentLeClient(distributionId: string): Promise<void> {
+  try {
+    const distribution = await prisma.distribution.findUniqueOrThrow({
+      where: { id: distributionId },
+      select: {
+        demande: {
+          select: {
+            id: true,
+            reference: true,
+            clientPrenom: true,
+            clientEmail: true,
+            clientTelephone: true,
+            commune: { select: { nom: true } },
+            prestation: { select: { nom: true } },
+          },
+        },
+        entreprise: { select: { nom: true } },
+      },
+    });
+
+    const demande = distribution.demande;
+    const pro = distribution.entreprise.nom;
+    const besoin = demande.prestation?.nom ?? 'votre demande';
+    const lien = await creeLien(demande.id, 'voir_pros');
+
+    const corps =
+      `Le Renom : ${pro} a accepté ${besoin}. ` +
+      `Ses coordonnées : ${lien.url} (demande ${demande.reference}).`;
+
+    await prisma.messageSortant.createMany({
+      data: [
+        {
+          demandeId: demande.id,
+          canal: 'sms',
+          modele: 'pro-a-accepte',
+          destinataire: demande.clientTelephone,
+          corps,
+          statut: 'en_attente',
+        },
+        {
+          demandeId: demande.id,
+          canal: 'email',
+          modele: 'pro-a-accepte',
+          destinataire: demande.clientEmail,
+          sujet: `${pro} a accepté votre demande`,
+          corps,
+          statut: 'en_attente',
+        },
+      ],
+    });
+  } catch (erreur) {
+    await prisma.alerte.create({
+      data: {
+        type: 'message_non_envoye',
+        gravite: 'moyenne',
+        titre: 'Client non prévenu d’une acceptation',
+        explication: erreur instanceof Error ? erreur.message : String(erreur),
+        objetId: distributionId,
+      },
+    });
+  }
 }
 
 /**

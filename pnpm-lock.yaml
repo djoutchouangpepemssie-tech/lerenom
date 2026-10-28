@@ -44,6 +44,9 @@ importers:
       '@lerenom/files':
         specifier: workspace:*
         version: link:../../packages/files
+      '@lerenom/liens':
+        specifier: workspace:*
+        version: link:../../packages/liens
       '@lerenom/securite':
         specifier: workspace:*
         version: link:../../packages/securite
@@ -96,6 +99,9 @@ importers:
       '@lerenom/files':
         specifier: workspace:*
         version: link:../../packages/files
+      '@lerenom/liens':
+        specifier: workspace:*
+        version: link:../../packages/liens
       '@lerenom/securite':
         specifier: workspace:*
         version: link:../../packages/securite
@@ -156,6 +162,22 @@ importers:
       ioredis:
         specifier: ^6.0.0
         version: 6.0.0
+    devDependencies:
+      '@types/node':
+        specifier: ^22.19.1
+        version: 22.20.5
+
+  packages/liens:
+    dependencies:
+      '@lerenom/core':
+        specifier: workspace:*
+        version: link:../core
+      '@lerenom/db':
+        specifier: workspace:*
+        version: link:../db
+      '@lerenom/securite':
+        specifier: workspace:*
+        version: link:../securite
     devDependencies:
       '@types/node':
         specifier: ^22.19.1

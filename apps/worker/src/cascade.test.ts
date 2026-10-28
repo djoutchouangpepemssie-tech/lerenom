@@ -52,6 +52,9 @@ decrire('cascade de distribution', () => {
   ];
 
   beforeAll(async () => {
+    // L'acceptation crée désormais le lien de suivi du client, qui a besoin du secret.
+    process.env['SECRET_VERIFICATION'] ??= 'secret-de-test-strictement-local-et-assez-long';
+
     // Un métier sans données de démonstration : le scénario ne doit croiser aucune entreprise
     // qu'il n'a pas créée lui-même, et aucune exclusivité déjà vendue.
     const metier = await prisma.metier.findFirstOrThrow({ where: { slug: 'serrurier' } });
@@ -158,6 +161,7 @@ decrire('cascade de distribution', () => {
     // On supprime dans l'ordre des dépendances : rien de ce test ne doit survivre.
     const ids = [...entreprises.values()];
     await prisma.messageSortant.deleteMany({ where: { demandeId } });
+    await prisma.lienAction.deleteMany({ where: { demandeId } });
     await prisma.suiviDemande.deleteMany({ where: { demandeId } });
     await prisma.distribution.deleteMany({ where: { demandeId } });
     await prisma.demande.deleteMany({ where: { id: demandeId } });
@@ -311,10 +315,38 @@ decrire('cascade de distribution', () => {
     expect(sollicites).toHaveLength(5);
   });
 
-  it('a mis en file une alerte pour chaque professionnel sollicité', async () => {
+  it('a mis en file un message pour chaque professionnel sollicité', async () => {
     const messages = await prisma.messageSortant.findMany({ where: { demandeId } });
+    const recues = messages.filter((m) => m.modele === 'demande-recue');
     // Un e-mail par professionnel sollicité ; les SMS attendent le numéro du destinataire.
-    expect(messages.filter((m) => m.canal === 'email')).toHaveLength(5);
+    expect(recues.filter((m) => m.canal === 'email')).toHaveLength(5);
     expect(messages.every((m) => m.statut === 'en_attente')).toBe(true);
+  });
+
+  it('prévient le client à chaque acceptation, et lui donne un lien de suivi', async () => {
+    const messages = await prisma.messageSortant.findMany({
+      where: { demandeId, modele: 'pro-a-accepte' },
+    });
+
+    // Trois acceptations, un SMS et un courriel chacune, tous adressés au client.
+    expect(messages.filter((m) => m.canal === 'sms')).toHaveLength(3);
+    expect(messages.filter((m) => m.canal === 'email')).toHaveLength(3);
+    expect(
+      messages.every(
+        (m) => m.destinataire.includes('99999999') || m.destinataire.includes('@exemple.test'),
+      ),
+    ).toBe(true);
+
+    const liens = await prisma.lienAction.findMany({ where: { demandeId } });
+    expect(liens).toHaveLength(3);
+    expect(liens.every((lien) => lien.action === 'voir_pros')).toBe(true);
+    // Chaque jeton est unique, et aucun n'est stocké en clair : 64 caractères d'empreinte.
+    expect(new Set(liens.map((lien) => lien.jeton)).size).toBe(3);
+    expect(liens.every((lien) => lien.jeton.length === 64)).toBe(true);
+
+    // Le jeton en clair figure dans le message, et c'est le seul endroit où il existe.
+    for (const message of messages) {
+      expect(message.corps).toMatch(/\/suivi\/[A-Za-z0-9_-]{43}/);
+    }
   });
 });

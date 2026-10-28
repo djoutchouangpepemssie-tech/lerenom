@@ -10,7 +10,7 @@
  *   * la comparaison se fait à temps constant, pour ne pas révéler l'empreinte octet par octet.
  */
 
-import { createHmac, randomInt, timingSafeEqual } from 'node:crypto';
+import { createHmac, randomBytes, randomInt, timingSafeEqual } from 'node:crypto';
 import {
   decideVerification,
   LONGUEUR_CODE,
@@ -55,4 +55,28 @@ export function verifieCode(
     empreintesEgales(etat.empreinte, empreinteCode(codeSaisi, etat.demandeId, secret));
 
   return decideVerification(etat, correspond, maintenant);
+}
+
+/**
+ * Tire le jeton d'un lien à action unique : 32 octets d'aléa, en base64url.
+ *
+ * Assez long pour qu'on ne le devine pas, assez court pour tenir dans un SMS à côté du reste.
+ */
+export function tireJeton(): string {
+  return randomBytes(32).toString('base64url');
+}
+
+/**
+ * Empreinte d'un jeton de lien.
+ *
+ * Le jeton n'existe en clair que dans le SMS du client : la base n'en garde que l'empreinte,
+ * et c'est par elle qu'on retrouve le lien. Quelqu'un qui lirait la base ne pourrait donc pas
+ * se faire passer pour un client, alors qu'un jeton stocké en clair serait une clé prête à
+ * l'emploi pour chaque demande en cours.
+ *
+ * Pas de sel par ligne, contrairement aux codes SMS : il faut pouvoir retrouver la ligne **à
+ * partir du seul jeton**. Les 32 octets d'aléa rendent l'attaque par dictionnaire vaine.
+ */
+export function empreinteJeton(jeton: string, secret: string): string {
+  return createHmac('sha256', secret).update(`lien:${jeton}`).digest('hex');
 }

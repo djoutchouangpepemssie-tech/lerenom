@@ -310,10 +310,63 @@ vérification n'a pas d'adresse propre, on n'y arrive qu'en remplissant les quat
 tunnel entier est donc vérifié dans un vrai navigateur, aux deux largeurs, à chaque passage.
 32 captures, aucun débordement.
 
+### La page de suivi : tout ce qu'un client a, sans compte
+
+Le Renom ne crée pas de compte client. Ce qu'un client possède, c'est un lien reçu par SMS —
+et c'est tout. Ce lien est désormais réel, de bout en bout.
+
+**Le jeton n'existe en clair qu'une fois**, dans le message. La base n'en garde que
+l'empreinte, et c'est par elle qu'on retrouve la ligne : lire la base ne donne donc pas les
+clés des dossiers en cours. Un test le vérifie, plutôt que de le supposer.
+
+La doctrine est écrite dans `packages/core/src/liens.ts` : **un lien, une portée**. Le lien de
+suivi ouvre une demande — la sienne — et ce qu'on peut en faire : voir qui a accepté, annuler.
+Il ne signe rien et ne paie rien ; ce qui engage juridiquement ou financièrement aura son
+propre lien, à usage unique, pour qu'un lien de suivi oublié dans une boîte mail ne puisse pas
+engager son destinataire. Les durées suivent l'usage, pas une règle unique : 90 jours pour
+revenir sur les coordonnées d'un artisan, 7 pour annuler, 3 pour modifier — au-delà, la demande
+est périmée de toute façon.
+
+Sur la page, trois choses et rien d'autre : où en est la demande, qui a accepté et comment le
+joindre, et le droit de tout arrêter.
+
+**Deux promesses sont tenues dans la requête, pas seulement à l'affichage**, et c'est ce que le
+test d'intégration vérifie :
+
+- les coordonnées d'un professionnel **qui n'a pas accepté** ne sortent jamais de la base. Le
+  client sait qu'un troisième pro a été sollicité ; il ne saura jamais lequel tant que celui-ci
+  n'a pas accepté ;
+- **annuler ne reprend rien à personne.** Les propositions en attente passent à « retirée » —
+  le pro n'a rien refusé, rien ne doit lui être compté — mais celles qui ont été acceptées
+  restent telles quelles : ces professionnels ont payé. La page le dit au client, en toutes
+  lettres, avant qu'il confirme.
+
+L'annulation est idempotente : un double clic ou un retour en arrière répond comme la première
+fois, plutôt que d'afficher une erreur à quelqu'un qui a fait ce qu'il fallait.
+
+Le worker prévient le client **à chaque acceptation** et lui joint son lien. L'envoi a lieu
+après la transaction, jamais dedans : un SMS qui échoue ne doit pas pouvoir annuler une
+acceptation déjà acquise et déjà facturée. Un échec laisse une alerte au back-office.
+
+### Trouvé en regardant les captures
+
+- Les numéros s'affichaient en format technique (`+33199000011`). `telephoneLisible` les écrit
+  comme on les lit, et rend tel quel ce qui n'est pas un numéro français plutôt que de le
+  découper n'importe comment.
+- Les sept plombiers de démonstration partageaient **le même numéro**, et aucun n'avait
+  d'adresse électronique : le bouton « Écrire » n'apparaissait jamais. Ils ont maintenant des
+  coordonnées distinctes, prises dans la plage `01 99 00 00 xx` que l'Arcep réserve à la
+  fiction — aucun vrai abonné ne peut être dérangé par une donnée de démonstration.
+
+La page de suivi n'ayant pas d'adresse devinable, `pnpm --filter @lerenom/db demo:suivi`
+fabrique un lien de démonstration et l'écrit à la racine ; le script de captures le retrouve
+seul. Sans lui, la page n'est pas photographiée **et le script le dit** au lieu de l'ignorer
+en silence. 36 captures, aucun débordement.
+
 ### Reste pour clore la phase 4
 
-Le raccordement d'un opérateur SMS (le message attend dans `messages_sortants`), les pages
-client d'une seule action, le suivi jusqu'à l'avis, les contestations et l'anti-fraude.
+Le raccordement d'un opérateur SMS (le message attend dans `messages_sortants`), le dépôt
+d'avis après intervention, les contestations et l'anti-fraude.
 
 ---
 

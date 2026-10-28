@@ -15,6 +15,7 @@
     "@lerenom/core": "workspace:*",
     "@lerenom/db": "workspace:*",
     "@lerenom/files": "workspace:*",
+    "@lerenom/liens": "workspace:*",
     "@lerenom/securite": "workspace:*",
     "bullmq": "^6.5.0",
     "ioredis": "^6.0.0"

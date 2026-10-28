@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { codeBienForme, LONGUEUR_CODE, TENTATIVES_MAX } from '@lerenom/core';
-import { empreinteCode, empreintesEgales, tireCode, verifieCode } from './index';
+import { codeBienForme, jetonBienForme, LONGUEUR_CODE, TENTATIVES_MAX } from '@lerenom/core';
+import {
+  empreinteCode,
+  empreinteJeton,
+  empreintesEgales,
+  tireCode,
+  tireJeton,
+  verifieCode,
+} from './index';
 
 const SECRET = 'secret-de-test-assez-long-pour-etre-credible';
 const DEMANDE = 'dem_01HZ';
@@ -125,5 +132,39 @@ describe('verifieCode', () => {
     expect(verifieCode({ ...etat(), empreinte: null }, '123456', SECRET, MAINTENANT)).toEqual({
       issue: 'expire',
     });
+  });
+});
+
+describe('tireJeton', () => {
+  it('tire un jeton bien formé, à chaque fois', () => {
+    for (let i = 0; i < 1_000; i += 1) {
+      expect(jetonBienForme(tireJeton())).toBe(true);
+    }
+  });
+
+  it('ne tire jamais deux fois le même', () => {
+    const tirages = new Set(Array.from({ length: 5_000 }, () => tireJeton()));
+    expect(tirages.size).toBe(5_000);
+  });
+});
+
+describe('empreinteJeton', () => {
+  it('ne contient pas le jeton en clair', () => {
+    const jeton = tireJeton();
+    expect(empreinteJeton(jeton, SECRET)).not.toContain(jeton);
+  });
+
+  it('est stable : c’est par elle qu’on retrouve la ligne', () => {
+    const jeton = tireJeton();
+    expect(empreinteJeton(jeton, SECRET)).toBe(empreinteJeton(jeton, SECRET));
+  });
+
+  it('change avec le secret du serveur', () => {
+    const jeton = tireJeton();
+    expect(empreinteJeton(jeton, SECRET)).not.toBe(empreinteJeton(jeton, 'un-autre-secret'));
+  });
+
+  it('ne se confond pas avec l’empreinte d’un code de vérification', () => {
+    expect(empreinteJeton('123456', SECRET)).not.toBe(empreinteCode('123456', DEMANDE, SECRET));
   });
 });

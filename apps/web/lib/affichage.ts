@@ -19,3 +19,18 @@ export function aLaVille(nom: string): string {
   if (/^La\s/i.test(court)) return `à ${court}`;
   return `à ${court}`;
 }
+
+/**
+ * Un numéro français, écrit comme on l'écrit : « 01 99 00 00 10 ».
+ *
+ * La base conserve la forme internationale E.164 — c'est elle qui sert à appeler et à envoyer
+ * un SMS — mais personne ne lit « +33199000010 ». Un numéro qui n'est pas français est rendu
+ * tel quel plutôt que mal découpé.
+ */
+export function telephoneLisible(numero: string): string {
+  const compact = numero.replace(/[\s.-]/g, '');
+  const national = /^\+33(\d{9})$/.exec(compact);
+  const chiffres = national !== null ? `0${national[1] ?? ''}` : compact;
+  if (!/^0\d{9}$/.test(chiffres)) return numero;
+  return (chiffres.match(/\d{2}/g) ?? []).join(' ');
+}

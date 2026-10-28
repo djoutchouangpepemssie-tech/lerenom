@@ -8,7 +8,7 @@
  * Usage : pnpm --filter @lerenom/web captures [adresse]
  */
 
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
@@ -16,6 +16,28 @@ import { chromium } from 'playwright';
 
 const BASE = process.argv[2] ?? 'http://127.0.0.1:3100';
 const SORTIE = path.resolve(import.meta.dirname, '../../../docs/captures');
+
+/**
+ * Le jeton de la page de suivi de démonstration.
+ *
+ * Cette page n'a pas d'adresse devinable : elle s'ouvre avec un jeton qui n'existe en clair
+ * qu'une fois. `pnpm --filter @lerenom/db demo:suivi` en fabrique un et l'écrit à la racine ;
+ * sans lui, la page ne peut pas être photographiée, et le script le dit au lieu de l'ignorer.
+ */
+function jetonDeSuivi() {
+  const variable = process.env.JETON_SUIVI;
+  if (variable !== undefined && variable !== '') return variable.trim();
+
+  const fichier = path.resolve(import.meta.dirname, '../../../.jeton-suivi');
+  if (!existsSync(fichier)) return null;
+  const contenu = readFileSync(fichier, 'utf8').trim();
+  return contenu === '' ? null : contenu;
+}
+
+function cheminDeSuivi() {
+  const jeton = jetonDeSuivi();
+  return jeton === null ? null : `/suivi/${jeton}`;
+}
 
 /**
  * Mène le tunnel de demande jusqu'à l'écran de vérification du mobile.
@@ -114,6 +136,23 @@ const PAGES = [
     titre: 'Demande — vérification du mobile',
     scenario: jusquALaVerification,
   },
+  {
+    nom: 'suivi',
+    titre: 'Suivi de la demande',
+    chemin: cheminDeSuivi,
+  },
+  {
+    nom: 'suivi-annulation',
+    titre: 'Suivi — annulation',
+    chemin: cheminDeSuivi,
+    // On ouvre le volet de confirmation sans confirmer : la demande de démonstration doit
+    // rester vivante pour la capture suivante.
+    scenario: async (onglet) => {
+      await onglet.getByRole('button', { name: 'Annuler ma demande' }).click();
+      await onglet.getByText('Annuler définitivement cette demande ?').waitFor();
+      await onglet.waitForTimeout(200);
+    },
+  },
   { nom: 'pro-inscription', chemin: '/pro/inscription', titre: 'Inscription professionnelle' },
   { nom: 'design-system', chemin: '/design', titre: 'Design system' },
 ];
@@ -133,6 +172,7 @@ async function main() {
     ...(existsSync(chemineChromium) ? { executablePath: chemineChromium } : {}),
   });
   const rapport = [];
+  const manquantes = new Set();
   let defauts = 0;
 
   for (const vue of LARGEURS) {
@@ -148,6 +188,12 @@ async function main() {
     });
 
     for (const page of PAGES) {
+      const chemin = typeof page.chemin === 'function' ? page.chemin() : page.chemin;
+      if (chemin === null) {
+        manquantes.add(page.titre);
+        continue;
+      }
+
       const onglet = await contexte.newPage();
       const erreurs = [];
       onglet.on('pageerror', (erreur) => erreurs.push(erreur.message));
@@ -157,7 +203,7 @@ async function main() {
 
       // `networkidle` ne se produit jamais sur une page riche en liens : Next en précharge le
       // rendu dès qu'ils entrent dans le cadre, et la capture pleine page les y fait tous entrer.
-      await onglet.goto(`${BASE}${page.chemin}`, { waitUntil: 'load' });
+      await onglet.goto(`${BASE}${chemin}`, { waitUntil: 'load' });
       await onglet.evaluate(() => document.fonts.ready);
       // Le temps que les apparitions échelonnées se posent. Sous `reducedMotion: reduce` elles
       // sont immédiates, mais la mise en page, elle, a besoin d'un souffle.
@@ -267,10 +313,18 @@ async function main() {
     'utf8',
   );
 
+  if (manquantes.size > 0) {
+    console.error(
+      `\n${manquantes.size} page(s) non capturée(s), faute de données : ${[...manquantes].join(', ')}.` +
+        '\n    La page de suivi exige un lien : pnpm --filter @lerenom/db demo:suivi',
+    );
+    process.exitCode = 1;
+  }
+
   if (defauts > 0) {
     console.error(`\n${defauts} capture(s) à corriger.`);
     process.exitCode = 1;
-  } else {
+  } else if (manquantes.size === 0) {
     console.log(`\n${rapport.length} captures vérifiées, aucun débordement.`);
   }
 }

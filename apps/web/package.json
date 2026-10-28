@@ -14,6 +14,7 @@
   "dependencies": {
     "@lerenom/core": "workspace:*",
     "@lerenom/files": "workspace:*",
+    "@lerenom/liens": "workspace:*",
     "@lerenom/securite": "workspace:*",
     "@lerenom/ui": "workspace:*",
     "next": "^16.4.3",

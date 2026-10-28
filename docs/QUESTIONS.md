@@ -296,3 +296,48 @@ personne ne doit le faire sans le savoir : c'est écrit dans `.env.exemple`.
 
 **À trancher à l'exploitation** : où ce secret est conservé en production (gestionnaire de
 secrets de l'hébergeur, pas un fichier `.env` sur le disque) et qui y a accès.
+
+---
+
+## Q17 🟡 — Durée de vie des liens à action unique
+
+_(§ non chiffré par le cahier des charges)_
+
+Le cahier des charges impose des pages client « à action unique, expirantes », sans dire combien
+de temps elles vivent.
+
+**Défauts appliqués**, dans `DUREE_LIEN_JOURS` (`packages/core/src/liens.ts`) : 90 jours pour
+consulter ses devis et déposer un avis, 60 pour régler une facture, 30 pour signer un devis,
+14 pour choisir un créneau ou envoyer des photos, 7 pour annuler, 3 pour modifier, 180 pour
+confirmer l'ouverture d'une ville.
+
+Le raisonnement est le même partout : **aussi longtemps que l'usage l'exige, pas un jour de
+plus.** On revient sur les coordonnées d'un artisan des semaines après l'intervention ; on
+n'annule pas une demande trois semaines après l'avoir déposée, puisqu'elle est périmée au bout
+de 72 heures.
+
+**À confirmer avec Arcel** : 90 jours pour le dépôt d'avis est-il suffisant pour des travaux
+longs (une rénovation peut durer six mois) ? Si non, c'est une constante à changer, pas du code.
+
+---
+
+## Q18 🟡 — Que devient une demande annulée pour les pros qui ont déjà accepté ?
+
+_(non tranché par le cahier des charges)_
+
+Le cahier des charges dit que l'acceptation est définitive et facturée. Il ne dit pas ce qui se
+passe si le client annule **après** qu'un professionnel a accepté.
+
+**Défaut appliqué : on ne reprend rien.** La demande passe à « annulée », les propositions
+encore en attente sont retirées (le pro n'a rien refusé, rien ne lui est compté), mais celles
+qui ont été acceptées restent acceptées et restent facturées. Le professionnel garde les
+coordonnées du client : il a payé pour les obtenir, et il a peut-être déjà appelé.
+
+La page de suivi le dit au client avant qu'il confirme : _« les professionnels qui ont déjà
+accepté gardent vos coordonnées : prévenez-les directement si vous ne souhaitez plus qu'ils
+vous recontactent »_.
+
+**À trancher** : faut-il un recrédit quand l'annulation survient très vite — disons dans les
+quinze minutes suivant l'acceptation, avant tout contact ? Ce serait équitable pour le pro, et
+la table `recredits` existe déjà pour cela. Mais c'est aussi une porte ouverte aux abus, et le
+coût réel pour Le Renom n'est pas nul.

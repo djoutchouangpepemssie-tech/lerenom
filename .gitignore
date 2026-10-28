@@ -7,6 +7,8 @@ coverage/
 *.tsbuildinfo
 
 .env
+# Jeton de démonstration de la page de suivi, écrit par `demo:suivi`.
+.jeton-suivi
 .env.local
 .env.*.local
 !.env.exemple

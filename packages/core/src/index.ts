@@ -18,3 +18,4 @@ export * from './garantie';
 export * from './devis';
 export * from './validateurs';
 export * from './verification';
+export * from './liens';

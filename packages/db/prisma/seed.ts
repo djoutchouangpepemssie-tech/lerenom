@@ -425,7 +425,11 @@ async function semeDemonstration(idsMetier: Map<string, string>): Promise<void> 
     where: { slug: 'plombier--recherche-de-fuite' },
   });
 
-  for (const pro of PLOMBIERS) {
+  for (const [indice, pro] of PLOMBIERS.entries()) {
+    // Numéros de la plage 01 99 00 00 xx, réservée par l'Arcep à la fiction : aucun vrai
+    // abonné ne peut être dérangé par une donnée de démonstration.
+    const telephoneFictif = `+33199000${String(indice + 10).padStart(3, '0')}`;
+    const emailFictif = `contact@${slugifie(pro.nom)}.exemple`;
     const entreprise = await prisma.entreprise.upsert({
       where: { siret: pro.siret },
       // Les données de démonstration se rafraîchissent à chaque semis : sans cela, un champ
@@ -459,17 +463,26 @@ async function semeDemonstration(idsMetier: Map<string, string>): Promise<void> 
 
     await prisma.fiche.upsert({
       where: { entrepriseId: entreprise.id },
-      update: {},
+      // Les champs de démonstration sont rafraîchis : un semis relancé après un changement
+      // de jeu d'essai doit refléter le nouveau, pas garder l'ancien.
+      update: { telephone: telephoneFictif, email: emailFictif, description: pro.description },
       create: {
         entrepriseId: entreprise.id,
         description: pro.description,
-        telephone: '+33100000000',
+        telephone: telephoneFictif,
+        email: emailFictif,
         completude: pro.formule === 'gratuit' ? 0.45 : pro.formule === 'essentiel' ? 0.68 : 0.92,
         atouts:
           pro.formule === 'gratuit'
             ? []
             : ['Devis gratuit', 'Intervention rapide', 'Assurance décennale'],
       },
+    });
+
+    // Même raison : les agences déjà en base reçoivent le contact de démonstration à jour.
+    await prisma.agence.updateMany({
+      where: { entrepriseId: entreprise.id },
+      data: { contactTelephone: telephoneFictif, contactEmail: emailFictif },
     });
 
     const agenceExistante = await prisma.agence.findFirst({
@@ -485,6 +498,8 @@ async function semeDemonstration(idsMetier: Map<string, string>): Promise<void> 
           communeId: '75111',
           rayonKm: 10,
           principale: true,
+          contactTelephone: telephoneFictif,
+          contactEmail: emailFictif,
         },
       });
       if (pro.nom === 'Dupont Plomberie') {
