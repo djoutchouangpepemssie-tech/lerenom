@@ -27,5 +27,16 @@
     "turbo": "^2.11.10",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.72.1"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@prisma/engines",
+      "prisma",
+      "@tailwindcss/oxide",
+      "esbuild",
+      "msgpackr-extract",
+      "sharp",
+      "unrs-resolver"
+    ]
   }
 }

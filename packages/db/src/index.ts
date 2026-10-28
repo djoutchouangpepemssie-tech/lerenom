@@ -46,10 +46,17 @@ function client(): PrismaClient {
  * aucune variable d'environnement.
  */
 export const prisma: PrismaClient = new Proxy({} as PrismaClient, {
-  get(_cible, propriete, recepteur) {
-    const valeur: unknown = Reflect.get(client(), propriete, recepteur);
-    // Les méthodes doivent rester liées au client, pas au mandataire.
-    return typeof valeur === 'function' ? valeur.bind(client()) : valeur;
+  get(_cible, propriete) {
+    const reel = client();
+    const valeur: unknown = Reflect.get(reel, propriete);
+
+    // Les méthodes doivent rester liées au client, pas au mandataire : `prisma.$connect`
+    // détaché de son objet perdrait son `this`. Le typage de `bind` ne survit pas au passage
+    // par `unknown`, d'où l'assertion — contenue à cette seule ligne.
+    if (typeof valeur === 'function') {
+      return (valeur as (...arguments_: readonly unknown[]) => unknown).bind(reel);
+    }
+    return valeur;
   },
   has(_cible, propriete) {
     return Reflect.has(client(), propriete);
