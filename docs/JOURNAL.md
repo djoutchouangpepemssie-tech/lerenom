@@ -838,6 +838,59 @@ quelque chose d'utile même sans croisement.
 
 ---
 
+## Horaires · savoir si l'on peut appeler maintenant
+
+L'écran « Ma fiche » affirmait que les horaires se réglaient « depuis les autres écrans de
+votre espace ». C'était faux : aucun écran ne le permettait. Une phrase d'interface qui
+promet ce qui n'existe pas est pire qu'un manque avoué.
+
+### Ce que le modèle devait permettre
+
+Plusieurs créneaux par jour. La pause du midi n'est pas une exception chez les artisans, c'est
+la règle, et un modèle à une seule plage obligerait à mentir — annoncer 8 h – 19 h quand on ne
+décroche pas entre midi et deux.
+
+Aucune heure n'est calculée dans `@lerenom/core` à partir d'une date : les fonctions reçoivent
+le jour et la minute déjà exprimés dans le fuseau du site. Mélanger les règles d'ouverture et
+l'arithmétique des fuseaux produit exactement le genre d'écart d'une heure qui ne se voit qu'au
+changement d'heure, un dimanche d'octobre.
+
+Le module répond à deux questions : « est-ce ouvert ? » et « quand est-ce que ça rouvre ? ».
+C'est ce qu'un visiteur veut savoir, et un annuaire qui ne le dit pas le laisse appeler dans
+le vide.
+
+### Trois défauts trouvés en regardant
+
+**`08:00 AM`.** Les champs `<input type="time">` affichent l'heure dans la langue **du
+navigateur**, pas dans celle de la page : sur un navigateur configuré en anglais, un artisan
+francophone lisait « 08:00 AM » sur son propre écran. Remplacés par des listes déroulantes au
+quart d'heure, qui disent « 8 h » partout et se manipulent aussi bien au doigt qu'à la souris.
+Le champ de date de l'assurance reste natif : son calendrier est réellement meilleur, et son
+format suit le navigateur de l'utilisateur — c'est-à-dire le sien.
+
+**Un débordement de 25 px à 390.** Trois champs d'heure et deux boutons sur une seule ligne ne
+tiennent pas sur un téléphone. La ligne passe en colonne sous 640 px.
+
+**Un commentaire JSX frère de l'élément racine**, qui a fait échouer la construction. Rattrapé
+par l'outil, pas par moi.
+
+### Ce qui a suivi
+
+La complétude ne se contente plus de vérifier que le champ existe : un objet vide ou une
+semaine entièrement fermée ne comptent pas. « Le champ est rempli » aurait donné le point à une
+fiche qui n'annonce rien.
+
+Le semis écrivait les horaires en texte (`'08:00-19:00'`), une forme que rien ne sait relire.
+Corrigé — et le JSON de la base est désormais relu puis vérifié avant usage, plutôt que cru sur
+parole : s'y fier sans contrôle reviendrait à faire confiance à une version du code qui n'existe
+pas encore.
+
+38 tests sur les règles, 4 sur la route et la base. Les plus utiles portent sur les bornes :
+une entreprise qui ferme à 18 h n'est pas ouverte à 18 h, et deux plages saisies « 8 h – 12 h »
+puis « 12 h – 18 h » décrivent une journée continue, pas une pause.
+
+---
+
 ## Phases 5 à 11 · à venir
 
 Agenda et documents du pro, monétisation Stripe, back-office, personnalisation, avis et

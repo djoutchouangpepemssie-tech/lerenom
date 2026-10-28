@@ -14,6 +14,12 @@ import { proConnecte } from '@/lib/session-pro';
 
 export const dynamic = 'force-dynamic';
 
+const Creneau = z.object({
+  debut: z.number().int().min(0).max(1440),
+  fin: z.number().int().min(0).max(1440),
+});
+const Journee = z.array(Creneau).max(3);
+
 const Fiche = z.object({
   description: z.string().max(5000),
   slogan: z.string().max(300),
@@ -24,6 +30,17 @@ const Fiche = z.object({
   decennaleNumero: z.string().max(80),
   decennaleAssureur: z.string().max(120),
   decennaleExpireLe: z.string().max(10),
+  // Les créneaux sont des minutes depuis minuit : un entier par borne, trois plages par jour
+  // au maximum. Au-delà, ce n'est plus un horaire d'ouverture mais un emploi du temps.
+  horaires: z.object({
+    lundi: Journee,
+    mardi: Journee,
+    mercredi: Journee,
+    jeudi: Journee,
+    vendredi: Journee,
+    samedi: Journee,
+    dimanche: Journee,
+  }),
 });
 
 export async function PUT(requete: Request): Promise<NextResponse> {

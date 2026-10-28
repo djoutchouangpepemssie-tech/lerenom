@@ -61,6 +61,18 @@ function saisie(modifications: Record<string, unknown> = {}): Record<string, unk
     decennaleNumero: '',
     decennaleAssureur: '',
     decennaleExpireLe: '',
+    horaires: {
+      lundi: [
+        { debut: 8 * 60, fin: 12 * 60 },
+        { debut: 14 * 60, fin: 18 * 60 },
+      ],
+      mardi: [{ debut: 8 * 60, fin: 18 * 60 }],
+      mercredi: [],
+      jeudi: [],
+      vendredi: [],
+      samedi: [],
+      dimanche: [],
+    },
     ...modifications,
   };
 }
@@ -167,6 +179,80 @@ describe('enregistrement', () => {
     await enregistre(requete(saisie({ atouts: ['Devis gratuit', '', '   ', 'Propreté'] })));
     const fiche = await prisma.fiche.findUniqueOrThrow({ where: { entrepriseId } });
     expect(fiche.atouts).toEqual(['Devis gratuit', 'Propreté']);
+  });
+});
+
+describe('horaires', () => {
+  it('enregistre les créneaux et les relit', async () => {
+    await enregistre(requete(saisie()));
+    const fiche = await ficheDuPro(entrepriseId);
+    expect(fiche?.horaires.lundi).toEqual([
+      { debut: 480, fin: 720 },
+      { debut: 840, fin: 1080 },
+    ]);
+    expect(fiche?.horaires.dimanche).toEqual([]);
+  });
+
+  it('fusionne deux plages qui se touchent avant de les stocker', async () => {
+    // La base ne doit pas garder une pause que personne n'a voulue.
+    await enregistre(
+      requete(
+        saisie({
+          horaires: {
+            lundi: [
+              { debut: 8 * 60, fin: 12 * 60 },
+              { debut: 12 * 60, fin: 18 * 60 },
+            ],
+            mardi: [],
+            mercredi: [],
+            jeudi: [],
+            vendredi: [],
+            samedi: [],
+            dimanche: [],
+          },
+        }),
+      ),
+    );
+    const fiche = await ficheDuPro(entrepriseId);
+    expect(fiche?.horaires.lundi).toEqual([{ debut: 480, fin: 1080 }]);
+  });
+
+  it('refuse une fermeture antérieure à l’ouverture', async () => {
+    const reponse = await enregistre(
+      requete(
+        saisie({
+          horaires: {
+            lundi: [{ debut: 18 * 60, fin: 8 * 60 }],
+            mardi: [],
+            mercredi: [],
+            jeudi: [],
+            vendredi: [],
+            samedi: [],
+            dimanche: [],
+          },
+        }),
+      ),
+    );
+    expect(reponse.status).toBe(422);
+    const corps = (await reponse.json()) as { problemes: { champ: string }[] };
+    expect(corps.problemes.map((p) => p.champ)).toContain('horaires.lundi');
+  });
+
+  it('fait monter la complétude quand on les renseigne', async () => {
+    const vide = {
+      lundi: [],
+      mardi: [],
+      mercredi: [],
+      jeudi: [],
+      vendredi: [],
+      samedi: [],
+      dimanche: [],
+    };
+    const sans = (await (await enregistre(requete(saisie({ horaires: vide })))).json()) as {
+      completude: number;
+    };
+    const avec = (await (await enregistre(requete(saisie()))).json()) as { completude: number };
+    expect(avec.completude).toBeGreaterThan(sans.completude);
   });
 });
 

@@ -15,7 +15,9 @@ import {
   TitreSection,
 } from '@lerenom/ui';
 import type { Merite } from '@lerenom/ui';
+import { horairesDepuisJson, horairesRenseignes } from '@lerenom/core';
 import { FilAriane } from '@/composants/FilAriane';
+import { HorairesPubliques } from '@/composants/HorairesPubliques';
 import { entrepriseParSlug } from '@/lib/donnees';
 import { FUSEAU, nomVille } from '@/lib/affichage';
 
@@ -60,6 +62,9 @@ export default async function PageEntreprise({ params }: Parametres) {
   const metierPrincipal = entreprise.metiers.find((m) => m.principal) ?? entreprise.metiers[0];
   const agencePrincipale = entreprise.agences.find((a) => a.principale) ?? entreprise.agences[0];
   const fiche = entreprise.fiche;
+  // Le JSON de la base est relu et vérifié : s'y fier sans contrôle reviendrait à faire
+  // confiance à ce qu'une version précédente du code y a écrit.
+  const horaires = horairesDepuisJson(fiche?.horaires);
 
   // Une fiche qui ne contient que les données SIRENE reste en `noindex` : publier des millions
   // de pages reproduites à grande échelle est exactement ce que les règles anti-spam visent.
@@ -241,6 +246,25 @@ export default async function PageEntreprise({ params }: Parametres) {
                 </li>
               ))}
             </ul>
+          </Conteneur>
+        </Section>
+      )}
+
+      {/* ── Horaires ───────────────────────────────────────────────────────── */}
+      {horaires !== null && horairesRenseignes(horaires) && (
+        <Section fond="creme" className="py-12">
+          <Conteneur>
+            <TitreSection
+              surtitre="Horaires"
+              titre={
+                <>
+                  Quand <Accent>l’appeler</Accent>
+                </>
+              }
+            />
+            <div className="mt-8 max-w-lg">
+              <HorairesPubliques horaires={horaires} />
+            </div>
           </Conteneur>
         </Section>
       )}

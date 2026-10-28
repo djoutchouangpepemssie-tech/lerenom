@@ -1,13 +1,19 @@
 import { prisma } from '@lerenom/db';
+import type { Prisma } from '@lerenom/db';
 import { telephoneLisible } from '@/lib/affichage';
 import {
   ATOUTS_MAXIMUM,
   LONGUEUR_PRESENTATION_UTILE,
   completudeFiche,
   criteresFiche,
+  horairesDepuisJson,
   manquesFiche,
+  normaliseHoraires,
+  problemesHoraires,
+  semaineFermee,
   type CritereFiche,
   type EtatFiche,
+  type Horaires,
 } from '@lerenom/core';
 
 /**
@@ -34,6 +40,7 @@ export interface SaisieFiche {
   readonly decennaleAssureur: string;
   /** Au format `AAAA-MM-JJ`, ou vide. */
   readonly decennaleExpireLe: string;
+  readonly horaires: Horaires;
 }
 
 export interface FicheDuPro extends SaisieFiche {
@@ -47,7 +54,6 @@ export interface FicheDuPro extends SaisieFiche {
   readonly nombrePrestations: number;
   readonly logoPose: boolean;
   readonly couverturePosee: boolean;
-  readonly horairesPosees: boolean;
 }
 
 function texte(valeur: string | null | undefined): string {
@@ -89,6 +95,7 @@ export async function ficheDuPro(entrepriseId: string): Promise<FicheDuPro | nul
     decennaleNumero: texte(fiche?.decennaleNumero),
     decennaleAssureur: texte(fiche?.decennaleAssureur),
     decennaleExpireLe: jour(fiche?.decennaleExpireLe ?? null),
+    horaires: horairesDepuisJson(fiche?.horaires) ?? semaineFermee(),
     completude: completudeFiche(etat),
     criteres: criteresFiche(etat),
     manques: manquesFiche(etat),
@@ -96,7 +103,6 @@ export async function ficheDuPro(entrepriseId: string): Promise<FicheDuPro | nul
     nombrePrestations: entreprise._count.prestations,
     logoPose: texte(fiche?.logoUrl) !== '',
     couverturePosee: texte(fiche?.couvertureUrl) !== '',
-    horairesPosees: fiche?.horaires !== null && fiche?.horaires !== undefined,
   };
 }
 
@@ -154,6 +160,10 @@ export function valideFiche(saisie: SaisieFiche): readonly ProblemeFiche[] {
     });
   }
 
+  for (const probleme of problemesHoraires(saisie.horaires)) {
+    problemes.push({ champ: `horaires.${probleme.jour}`, message: probleme.message });
+  }
+
   const echeance = saisie.decennaleExpireLe.trim();
   if (echeance !== '') {
     const date = new Date(`${echeance}T00:00:00Z`);
@@ -195,6 +205,9 @@ export async function enregistreFiche(
     decennaleNumero: vide(saisie.decennaleNumero),
     decennaleAssureur: vide(saisie.decennaleAssureur),
     decennaleExpireLe,
+    // Normalisés avant d'être stockés : deux plages qui se touchent décrivent une journée
+    // continue, et la base ne doit pas garder une pause que personne n'a voulue.
+    horaires: normaliseHoraires(saisie.horaires) as unknown as Prisma.InputJsonValue,
   };
 
   const enregistree = await prisma.fiche.upsert({

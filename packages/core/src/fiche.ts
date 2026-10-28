@@ -46,6 +46,8 @@ export interface CritereFiche {
   readonly acquis: boolean;
 }
 
+import { horairesDepuisJson, horairesRenseignes } from './horaires.ts';
+
 /** La longueur en deçà de laquelle une présentation n'apprend rien. */
 export const LONGUEUR_PRESENTATION_UTILE = 60;
 /** Trois photos : moins ne donne pas une idée du travail. */
@@ -57,6 +59,11 @@ export const ATOUTS_MAXIMUM = 6;
 
 function rempli(valeur: string | null | undefined): boolean {
   return typeof valeur === 'string' && valeur.trim().length > 0;
+}
+
+function horairesUtiles(valeur: unknown): boolean {
+  const horaires = horairesDepuisJson(valeur);
+  return horaires !== null && horairesRenseignes(horaires);
 }
 
 /**
@@ -110,7 +117,9 @@ export function criteresFiche(
       libelle: 'Horaires',
       action: 'Indiquer vos horaires d’ouverture.',
       poids: 0.1,
-      acquis: etat.horaires !== null && etat.horaires !== undefined,
+      // Un objet vide n'est pas un horaire : il faut au moins un créneau dans la semaine. Se
+      // contenter de « le champ existe » donnerait le point à une fiche qui n'annonce rien.
+      acquis: horairesUtiles(etat.horaires),
     },
     {
       cle: 'telephone',

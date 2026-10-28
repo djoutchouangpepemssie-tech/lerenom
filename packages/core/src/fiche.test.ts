@@ -36,7 +36,10 @@ const COMPLETE: EtatFiche = {
   telephone: '01 99 00 00 12',
   email: 'contact@exemple.test',
   siteWeb: 'https://exemple.test',
-  horaires: { lundi: '08:00-18:00' },
+  horaires: {
+    lundi: [{ debut: 8 * 60, fin: 18 * 60 }],
+    mardi: [{ debut: 8 * 60, fin: 18 * 60 }],
+  },
   atouts: ['Devis gratuit', 'Intervention sous 2 h', 'Chantier laissé propre'],
   nombrePhotos: PHOTOS_ATTENDUES,
   decennaleNumero: 'DEC-2026-41',
@@ -132,6 +135,22 @@ describe('completudeFiche', () => {
 
     it('ne compte pas une attestation sans date d’échéance', () => {
       expect(completudeFiche(avec({ decennaleExpireLe: null }), MAINTENANT)).toBeLessThan(1);
+    });
+  });
+
+  describe('horaires', () => {
+    it('ne compte pas un objet vide', () => {
+      // « Le champ existe » donnerait le point à une fiche qui n'annonce aucun créneau.
+      expect(completudeFiche(avec({ horaires: {} }), MAINTENANT)).toBeLessThan(1);
+    });
+
+    it('ne compte pas une semaine entièrement fermée', () => {
+      const fermee = { lundi: [], mardi: [], mercredi: [] };
+      expect(completudeFiche(avec({ horaires: fermee }), MAINTENANT)).toBeLessThan(1);
+    });
+
+    it('ne compte pas des horaires illisibles', () => {
+      expect(completudeFiche(avec({ horaires: '8h-18h' }), MAINTENANT)).toBeLessThan(1);
     });
   });
 

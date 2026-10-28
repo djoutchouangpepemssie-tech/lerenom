@@ -4,10 +4,18 @@ import { useMemo, useState } from 'react';
 import { Anneau, Bouton, Carte, Champ, ZoneTexte, cn } from '@lerenom/ui';
 import {
   ATOUTS_MAXIMUM,
+  JOURS,
+  LIBELLE_JOUR,
   LONGUEUR_PRESENTATION_UTILE,
   completudeFiche,
   criteresFiche,
+  heureLisible,
+  heuresProposees,
+  problemesHoraires,
   type CritereFiche,
+  type Creneau,
+  type Horaires,
+  type Jour,
 } from '@lerenom/core';
 // Un **type** seulement : importer une valeur depuis ce module embarquerait Prisma — et donc
 // `pg`, `dns`, `fs` — dans le paquet envoyé au navigateur. La construction le refuse, et elle
@@ -22,8 +30,8 @@ import type { FicheDuPro } from '@/lib/fiche-pro';
  * savoir sur quoi passer ses dix minutes. L'anneau et la liste des manques bougent au fil de
  * la frappe, avec la fonction qui sert au classement — pas une approximation d'affichage.
  *
- * Les quatre éléments qu'on ne saisit pas ici — photos, logo, couverture, horaires — sont tout
- * de même nommés : les taire donnerait une fiche « complète » à 100 % qui ne l'est pas.
+ * Les trois éléments qu'on ne saisit pas ici — photos, logo, couverture — sont tout de même
+ * nommés : les taire donnerait une fiche « complète » à 100 % qui ne l'est pas.
  */
 export function FormulaireFiche({ fiche }: { readonly fiche: FicheDuPro }) {
   const [description, setDescription] = useState(fiche.description);
@@ -37,6 +45,7 @@ export function FormulaireFiche({ fiche }: { readonly fiche: FicheDuPro }) {
   const [decennaleNumero, setDecennaleNumero] = useState(fiche.decennaleNumero);
   const [decennaleAssureur, setDecennaleAssureur] = useState(fiche.decennaleAssureur);
   const [decennaleExpireLe, setDecennaleExpireLe] = useState(fiche.decennaleExpireLe);
+  const [horaires, setHoraires] = useState<Horaires>(fiche.horaires);
 
   const [enregistrement, setEnregistrement] = useState(false);
   const [problemes, setProblemes] = useState<readonly { champ: string; message: string }[]>([]);
@@ -52,7 +61,7 @@ export function FormulaireFiche({ fiche }: { readonly fiche: FicheDuPro }) {
       telephone: telephone === '' ? null : telephone,
       email: email === '' ? null : email,
       siteWeb: siteWeb === '' ? null : siteWeb,
-      horaires: fiche.horairesPosees ? {} : null,
+      horaires,
       atouts,
       nombrePhotos: fiche.nombrePhotos,
       decennaleNumero: decennaleNumero === '' ? null : decennaleNumero,
@@ -71,6 +80,7 @@ export function FormulaireFiche({ fiche }: { readonly fiche: FicheDuPro }) {
       decennaleNumero,
       decennaleAssureur,
       decennaleExpireLe,
+      horaires,
       fiche,
     ],
   );
@@ -104,6 +114,7 @@ export function FormulaireFiche({ fiche }: { readonly fiche: FicheDuPro }) {
           decennaleNumero,
           decennaleAssureur,
           decennaleExpireLe,
+          horaires,
         }),
       });
 
@@ -233,6 +244,37 @@ export function FormulaireFiche({ fiche }: { readonly fiche: FicheDuPro }) {
         </Carte>
 
         <Carte className="mt-6 p-5">
+          <h2 className="text-xl">Vos horaires</h2>
+          <p className="text-encre-70 mt-2 text-sm">
+            Ils disent à un visiteur s’il peut appeler maintenant. Laissez un jour vide pour le
+            déclarer fermé, et ajoutez une seconde plage si vous fermez le midi.
+          </p>
+
+          <div className="mt-5 space-y-3">
+            {JOURS.map((jour) => (
+              <LigneJour
+                key={jour}
+                jour={jour}
+                creneaux={horaires[jour]}
+                onChange={(creneaux) =>
+                  setHoraires((actuels) => ({ ...actuels, [jour]: creneaux }))
+                }
+              />
+            ))}
+          </div>
+
+          {problemesHoraires(horaires).length > 0 && (
+            <ul className="text-alerte mt-4 space-y-1 text-sm font-semibold">
+              {problemesHoraires(horaires).map((probleme) => (
+                <li key={`${probleme.jour}-${probleme.message}`}>
+                  {LIBELLE_JOUR[probleme.jour]} : {probleme.message}
+                </li>
+              ))}
+            </ul>
+          )}
+        </Carte>
+
+        <Carte className="mt-6 p-5">
           <h2 className="text-xl">Assurance décennale</h2>
           <p className="text-encre-70 mt-2 text-sm">
             Une attestation en cours de validité est l’un des éléments qui comptent le plus pour un
@@ -307,8 +349,8 @@ export function FormulaireFiche({ fiche }: { readonly fiche: FicheDuPro }) {
         </ul>
 
         <p className="text-encre-55 mt-5 text-xs">
-          Les photos, le logo, l’image de couverture et les horaires se règlent depuis les autres
-          écrans de votre espace. Ils comptent ici pour que ce pourcentage ne vous mente pas.
+          Les photos, le logo et l’image de couverture demandent un téléversement : ils se régleront
+          depuis l’écran des visuels. Ils comptent ici pour que ce pourcentage ne vous mente pas.
         </p>
       </Carte>
     </div>
@@ -343,5 +385,124 @@ function LigneCritere({ critere }: { readonly critere: CritereFiche }) {
         {!critere.acquis && <span className="text-encre-70 block text-xs">{critere.action}</span>}
       </span>
     </li>
+  );
+}
+
+/**
+ * Une journée de la semaine : jusqu'à deux plages.
+ *
+ * Deux et pas une, parce que la pause du midi est la règle chez les artisans ; deux et pas
+ * dix, parce qu'un horaire d'ouverture n'est pas un emploi du temps. Un jour sans plage est
+ * fermé — et il est écrit « Fermé », pour que l'absence se lise comme une information et non
+ * comme un oubli.
+ */
+function LigneJour({
+  jour,
+  creneaux,
+  onChange,
+}: {
+  readonly jour: Jour;
+  readonly creneaux: readonly Creneau[];
+  readonly onChange: (creneaux: readonly Creneau[]) => void;
+}) {
+  function changeBorne(rang: number, borne: 'debut' | 'fin', minutes: number) {
+    onChange(
+      creneaux.map((creneau, index) =>
+        index === rang ? { ...creneau, [borne]: minutes } : creneau,
+      ),
+    );
+  }
+
+  // En colonne sur téléphone : trois champs d'heure et deux boutons sur une seule ligne
+  // débordent de la fenêtre, et un écran qui défile latéralement est un écran cassé.
+  return (
+    <div className="border-bordure flex flex-col gap-2 border-b pb-3 last:border-0 last:pb-0 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-3">
+      <span className="text-encre text-sm font-semibold sm:w-24 sm:shrink-0">
+        {LIBELLE_JOUR[jour]}
+      </span>
+
+      {creneaux.length === 0 ? (
+        <span className="text-encre-55 flex-1 text-sm">Fermé</span>
+      ) : (
+        <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
+          {creneaux.map((creneau, rang) => (
+            <span key={rang} className="flex min-w-0 items-center gap-1.5">
+              <ChoixHeure
+                etiquette={`${LIBELLE_JOUR[jour]}, plage ${String(rang + 1)}, ouverture`}
+                valeur={creneau.debut}
+                onChange={(minutes) => changeBorne(rang, 'debut', minutes)}
+              />
+              <span className="text-encre-55 text-sm">–</span>
+              <ChoixHeure
+                etiquette={`${LIBELLE_JOUR[jour]}, plage ${String(rang + 1)}, fermeture`}
+                valeur={creneau.fin}
+                onChange={(minutes) => changeBorne(rang, 'fin', minutes)}
+              />
+            </span>
+          ))}
+        </div>
+      )}
+
+      <div className="flex flex-wrap gap-1 sm:shrink-0">
+        {creneaux.length < 2 && (
+          <button
+            type="button"
+            onClick={() =>
+              onChange([
+                ...creneaux,
+                creneaux.length === 0
+                  ? { debut: 8 * 60, fin: 12 * 60 }
+                  : { debut: 14 * 60, fin: 18 * 60 },
+              ])
+            }
+            className="text-or-fonce hover:text-encre min-h-11 px-2 text-sm font-semibold transition-colors"
+          >
+            {creneaux.length === 0 ? 'Ouvrir' : 'Ajouter une plage'}
+          </button>
+        )}
+        {creneaux.length > 0 && (
+          <button
+            type="button"
+            onClick={() => onChange(creneaux.slice(0, -1))}
+            className="text-encre-55 hover:text-alerte min-h-11 px-2 text-sm font-semibold transition-colors"
+          >
+            {creneaux.length === 1 ? 'Fermer' : 'Retirer'}
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Le choix d'une heure, en liste déroulante plutôt qu'en champ natif.
+ *
+ * `<input type="time">` affiche l'heure dans la langue **du navigateur**, pas dans celle de la
+ * page : sur un navigateur configuré en anglais, un artisan francophone lisait « 08:00 AM » sur
+ * son propre écran. Une liste que nous écrivons dit « 8 h » partout, et elle se manipule aussi
+ * bien au doigt qu'à la souris.
+ */
+function ChoixHeure({
+  etiquette,
+  valeur,
+  onChange,
+}: {
+  readonly etiquette: string;
+  readonly valeur: number;
+  readonly onChange: (minutes: number) => void;
+}) {
+  return (
+    <select
+      aria-label={etiquette}
+      value={valeur}
+      onChange={(e) => onChange(Number(e.target.value))}
+      className="border-bordure bg-carte text-encre focus:border-or min-h-11 min-w-0 rounded-[var(--radius-douce)] border px-2.5 text-sm focus:outline-none"
+    >
+      {heuresProposees(valeur).map((minutes) => (
+        <option key={minutes} value={minutes}>
+          {heureLisible(minutes)}
+        </option>
+      ))}
+    </select>
   );
 }

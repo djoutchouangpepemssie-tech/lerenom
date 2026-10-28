@@ -275,6 +275,12 @@ async function semeParametres(): Promise<void> {
   console.log(`  paramètres : ${Object.keys(PARAMETRES).length} règles historisées`);
 }
 
+/** Une journée ordinaire : 8 h – 12 h, puis 14 h – 18 h. */
+const SEMAINE_ARTISAN = [
+  { debut: 8 * 60, fin: 12 * 60 },
+  { debut: 14 * 60, fin: 18 * 60 },
+] as const;
+
 /** Deux ans devant soi : une date fixe ferait expirer la démonstration toute seule. */
 function dansDeuxAns(): Date {
   const echeance = new Date();
@@ -485,14 +491,17 @@ async function semeDemonstration(idsMetier: Map<string, string>): Promise<void> 
       ...(soignee
         ? {
             slogan: 'Le dépannage sans mauvaise surprise',
+            // Des créneaux en minutes depuis minuit, la forme que `@lerenom/core` sait
+            // relire. Pause du midi en semaine, samedi matin, dimanche fermé : la semaine
+            // d'un artisan.
             horaires: {
-              lundi: '08:00-19:00',
-              mardi: '08:00-19:00',
-              mercredi: '08:00-19:00',
-              jeudi: '08:00-19:00',
-              vendredi: '08:00-18:00',
-              samedi: '09:00-13:00',
-              dimanche: 'urgences uniquement',
+              lundi: SEMAINE_ARTISAN,
+              mardi: SEMAINE_ARTISAN,
+              mercredi: SEMAINE_ARTISAN,
+              jeudi: SEMAINE_ARTISAN,
+              vendredi: [{ debut: 8 * 60, fin: 17 * 60 }],
+              samedi: [{ debut: 9 * 60, fin: 13 * 60 }],
+              dimanche: [],
             },
             decennaleAssureur: 'Assurance fictive des artisans',
             decennaleNumero: `DEC-${pro.siret.slice(0, 6)}`,
