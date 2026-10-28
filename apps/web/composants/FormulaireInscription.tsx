@@ -17,15 +17,18 @@ import {
 } from '@lerenom/ui';
 import {
   FORMULES,
+  LONGUEUR_MOT_DE_PASSE_MINIMALE,
+  MESSAGES_FAIBLESSE,
   PARAMETRES_PAR_DEFAUT,
   REGLES_VALIDEES,
   ajusteZonesPourFormule,
+  faiblessesMotDePasse,
   formatEuros,
   nombreDePages,
   prixAnnuelHT,
   siretValide,
 } from '@lerenom/core';
-import type { Formule, VilleChoisie } from '@lerenom/core';
+import type { Formule, ProblemeInscription, VilleChoisie } from '@lerenom/core';
 
 export interface MetierInscription {
   readonly slug: string;
@@ -59,7 +62,7 @@ const ETAPES = [
   'Zones',
   'Fiche',
   'Formule',
-  'Paiement',
+  'Récapitulatif',
   'Terminé',
 ] as const;
 
@@ -93,6 +96,18 @@ export function FormulaireInscription({
   const [email, setEmail] = useState('');
   const [telephone, setTelephone] = useState('');
   const [code, setCode] = useState('');
+  const [motDePasse, setMotDePasse] = useState('');
+  const [motDePasseConfirme, setMotDePasseConfirme] = useState('');
+
+  const [envoiEnCours, setEnvoiEnCours] = useState(false);
+  const [problemes, setProblemes] = useState<readonly ProblemeInscription[]>([]);
+  const [refus, setRefus] = useState<{ message: string; proposeConnexion: boolean } | null>(null);
+  const [resultat, setResultat] = useState<{
+    readonly slug: string;
+    readonly revendiquee: boolean;
+    readonly villesConservees: readonly string[];
+    readonly paiementRequis: boolean;
+  } | null>(null);
 
   const [metiersChoisis, setMetiersChoisis] = useState<readonly string[]>([]);
   const [metierPrincipal, setMetierPrincipal] = useState<string | null>(null);
@@ -141,6 +156,9 @@ export function FormulaireInscription({
   const pages = nombreDePages(ajustement.conservees.length, metiersChoisis.length);
   const limiteVilles = REGLES_VALIDEES.villesMax[formule];
 
+  const faiblesses = useMemo(() => faiblessesMotDePasse(motDePasse, email), [motDePasse, email]);
+  const motDePasseAccepte = faiblesses.length === 0 && motDePasse === motDePasseConfirme;
+
   const completude = useMemo(() => {
     const criteres = [
       siretValide(siret),
@@ -150,9 +168,19 @@ export function FormulaireInscription({
       description.trim().length >= 60,
       email.includes('@'),
       telephone.trim().length >= 10,
+      motDePasseAccepte,
     ];
     return criteres.filter(Boolean).length / criteres.length;
-  }, [siret, nomEntreprise, metiersChoisis, villesChoisies, description, email, telephone]);
+  }, [
+    siret,
+    nomEntreprise,
+    metiersChoisis,
+    villesChoisies,
+    description,
+    email,
+    telephone,
+    motDePasseAccepte,
+  ]);
 
   const communesVisibles = useMemo(() => {
     const departement = departements.find((d) => d.code === departementActif);
@@ -166,7 +194,7 @@ export function FormulaireInscription({
 
   const etapeValide = [
     siretValide(siret) && nomEntreprise.trim().length > 1,
-    email.includes('@') && telephone.trim().length >= 10,
+    email.includes('@') && telephone.trim().length >= 10 && motDePasseAccepte,
     metiersChoisis.length > 0 && metierPrincipal !== null,
     villesChoisies.length > 0,
     description.trim().length >= 60,
@@ -195,6 +223,80 @@ export function FormulaireInscription({
       if (communeSiege === codeCommune && !suivant.includes(codeCommune)) setCommuneSiege(null);
       return suivant;
     });
+  }
+
+  /**
+   * L'envoi de l'inscription.
+   *
+   * Le serveur rejuge tout avec les mêmes règles : si ses refus nous reviennent, on ramène le
+   * professionnel à l'étape concernée au lieu d'afficher une liste d'erreurs sans chemin pour
+   * les atteindre.
+   */
+  async function envoie(): Promise<void> {
+    setEnvoiEnCours(true);
+    setProblemes([]);
+    setRefus(null);
+    try {
+      const reponse = await fetch('/api/pro/inscription', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          siret,
+          nomEntreprise,
+          email,
+          telephone,
+          motDePasse,
+          motDePasseConfirme,
+          metiers: metiersChoisis,
+          metierPrincipal,
+          villes: villesChoisies,
+          communeSiege,
+          description,
+          formule,
+          annuel,
+        }),
+      });
+
+      if (reponse.ok) {
+        const corps = (await reponse.json()) as {
+          slug: string;
+          revendiquee: boolean;
+          villesConservees: readonly string[];
+          paiementRequis: boolean;
+        };
+        setResultat(corps);
+        setEtape(7);
+        return;
+      }
+
+      const corps = (await reponse.json()) as {
+        erreur?: string;
+        genre?: string;
+        problemes?: readonly ProblemeInscription[];
+      };
+
+      if (corps.problemes !== undefined && corps.problemes.length > 0) {
+        setProblemes(corps.problemes);
+        const premiere = Math.min(...corps.problemes.map((probleme) => probleme.etape));
+        setEtape(premiere);
+        return;
+      }
+
+      setRefus({
+        message: corps.erreur ?? 'Votre inscription n’a pas pu être enregistrée.',
+        // Une fiche déjà tenue et une adresse déjà utilisée ont la même issue : se connecter.
+        proposeConnexion:
+          corps.genre === 'fiche-deja-revendiquee' || corps.genre === 'adresse-deja-utilisee',
+      });
+    } catch {
+      setRefus({
+        message:
+          'Nous n’avons pas pu joindre nos serveurs. Votre saisie est conservée : réessayez dans un instant.',
+        proposeConnexion: false,
+      });
+    } finally {
+      setEnvoiEnCours(false);
+    }
   }
 
   const prixMensuel = REGLES_VALIDEES.prixMensuelHT[formule];
@@ -326,6 +428,41 @@ export function FormulaireInscription({
       {/* ── Contenu ───────────────────────────────────────────────────────── */}
       <div className="px-5 py-8 md:px-10 md:py-12">
         <div className="mx-auto max-w-3xl">
+          {refus !== null && (
+            <div
+              role="alert"
+              className="border-alerte/25 bg-alerte-fond mb-6 rounded-[var(--radius-carte)] border p-5"
+            >
+              <p className="text-alerte text-sm font-semibold">{refus.message}</p>
+              {refus.proposeConnexion && (
+                <Link
+                  href="/pro/connexion"
+                  className="text-alerte mt-3 inline-block text-sm font-bold underline underline-offset-4"
+                >
+                  Me connecter à mon espace
+                </Link>
+              )}
+            </div>
+          )}
+
+          {problemes.length > 0 && (
+            <div
+              role="alert"
+              className="border-alerte/25 bg-alerte-fond mb-6 rounded-[var(--radius-carte)] border p-5"
+            >
+              <p className="text-alerte text-sm font-semibold">
+                {problemes.length === 1
+                  ? 'Un point reste à corriger :'
+                  : `${String(problemes.length)} points restent à corriger :`}
+              </p>
+              <ul className="text-alerte/85 mt-2 list-disc space-y-1 pl-5 text-sm">
+                {problemes.map((probleme) => (
+                  <li key={`${probleme.champ}-${probleme.message}`}>{probleme.message}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
           {etape === 0 && (
             <Etape
               titre="Votre entreprise"
@@ -381,6 +518,33 @@ export function FormulaireInscription({
                 />
               </div>
 
+              <div className="border-bordure mt-6 border-t pt-6">
+                <p className="text-encre text-sm font-semibold">Le mot de passe de votre espace</p>
+                <div className="mt-3 grid gap-4 md:grid-cols-2">
+                  <Champ
+                    etiquette="Mot de passe"
+                    type="password"
+                    value={motDePasse}
+                    onChange={(e) => setMotDePasse(e.target.value)}
+                    autoComplete="new-password"
+                    aide={`Au moins ${String(LONGUEUR_MOT_DE_PASSE_MINIMALE)} caractères. Une phrase que vous seul connaissez vaut mieux qu’un mot compliqué.`}
+                    {...(motDePasse !== '' && faiblesses[0] !== undefined
+                      ? { erreur: MESSAGES_FAIBLESSE[faiblesses[0]] }
+                      : {})}
+                  />
+                  <Champ
+                    etiquette="Répétez le mot de passe"
+                    type="password"
+                    value={motDePasseConfirme}
+                    onChange={(e) => setMotDePasseConfirme(e.target.value)}
+                    autoComplete="new-password"
+                    {...(motDePasseConfirme !== '' && motDePasse !== motDePasseConfirme
+                      ? { erreur: 'Les deux mots de passe ne sont pas identiques.' }
+                      : {})}
+                  />
+                </div>
+              </div>
+
               <div className="mt-6">
                 <p className="text-encre text-sm font-semibold">Code reçu par SMS</p>
                 <div className="mt-3 flex gap-2">
@@ -417,7 +581,7 @@ export function FormulaireInscription({
               sous="Vous ne recevrez que des demandes correspondant aux métiers que vous cochez."
             >
               <div className="grid gap-5 md:grid-cols-[14rem_1fr]">
-                <ul className="max-h-96 space-y-0.5 overflow-y-auto pr-1">
+                <ul aria-label="Univers" className="max-h-96 space-y-0.5 overflow-y-auto pr-1">
                   {univers.map((u) => (
                     <li key={u.slug}>
                       <button
@@ -445,7 +609,11 @@ export function FormulaireInscription({
                   ))}
                 </ul>
 
-                <div className="flex flex-wrap gap-2 self-start">
+                <div
+                  role="group"
+                  aria-label="Métiers de l’univers choisi"
+                  className="flex flex-wrap gap-2 self-start"
+                >
                   {univers
                     .find((u) => u.slug === universActif)
                     ?.metiers.map((metier) => (
@@ -513,7 +681,10 @@ export function FormulaireInscription({
                 onChange={(e) => setRechercheVille(e.target.value)}
               />
 
-              <ul className="mt-5 grid max-h-80 gap-1.5 overflow-y-auto pr-1 sm:grid-cols-2">
+              <ul
+                aria-label="Villes du département choisi"
+                className="mt-5 grid max-h-80 gap-1.5 overflow-y-auto pr-1 sm:grid-cols-2"
+              >
                 {communesVisibles.map((commune) => {
                   const choisie = villesChoisies.includes(commune.code);
                   return (
@@ -751,21 +922,50 @@ export function FormulaireInscription({
               <span className="bg-succes-fond text-succes mx-auto flex size-16 items-center justify-center rounded-full text-3xl">
                 ✓
               </span>
-              <h1 className="mt-6 text-3xl">Votre fiche est prête</h1>
+              <h1 className="mt-6 text-3xl">
+                {resultat?.revendiquee === true
+                  ? 'Votre fiche est à vous'
+                  : 'Votre fiche est prête'}
+              </h1>
               <p className="text-encre-70 mx-auto mt-4 max-w-[54ch]">
+                {resultat?.revendiquee === true
+                  ? 'Votre entreprise figurait déjà dans notre annuaire : vous en avez repris la main, avec son ancienneté et ses avis. '
+                  : ''}
                 {nomEntreprise || 'Votre entreprise'} apparaîtra sur{' '}
-                <strong className="text-encre">{pages} pages</strong>, soit{' '}
-                {ajustement.conservees.length} villes × {metiersChoisis.length} métiers. Complétez
-                votre fiche — photos, horaires, assurance décennale — pour monter dans le classement
-                naturel.
+                <strong className="text-encre">
+                  {nombreDePages(
+                    resultat?.villesConservees.length ?? ajustement.conservees.length,
+                    metiersChoisis.length,
+                  )}{' '}
+                  pages
+                </strong>
+                , soit {resultat?.villesConservees.length ?? ajustement.conservees.length} villes ×{' '}
+                {metiersChoisis.length} métiers. Complétez votre fiche — photos, horaires, assurance
+                décennale — pour monter dans le classement naturel.
               </p>
+
+              <p className="border-bordure bg-creme text-encre-70 mx-auto mt-6 max-w-[60ch] rounded-[var(--radius-carte)] border p-4 text-left text-sm">
+                Votre numéro n’est pas encore vérifié, et c’est la condition pour recevoir des
+                demandes : aucune ne vous sera transmise tant que l’opérateur SMS n’est pas
+                raccordé. Votre fiche, elle, est déjà visible dans l’annuaire.
+                {resultat?.paiementRequis === true && (
+                  <>
+                    {' '}
+                    Votre formule est enregistrée mais pas encore réglée : elle ne vous donne ni
+                    emplacement ni mise en avant avant son premier paiement.
+                  </>
+                )}
+              </p>
+
               <div className="mt-8 flex flex-wrap justify-center gap-3">
-                <Link href="/">
-                  <Bouton aspect="contour">Retour à l’accueil</Bouton>
+                <Link href="/pro/espace">
+                  <Bouton aspect="or">Aller à mon espace</Bouton>
                 </Link>
-                <Link href="/pro">
-                  <Bouton aspect="or">Voir les formules</Bouton>
-                </Link>
+                {resultat !== null && (
+                  <Link href={`/entreprise/${resultat.slug}`}>
+                    <Bouton aspect="contour">Voir ma fiche</Bouton>
+                  </Link>
+                )}
               </div>
             </div>
           )}
@@ -783,11 +983,21 @@ export function FormulaireInscription({
                 <Bouton
                   aspect="or"
                   taille="grand"
-                  onClick={() => setEtape((e) => e + 1)}
-                  disabled={!etapeValide}
+                  onClick={() => {
+                    if (etape === 6) {
+                      void envoie();
+                      return;
+                    }
+                    setEtape((e) => e + 1);
+                  }}
+                  disabled={!etapeValide || envoiEnCours}
                   title={!etapeValide ? 'Complétez cette étape pour continuer.' : undefined}
                 >
-                  {etape === 6 ? 'Valider mon inscription' : 'Continuer'}
+                  {etape === 6
+                    ? envoiEnCours
+                      ? 'Enregistrement…'
+                      : 'Valider mon inscription'
+                    : 'Continuer'}
                 </Bouton>
               </div>
             </BarreCollante>

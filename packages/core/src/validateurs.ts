@@ -12,10 +12,16 @@
  *
  * Exception documentée par l'Insee : La Poste (SIREN 356000000) ne respecte pas la clé de Luhn.
  * Pour ses établissements, la somme des chiffres doit être un multiple de 5.
+ *
+ * La clé de Luhn seule ne suffit pas : `00000000000000` la satisfait, puisque la somme vaut
+ * zéro. Or l'Insee n'attribue pas le SIREN `000000000`, et c'est précisément la saisie que
+ * produit quelqu'un qui veut passer l'étape sans donner son numéro. On la refuse donc
+ * explicitement, de même qu'un numéro d'établissement nul.
  */
 export function siretValide(siret: string): boolean {
   const chiffres = siret.replace(/\s/g, '');
   if (!/^\d{14}$/.test(chiffres)) return false;
+  if (chiffres.slice(0, 9) === '000000000' || chiffres.slice(9) === '00000') return false;
 
   if (chiffres.startsWith('356000000')) {
     const somme = [...chiffres].reduce((s, c) => s + Number(c), 0);
@@ -25,10 +31,11 @@ export function siretValide(siret: string): boolean {
   return luhn(chiffres);
 }
 
-/** Clé de Luhn du SIREN : 9 chiffres. */
+/** Clé de Luhn du SIREN : 9 chiffres. `000000000` n'est pas attribué. */
 export function sirenValide(siren: string): boolean {
   const chiffres = siren.replace(/\s/g, '');
   if (!/^\d{9}$/.test(chiffres)) return false;
+  if (chiffres === '000000000') return false;
   if (chiffres === '356000000') return true;
   return luhn(chiffres);
 }

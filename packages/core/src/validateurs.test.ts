@@ -10,6 +10,16 @@ import {
 } from './validateurs.ts';
 
 describe('siretValide', () => {
+  it('refuse un SIRET fait de zéros, que la clé de Luhn accepte pourtant', () => {
+    // La somme pondérée de quatorze zéros vaut zéro, donc divisible par dix. C'est exactement
+    // la saisie de quelqu'un qui veut franchir l'étape sans donner son numéro.
+    expect(siretValide('00000000000000')).toBe(false);
+  });
+
+  it('refuse un numéro d’établissement nul', () => {
+    expect(siretValide('73282932000000')).toBe(false);
+  });
+
   it('accepte un SIRET dont la clé de Luhn est juste', () => {
     // SIRET construit pour satisfaire Luhn : 73282932000074 (exemple de documentation publique).
     expect(siretValide('73282932000074')).toBe(true);

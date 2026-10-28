@@ -664,6 +664,66 @@ sans test n'excuse pas un câblage sans vérification.
 
 ---
 
+## Phase 3 · l'inscription enregistre enfin quelque chose
+
+Le formulaire d'inscription comptait huit étapes, un compteur de pages vivant, un ajustement
+des villes à la formule — et **ne créait aucun compte**. « Valider mon inscription »
+incrémentait un numéro d'étape et affichait des félicitations. C'est le genre de manque qu'une
+démonstration ne révèle jamais : tout se passe bien jusqu'à ce que quelqu'un revienne le
+lendemain.
+
+### Ce qu'il a fallu décider
+
+Six décisions, toutes consignées en Q23, dont trois qui engagent vraiment :
+
+**Créer ou revendiquer.** L'annuaire contient des entreprises venues de la base SIRENE que
+personne n'a réclamées. Un SIRET déjà présent ne crée pas un doublon : il reprend la fiche,
+avec son ancienneté, ses avis et son adresse déjà indexée — le slug existant est conservé, car
+il est peut-être partagé. Si la fiche est déjà revendiquée, on refuse et on renvoie vers la
+connexion : deux personnes ne peuvent pas tenir la même fiche sans que l'une s'en aperçoive.
+
+**Le mot de passe est demandé, pas envoyé.** Un lien « définissez votre mot de passe » serait
+plus élégant et prouverait l'adresse. Il est impossible aujourd'hui : sans opérateur SMS ni
+service d'envoi, **aucun professionnel ne pourrait terminer**. Deux champs de plus dans l'étape
+« Vérification », et l'inscription fonctionne dès maintenant.
+
+**L'agence prend les coordonnées de sa commune.** L'adresse exacte n'est pas demandée — huit
+étapes suffisent. Mais une agence sans latitude ni longitude n'est éligible à rien : elle serait
+inscrite et ne recevrait jamais une demande. Une approximation honnête vaut mieux qu'un trou.
+
+### Ce que le travail a révélé
+
+`siretValide('00000000000000')` rendait **vrai**. La clé de Luhn est satisfaite — la somme vaut
+zéro — et c'est exactement la saisie de quelqu'un qui veut franchir l'étape sans donner son
+numéro. L'Insee n'attribue pas le SIREN `000000000` : il est refusé, ainsi qu'un numéro
+d'établissement nul. Deux tests le gardent.
+
+Le rail annonçait « Paiement » à l'étape 7, là où l'écran montre un récapitulatif et où rien
+n'est encaissé. Renommé.
+
+Trois listes du formulaire — univers, métiers, villes — n'avaient pas de nom accessible. Elles
+en ont un maintenant : un lecteur d'écran annonce ce qu'il parcourt, et les captures les
+désignent sans s'accrocher à des classes CSS.
+
+### La vérification
+
+Cinquante-six tests nouveaux : trente-sept sur les règles pures, dix-neuf sur la route et la
+base. Les plus utiles ne vérifient pas un succès mais une absence — **une inscription refusée
+n'écrit rien**, et ne laisse pas un SIRET pris sans compte pour l'ouvrir.
+
+Six captures nouvelles, aux deux largeurs, regardées une à une. L'écran de fin a été vérifié par
+une inscription réelle jouée de bout en bout, puis effacée. Au passage, le script de captures
+accepte un filtre : reprendre les cinquante-six captures pour vérifier un écran coûtait un quart
+d'heure, et ce coût décourageait exactement ce qu'il faut faire souvent — regarder.
+
+### Ce qui manque encore à l'inscription
+
+La recherche automatique dans la base SIRENE (l'accès à l'API de l'Insee n'est pas ouvert sur
+cet environnement), l'envoi réel du code SMS, et le paiement. Les trois sont des raccordements,
+pas des décisions.
+
+---
+
 ## Phases 5 à 11 · à venir
 
 Agenda et documents du pro, monétisation Stripe, back-office, personnalisation, avis et

@@ -469,3 +469,47 @@ difficile à voir.
 La reprise propre est donc : des objets de transfert explicites entre la base et les pages, où
 les montants sont des `number` et les dates des `string`, puis la mise en cache de ces objets.
 C'est un travail de frontière, pas un réglage, et il mérite ses propres tests.
+
+---
+
+## Q23 🟡 — Les six décisions de l'inscription professionnelle
+
+_(métier — décidées par défaut, à confirmer)_
+
+« Valider mon inscription » n'écrivait rien. Le brancher a exigé six décisions que la
+spécification ne tranche pas. Chacune est appliquée, chacune est réversible, et aucune n'est
+cachée dans le code.
+
+**1. Un SIRET déjà présent est revendiqué, pas dupliqué.** L'annuaire contient des entreprises
+venues de la base SIRENE que personne n'a réclamées. Créer un doublon priverait l'entreprise de
+son ancienneté, de ses avis et de son adresse déjà indexée. Le titre de la page le disait
+déjà : « Créer ou revendiquer ma fiche ». Le slug existant est **conservé** — il est peut-être
+partagé ou référencé.
+
+**2. Une fiche déjà revendiquée est refusée, avec un lien vers la connexion.** Deux personnes ne
+peuvent pas tenir la même fiche sans que l'une s'en aperçoive. Le message invite à écrire si
+quelqu'un tient la fiche à tort — c'est une procédure humaine, et elle n'existe pas encore.
+
+**3. Le mot de passe est demandé dans le formulaire, pas envoyé par lien.** Un lien « définissez
+votre mot de passe » serait plus élégant et prouverait l'adresse. Il est impossible aujourd'hui :
+aucun opérateur SMS ni service d'envoi d'e-mail n'est raccordé, donc **aucun professionnel ne
+pourrait terminer**. Les deux champs sont dans l'étape « Vérification », avec l'identité.
+
+**4. L'entreprise est créée `verifiee: false`.** La fiche existe dans l'annuaire ; elle ne reçoit
+aucune demande. C'est exactement ce que l'écran annonce, et c'est la condition posée partout
+ailleurs : pas de numéro vérifié, pas de distribution.
+
+**5. Un abonnement payant est créé au statut `impaye`.** C'est son état exact tant que Stripe
+n'est pas raccordé. Rien dans le classement ni dans la distribution ne regarde un abonnement
+qui n'est pas `actif` : la formule est enregistrée sans offrir de visibilité non réglée. Le
+jour où les paiements s'ouvrent, ces lignes sont la liste de ce qu'il faut encaisser.
+
+**6. L'agence principale prend les coordonnées de la commune du siège.** L'adresse exacte n'est
+pas demandée pendant l'inscription — huit étapes suffisent. Mais sans latitude ni longitude,
+aucune distance ne se calcule et l'entreprise n'est éligible à **rien** : elle serait inscrite
+et ne recevrait jamais une demande. Les coordonnées de la commune sont une approximation
+honnête, remplacée dès que l'adresse est saisie depuis l'espace pro.
+
+**Ce qui reste à faire, et qui ne dépend pas de ces décisions** : la recherche automatique dans
+la base SIRENE (l'accès à l'API de l'Insee n'est pas ouvert sur cet environnement), l'envoi réel
+du code SMS, et le paiement.

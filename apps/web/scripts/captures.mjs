@@ -15,6 +15,15 @@ import process from 'node:process';
 import { chromium } from 'playwright';
 
 const BASE = process.argv[2] ?? 'http://127.0.0.1:3100';
+/**
+ * Un filtre facultatif sur le nom des captures.
+ *
+ * Reprendre les cinquante-quatre captures pour vérifier un seul écran coûte un quart d'heure,
+ * et ce coût décourage exactement ce qu'il faudrait faire souvent : regarder.
+ *
+ *   node scripts/captures.mjs http://127.0.0.1:3100 inscription
+ */
+const FILTRE = process.argv[3] ?? '';
 const SORTIE = path.resolve(import.meta.dirname, '../../../docs/captures');
 
 /**
@@ -231,6 +240,52 @@ const PAGES = [
     },
   },
   { nom: 'pro-inscription', chemin: '/pro/inscription', titre: 'Inscription professionnelle' },
+  {
+    nom: 'pro-inscription-verification',
+    chemin: '/pro/inscription',
+    titre: 'Inscription — identité et mot de passe',
+    // On s'arrête avant d'envoyer : la capture doit rester rejouable, et rien ne doit être
+    // écrit en base par une prise de vue.
+    scenario: async (onglet) => {
+      await remplitIdentite(onglet);
+      await onglet.waitForTimeout(200);
+    },
+  },
+  {
+    nom: 'pro-inscription-recapitulatif',
+    chemin: '/pro/inscription',
+    titre: 'Inscription — récapitulatif avant validation',
+    scenario: async (onglet) => {
+      await remplitIdentite(onglet);
+      await onglet.getByRole('button', { name: 'Continuer' }).click();
+
+      // Métiers : les deux premiers de l'univers affiché. Le premier coché devient le métier
+      // principal, ce que l'écran annonce dès qu'un métier est choisi.
+      const metiers = onglet.getByRole('group', { name: 'Métiers de l’univers choisi' });
+      await metiers.getByRole('button').nth(0).click();
+      await metiers.getByRole('button').nth(1).click();
+      await onglet.getByRole('button', { name: 'Continuer' }).click();
+
+      // Villes : les trois premières du département affiché, pour que la formule choisie en
+      // retire une et que le récapitulatif montre l'ajustement.
+      const villes = onglet.getByRole('list', { name: 'Villes du département choisi' });
+      await villes.getByRole('button').nth(0).click();
+      await villes.getByRole('button').nth(1).click();
+      await villes.getByRole('button').nth(2).click();
+      await onglet.getByRole('button', { name: 'Continuer' }).click();
+
+      await onglet
+        .getByLabel('Présentation de votre entreprise')
+        .fill(
+          'Entreprise familiale installée dans le 11e depuis 1998. Recherche de fuite, ' +
+            'dépannage d’urgence et rénovation complète de salle de bain.',
+        );
+      await onglet.getByRole('button', { name: 'Continuer' }).click();
+      await onglet.getByRole('button', { name: 'Continuer' }).click();
+      await onglet.getByText('Vérifiez avant de valider').waitFor();
+      await onglet.waitForTimeout(250);
+    },
+  },
   { nom: 'design-system', chemin: '/design', titre: 'Design system' },
   { nom: 'pro-connexion', chemin: '/pro/connexion', titre: 'Connexion professionnelle' },
   {
@@ -268,6 +323,23 @@ const PAGES = [
   },
 ];
 
+/**
+ * Les deux premières étapes de l'inscription, remplies.
+ *
+ * Le SIRET est celui d'une société fictive dont la clé de Luhn est juste : le formulaire la
+ * vérifie côté navigateur, une saisie fausse resterait bloquée à l'étape 1.
+ */
+async function remplitIdentite(onglet) {
+  await onglet.getByLabel('Numéro SIRET').fill('73282932000074');
+  await onglet.getByLabel('Nom de l’entreprise').fill('Dupont Plomberie');
+  await onglet.getByRole('button', { name: 'Continuer' }).click();
+
+  await onglet.getByLabel('Adresse électronique professionnelle').fill('gerant@exemple.test');
+  await onglet.getByLabel('Téléphone').fill('01 99 00 00 12');
+  await onglet.getByLabel('Mot de passe', { exact: true }).fill('la pluie tombe sur les toits');
+  await onglet.getByLabel('Répétez le mot de passe').fill('la pluie tombe sur les toits');
+}
+
 const LARGEURS = [
   { nom: 'telephone', largeur: 390, hauteur: 844, mobile: true },
   { nom: 'ordinateur', largeur: 1440, hauteur: 900, mobile: false },
@@ -299,6 +371,7 @@ async function main() {
     });
 
     for (const page of PAGES) {
+      if (FILTRE !== '' && !page.nom.includes(FILTRE)) continue;
       const chemin = typeof page.chemin === 'function' ? page.chemin() : page.chemin;
       if (chemin === null) {
         manquantes.add(page.titre);
