@@ -137,18 +137,32 @@ describe('création', () => {
   });
 
   it('donne à l’agence principale les coordonnées de sa commune', async () => {
-    // Sans coordonnées, aucune distance ne se calcule et l'entreprise n'est éligible à rien :
-    // elle serait inscrite et ne recevrait jamais une demande.
-    await inscrit(requete(saisie()));
-
-    const agence = await prisma.agence.findFirstOrThrow({
-      where: { entreprise: { siret: SIRET } },
+    // Sans coordonnées, aucune distance ne se calcule. Aucune commune n'en a aujourd'hui
+    // (Q26) : comparer les deux valeurs reviendrait à vérifier que `null` vaut `null`. Le
+    // test en pose donc une, pour éprouver le chemin, puis la retire.
+    const cible = villes[0];
+    if (cible === undefined) throw new Error('ville manquante');
+    await prisma.commune.update({
+      where: { code: cible },
+      data: { latitude: 48.8566, longitude: 2.3522 },
     });
-    const commune = await prisma.commune.findUniqueOrThrow({ where: { code: agence.communeId } });
 
-    expect(agence.principale).toBe(true);
-    expect(agence.latitude).toBe(commune.latitude);
-    expect(agence.longitude).toBe(commune.longitude);
+    try {
+      await inscrit(requete(saisie({ communeSiege: cible })));
+
+      const agence = await prisma.agence.findFirstOrThrow({
+        where: { entreprise: { siret: SIRET } },
+      });
+      expect(agence.principale).toBe(true);
+      expect(agence.communeId).toBe(cible);
+      expect(agence.latitude).toBe(48.8566);
+      expect(agence.longitude).toBe(2.3522);
+    } finally {
+      await prisma.commune.update({
+        where: { code: cible },
+        data: { latitude: null, longitude: null },
+      });
+    }
   });
 
   it('enregistre le mot de passe haché, jamais en clair', async () => {

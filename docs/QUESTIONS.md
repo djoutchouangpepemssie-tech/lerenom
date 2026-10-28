@@ -584,3 +584,42 @@ ville où l'honorer. L'écran la montre verrouillée, le refus la nomme, et il i
 mettre fin à un emplacement ou à une exclusivité avant son terme. Le message renvoie donc vers
 un contact humain qui n'a pas d'écran. C'est volontaire — résilier un emplacement payé engage
 un remboursement au prorata, et cette règle-là n'est pas écrite. Elle le sera avec Stripe.
+
+---
+
+## Q26 🔴 — Aucune commune n'a de coordonnées : la proximité ne joue pas
+
+_(donnée manquante — bloquant pour une ouverture au public)_
+
+**Le constat.** Les 1 285 communes du jeu de données ont bien des colonnes `latitude`,
+`longitude` et `sourceCoordonnees` — toutes à `null`. Le géocodage n'a jamais tourné. Aucune
+agence n'a donc de position non plus, puisqu'elle recopie celle de sa commune.
+
+**Ce que cela désactive, sans que rien ne le signale :**
+
+- **le rayon d'intervention d'une agence n'a aucun effet.** L'éligibilité se décide
+  entièrement sur la liste des villes du périmètre. Un professionnel qui règle son rayon à
+  3 km recevra les mêmes demandes qu'à 50 km ;
+- **la proximité ne compte pas dans le classement des non-abonnés.** `noteMixte` annonce
+  « 60 % qualité, 40 % proximité » ; faute de distance, la proximité vaut 0,5 pour tout le
+  monde — neutre, donc le classement est en réalité purement qualitatif ;
+- **la page « Comment nous classons » promet au public** « la proximité entre l'adresse des
+  travaux et l'agence la plus proche ». C'est aujourd'hui inexact.
+
+**Ce qui sauve le système en attendant**, et qui était prévu : `packages/core` accepte une
+zone déclarée **par liste de communes** autant que par rayon, et traite une distance inconnue
+comme neutre plutôt que comme nulle. Rien ne casse, rien ne ment dans le code — mais une
+fonctionnalité annoncée est inerte.
+
+**Ce qu'il faut pour la combler.** Les centroïdes des communes sont une donnée publique et
+gratuite (`geo.api.gouv.fr`, champ `centre`). Un script de quelques lignes remplirait le
+fichier `donnees/communes-ile-de-france.json`. **Cet environnement ne peut pas y accéder** : sa
+politique réseau refuse le domaine. Deux voies :
+
+1. autoriser `geo.api.gouv.fr` dans les réglages réseau de l'environnement, et le script se
+   fait en une passe ;
+2. fournir le fichier de centroïdes par un autre moyen.
+
+Tant que ce point n'est pas réglé, **la phrase de « Comment nous classons » doit être corrigée
+ou la fonctionnalité livrée** : promettre publiquement un critère de classement qui ne
+s'applique pas est le genre d'inexactitude qu'un annuaire ne peut pas se permettre.

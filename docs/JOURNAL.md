@@ -936,6 +936,62 @@ ne se retire pas.
 
 ---
 
+## Agences · et une fonctionnalité annoncée qui n'existait pas
+
+L'inscription crée une agence sur la commune du siège, avec le rayon par défaut. Sans écran,
+une entreprise à deux adresses ne pouvait en déclarer qu'une, et personne ne pouvait corriger
+un rayon. « Mes agences » comble cela — et a mis au jour un manque plus sérieux.
+
+### Aucune commune n'a de coordonnées
+
+Les 1 285 communes ont bien des colonnes `latitude`, `longitude` et `sourceCoordonnees` :
+**toutes à `null`**. Le géocodage n'a jamais tourné. Aucune agence n'a donc de position non
+plus, puisqu'elle recopie celle de sa commune.
+
+Trois conséquences, qu'aucun test ne signalait :
+
+- **le rayon d'une agence n'a aucun effet.** L'éligibilité se décide entièrement sur la liste
+  des villes. Un professionnel réglant son rayon à 3 km recevrait les mêmes demandes qu'à
+  50 km ;
+- **la proximité ne compte pas dans le classement.** `noteMixte` annonce « 60 % qualité, 40 %
+  proximité » ; faute de distance, la proximité vaut 0,5 pour tout le monde, donc le classement
+  est purement qualitatif ;
+- **la page « Comment nous classons » promettait au public** la proximité entre l'adresse des
+  travaux et l'agence la plus proche. C'était inexact.
+
+Ce qui sauve le système, et qui était prévu : `packages/core` accepte une zone déclarée **par
+liste de communes** autant que par rayon, et traite une distance inconnue comme neutre plutôt
+que comme nulle. Rien ne casse ; une fonctionnalité annoncée est simplement inerte.
+
+### Ce que j'ai fait, et ce que je n'ai pas pu faire
+
+Les centroïdes des communes sont une donnée publique et gratuite (`geo.api.gouv.fr`). **Cet
+environnement ne peut pas y accéder** : sa politique réseau refuse le domaine. Je ne peux donc
+pas combler la donnée, et je ne vais pas l'inventer.
+
+Restait à ne pas mentir. L'écran des agences porte un avertissement qui dit la chose
+franchement — le rayon se règle, il ne fait rien encore, il s'appliquera au raccordement — et
+la phrase publique de « Comment nous classons » a été corrigée pour décrire ce qui se passe
+réellement. Le détail est consigné en Q26, marqué bloquant.
+
+### Une assertion qui ne vérifiait rien
+
+Le test d'inscription contenait `expect(agence.latitude).toBe(commune.latitude)`. Les deux
+valant `null`, il passait en ne prouvant rien — et c'est précisément ce test qui aurait dû
+révéler le manque. Il pose désormais lui-même une coordonnée, éprouve le chemin, et la retire.
+La leçon est la même qu'avec le worker qui ne démarrait pas : une suite verte n'est une preuve
+que de ce qu'elle regarde vraiment.
+
+### Les garanties de l'écran
+
+20 tests. Trois portent sur des invariants qui ne se voient pas : **exactement une** agence
+principale, toujours — c'est son adresse qui figure sur la fiche publique ; des **coordonnées**
+recopiées depuis la commune, sans quoi l'agence ne serait éligible à rien ; et une agence qui
+**reste dans le périmètre**, faute de quoi elle recevrait des demandes que le professionnel a
+lui-même écartées.
+
+---
+
 ## Phases 5 à 11 · à venir
 
 Agenda et documents du pro, monétisation Stripe, back-office, personnalisation, avis et

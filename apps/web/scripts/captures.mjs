@@ -313,6 +313,12 @@ const PAGES = [
     connexionPro: true,
   },
   {
+    nom: 'pro-agences',
+    chemin: '/pro/espace/agences',
+    titre: 'Espace pro — mes agences',
+    connexionPro: true,
+  },
+  {
     nom: 'pro-fiche-completee',
     chemin: '/pro/espace/fiche',
     titre: 'Espace pro — ma fiche, complétude en hausse',
