@@ -1,0 +1,11 @@
+{
+  "$schema": "https://railway.com/railway.schema.json",
+  "build": {
+    "builder": "RAILPACK",
+    "buildCommand": "pnpm --filter @lerenom/db build"
+  },
+  "deploy": {
+    "startCommand": "pnpm --filter @lerenom/worker start",
+    "restartPolicyType": "ALWAYS"
+  }
+}

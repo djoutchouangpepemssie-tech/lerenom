@@ -3,6 +3,17 @@
 Ce document dit ce qu'il faut fournir à l'hébergement, et dans quel ordre. Il est court à
 dessein : tout ce qui peut être automatisé l'est, le reste tient en quatre variables.
 
+## Pourquoi Railway et pas Vercel
+
+Le worker ne peut pas tourner sur Vercel. Vercel n'exécute que des fonctions éphémères,
+déclenchées par une requête et arrêtées aussitôt après ; le worker, lui, est un processus qui
+ne s'arrête pas — il tient des files BullMQ, attend des échéances à la seconde et exécute les
+travaux de nuit. Sans lui, **une demande déposée n'est jamais distribuée** : le site
+fonctionnerait, et ne servirait à rien.
+
+Railway héberge les quatre pièces au même endroit : la base, Redis, le site et le worker. La
+base reste sur le réseau privé à l'exécution, et le projet n'a qu'une facture.
+
 ---
 
 ## Ce que l'application exige, et pourquoi
