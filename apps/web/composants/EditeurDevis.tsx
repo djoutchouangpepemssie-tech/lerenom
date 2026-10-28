@@ -552,7 +552,9 @@ function LigneEditable({
         ligne.type === 'section' && 'bg-creme',
       )}
     >
-      <div className="flex flex-wrap items-start gap-3">
+      {/* Les boutons passent sous le champ en dessous de 640 px : à côté, ils écrasent la
+          désignation au point d'en cacher la moitié. */}
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:gap-3">
         <div className="min-w-0 flex-1">
           {ligne.type === 'texte' ? (
             // Une note est de la prose : un champ d'une ligne en cache la fin au moment même
@@ -579,7 +581,7 @@ function LigneEditable({
           )}
         </div>
         {!fige && (
-          <div className="flex shrink-0 gap-1 pt-7">
+          <div className="flex gap-1 sm:shrink-0 sm:pt-7">
             <button
               type="button"
               onClick={() => onDeplace(-1)}

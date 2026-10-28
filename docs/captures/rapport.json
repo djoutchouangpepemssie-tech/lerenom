@@ -658,5 +658,45 @@
     "largeurFenetre": 1440,
     "debordements": [],
     "erreursConsole": []
+  },
+  {
+    "page": "Espace pro — mes devis",
+    "largeur": 390,
+    "fichier": "pro-devis-liste-390.png",
+    "defilementHorizontal": false,
+    "largeurDocument": 390,
+    "largeurFenetre": 390,
+    "debordements": [],
+    "erreursConsole": []
+  },
+  {
+    "page": "Espace pro — mes devis",
+    "largeur": 1440,
+    "fichier": "pro-devis-liste-1440.png",
+    "defilementHorizontal": false,
+    "largeurDocument": 1440,
+    "largeurFenetre": 1440,
+    "debordements": [],
+    "erreursConsole": []
+  },
+  {
+    "page": "Espace pro — éditeur de devis",
+    "largeur": 390,
+    "fichier": "pro-devis-editeur-390.png",
+    "defilementHorizontal": false,
+    "largeurDocument": 390,
+    "largeurFenetre": 390,
+    "debordements": [],
+    "erreursConsole": []
+  },
+  {
+    "page": "Espace pro — éditeur de devis",
+    "largeur": 1440,
+    "fichier": "pro-devis-editeur-1440.png",
+    "defilementHorizontal": false,
+    "largeurDocument": 1440,
+    "largeurFenetre": 1440,
+    "debordements": [],
+    "erreursConsole": []
   }
 ]
