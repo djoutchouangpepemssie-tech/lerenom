@@ -13,6 +13,7 @@ import path from 'node:path';
 import { writeFile } from 'node:fs/promises';
 import { randomBytes, scrypt } from 'node:crypto';
 import { PrismaPg } from '@prisma/adapter-pg';
+import { calculeTotaux } from '@lerenom/core';
 import { PrismaClient } from '../src/genere/client.js';
 
 const connectionString = process.env['DATABASE_URL'];
@@ -273,6 +274,30 @@ async function semeDevisDeDemonstration(entrepriseId: string): Promise<string> {
       },
     },
     select: { id: true },
+  });
+
+  // Les totaux ne se devinent pas des lignes : ils sont stockés pour que la liste et la
+  // comptabilité n'aient pas à recalculer. Tout chemin qui écrit des lignes doit donc les
+  // écrire aussi — le semis compris, sinon la liste affiche 0 € pour un devis à 410 €.
+  const lignes = await prisma.devisLigne.findMany({
+    where: { devisId: devis.id },
+    orderBy: { rang: 'asc' },
+  });
+  const totaux = calculeTotaux({
+    lignes: lignes.map((ligne) => ({
+      id: ligne.id,
+      type: ligne.type,
+      designation: ligne.designation,
+      ...(ligne.unite !== null ? { unite: ligne.unite } : {}),
+      ...(ligne.quantite !== null ? { quantite: Number(ligne.quantite) } : {}),
+      ...(ligne.prixUnitaireHT !== null ? { prixUnitaireHT: Number(ligne.prixUnitaireHT) } : {}),
+      ...(ligne.tauxTva !== null ? { tauxTva: Number(ligne.tauxTva) as 5.5 | 10 | 20 } : {}),
+    })),
+    acomptePourcent: 30,
+  });
+  await prisma.devis.update({
+    where: { id: devis.id },
+    data: { totalHT: totaux.totalHT, totalTVA: totaux.totalTVA, totalTTC: totaux.totalTTC },
   });
 
   const racine = path.resolve(import.meta.dirname, '../../..');

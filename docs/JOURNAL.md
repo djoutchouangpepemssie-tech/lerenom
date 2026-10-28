@@ -1044,6 +1044,17 @@ et trois brouillons abandonnés n'en consomment aucun.
 Le compte de démonstration reçoit un devis en brouillon, pour que l'éditeur ait quelque chose
 à montrer : recherche de fuite, pièces, main-d'œuvre, 410,30 € TTC avec 30 % d'acompte.
 
+### Et le même piège que la complétude, à nouveau
+
+La liste affichait **0 €** pour ce devis à 410,30 €. Les totaux sont stockés sur la ligne du
+devis — pour que la liste et la comptabilité n'aient pas à recalculer — et le semis écrivait
+les lignes sans les calculer. L'écran de détail, lui, était juste : il recalcule à la lecture.
+
+C'est exactement la leçon de la complétude des fiches, rencontrée deux phases plus tôt : **une
+valeur stockée qu'un seul chemin calcule finit par mentir dès qu'un autre chemin écrit**. Le
+semis les calcule désormais avec la même fonction que l'application, et le commentaire le dit
+à l'endroit où on serait tenté de l'oublier.
+
 ---
 
 ## Phases 5 à 11 · à venir
