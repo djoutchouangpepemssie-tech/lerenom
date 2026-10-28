@@ -20,8 +20,9 @@
     "lint": "eslint src"
   },
   "dependencies": {
-    "@prisma/client": "^7.10.1",
+    "@lerenom/core": "workspace:*",
     "@prisma/adapter-pg": "^7.10.1",
+    "@prisma/client": "^7.10.1",
     "@prisma/client-runtime-utils": "^7.10.1"
   },
   "devDependencies": {

@@ -19,6 +19,7 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
 import { PrismaPg } from '@prisma/adapter-pg';
+import { completudeFiche, slugifie } from '@lerenom/core';
 import { PrismaClient } from '../src/genere/client.js';
 
 const RACINE = path.resolve(import.meta.dirname, '../../..');
@@ -101,16 +102,6 @@ interface FichierPrix {
     tauxTva: number;
     prestations: { slug: string; minTTC: number; maxTTC: number; source: string }[];
   }[];
-}
-
-function slugifie(texte: string): string {
-  return texte
-    .normalize('NFKD')
-    .replace(/[̀-ͯ]/g, '')
-    .replace(/['’]/g, '-')
-    .replace(/[^A-Za-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .toLowerCase();
 }
 
 async function semeGeographie(): Promise<void> {
@@ -282,6 +273,13 @@ async function semeParametres(): Promise<void> {
     }
   }
   console.log(`  paramètres : ${Object.keys(PARAMETRES).length} règles historisées`);
+}
+
+/** Deux ans devant soi : une date fixe ferait expirer la démonstration toute seule. */
+function dansDeuxAns(): Date {
+  const echeance = new Date();
+  echeance.setFullYear(echeance.getFullYear() + 2);
+  return echeance;
 }
 
 /* ------------------------------------------------------------------------- */
@@ -471,22 +469,48 @@ async function semeDemonstration(idsMetier: Map<string, string>): Promise<void> 
       },
     });
 
+    // Le jeu de démonstration illustre ce que la complétude mesure : une fiche soignée est
+    // mieux classée. Les éléments ci-dessous sont donc gradués par formule — non pour
+    // récompenser le paiement, mais parce qu'un professionnel qui investit dans sa visibilité
+    // remplit généralement sa fiche. Tout y est fictif et vérifiable : pas d'images inventées.
+    const soignee = pro.formule === 'exclusif' || pro.formule === 'premium';
+    const champsFiche = {
+      description: pro.description,
+      telephone: telephoneFictif,
+      email: emailFictif,
+      atouts:
+        pro.formule === 'gratuit'
+          ? []
+          : ['Devis gratuit', 'Intervention rapide', 'Assurance décennale'],
+      ...(soignee
+        ? {
+            slogan: 'Le dépannage sans mauvaise surprise',
+            horaires: {
+              lundi: '08:00-19:00',
+              mardi: '08:00-19:00',
+              mercredi: '08:00-19:00',
+              jeudi: '08:00-19:00',
+              vendredi: '08:00-18:00',
+              samedi: '09:00-13:00',
+              dimanche: 'urgences uniquement',
+            },
+            decennaleAssureur: 'Assurance fictive des artisans',
+            decennaleNumero: `DEC-${pro.siret.slice(0, 6)}`,
+            // Deux ans devant elle : une attestation expirée ne compte pas, et une date fixe
+            // ferait échouer la démonstration le jour où elle est dépassée.
+            decennaleExpireLe: dansDeuxAns(),
+          }
+        : {}),
+    };
+
+    // La complétude n'est pas écrite ici : elle dépend des prestations et des photos, créées
+    // plus loin. Elle est calculée en une passe finale, par `calculeLesCompletudes`.
     await prisma.fiche.upsert({
       where: { entrepriseId: entreprise.id },
       // Les champs de démonstration sont rafraîchis : un semis relancé après un changement
       // de jeu d'essai doit refléter le nouveau, pas garder l'ancien.
-      update: { telephone: telephoneFictif, email: emailFictif, description: pro.description },
-      create: {
-        entrepriseId: entreprise.id,
-        description: pro.description,
-        telephone: telephoneFictif,
-        email: emailFictif,
-        completude: pro.formule === 'gratuit' ? 0.45 : pro.formule === 'essentiel' ? 0.68 : 0.92,
-        atouts:
-          pro.formule === 'gratuit'
-            ? []
-            : ['Devis gratuit', 'Intervention rapide', 'Assurance décennale'],
-      },
+      update: champsFiche,
+      create: { entrepriseId: entreprise.id, ...champsFiche },
     });
 
     // Même raison : les agences déjà en base reçoivent le contact de démonstration à jour.
@@ -727,6 +751,53 @@ async function dejaSeme(): Promise<boolean> {
   );
 }
 
+/**
+ * La complétude de chaque fiche, calculée en dernier.
+ *
+ * Elle était écrite au jugé — 0,45 pour une fiche gratuite, 0,92 pour une Exclusif — alors
+ * qu'elle alimente la composante « pertinence » du score, donc le classement naturel. Une
+ * donnée de démonstration qui ment sur un chiffre qui classe fausse exactement ce qu'elle est
+ * censée illustrer.
+ *
+ * Elle est calculée **après** tout le reste, et non au fil de l'eau : elle dépend des photos
+ * et des prestations, qui n'existent pas encore au moment où la fiche est créée. L'avoir
+ * calculée dans la boucle donnait zéro prestation à tout le monde.
+ */
+async function calculeLesCompletudes(): Promise<void> {
+  const fiches = await prisma.fiche.findMany({
+    include: { _count: { select: { photos: true } } },
+  });
+
+  for (const fiche of fiches) {
+    const nombrePrestations = await prisma.prestationPro.count({
+      where: { entrepriseId: fiche.entrepriseId },
+    });
+    await prisma.fiche.update({
+      where: { entrepriseId: fiche.entrepriseId },
+      data: {
+        completude: completudeFiche({
+          description: fiche.description,
+          slogan: fiche.slogan,
+          logoUrl: fiche.logoUrl,
+          couvertureUrl: fiche.couvertureUrl,
+          telephone: fiche.telephone,
+          email: fiche.email,
+          siteWeb: fiche.siteWeb,
+          horaires: fiche.horaires,
+          atouts: fiche.atouts,
+          nombrePhotos: fiche._count.photos,
+          decennaleNumero: fiche.decennaleNumero,
+          decennaleAssureur: fiche.decennaleAssureur,
+          decennaleExpireLe: fiche.decennaleExpireLe,
+          nombrePrestations,
+        }),
+      },
+    });
+  }
+
+  console.log(`  complétudes : ${String(fiches.length)} fiches recalculées`);
+}
+
 async function main(): Promise<void> {
   if (await dejaSeme()) {
     console.log('Semis déjà fait : rien à reposer. FORCE_SEMIS=1 pour le refaire.');
@@ -743,6 +814,8 @@ async function main(): Promise<void> {
   } else {
     console.log('  démonstration : écartée (production). AVEC_DEMONSTRATION=1 pour la forcer.');
   }
+
+  await calculeLesCompletudes();
 
   console.log('Terminé.');
 }

@@ -24,3 +24,4 @@ export * from './contestation.ts';
 export * from './mot-de-passe.ts';
 export * from './connexion.ts';
 export * from './inscription.ts';
+export * from './fiche.ts';

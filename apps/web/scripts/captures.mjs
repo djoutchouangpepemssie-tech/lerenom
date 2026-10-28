@@ -301,6 +301,26 @@ const PAGES = [
     connexionPro: true,
   },
   {
+    nom: 'pro-fiche',
+    chemin: '/pro/espace/fiche',
+    titre: 'Espace pro — ma fiche',
+    connexionPro: true,
+  },
+  {
+    nom: 'pro-fiche-completee',
+    chemin: '/pro/espace/fiche',
+    titre: 'Espace pro — ma fiche, complétude en hausse',
+    connexionPro: true,
+    // On remplit sans enregistrer : l'anneau et la liste des manques doivent bouger à la
+    // frappe, puisqu'ils utilisent la fonction qui sert au classement.
+    scenario: async (onglet) => {
+      await onglet.getByLabel('Assureur').fill('Assurance fictive des artisans');
+      await onglet.getByLabel('Numéro de contrat').fill('DEC-2026-41');
+      await onglet.getByLabel('Échéance').fill('2028-06-30');
+      await onglet.waitForTimeout(250);
+    },
+  },
+  {
     nom: 'pro-demandes-acceptees',
     chemin: '/pro/espace/demandes',
     titre: 'Espace pro — demandes acceptées',

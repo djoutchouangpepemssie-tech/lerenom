@@ -724,6 +724,72 @@ pas des décisions.
 
 ---
 
+## Phase 3 (suite) · « Ma fiche », et un chiffre qui ne classait rien
+
+L'inscription crée un compte ; il fallait maintenant qu'un professionnel puisse modifier ce
+qu'il montre. En construisant l'écran, une découverte a changé la portée du travail.
+
+### Un chiffre qui classait, et que personne ne calculait
+
+`completude` alimente la composante **pertinence** du score de qualité — donc le classement
+naturel des résultats. Rien ne la calculait. Le semis écrivait 0,45 pour une fiche gratuite,
+0,68 pour une Essentiel, 0,92 pour une Exclusif. Des valeurs posées à la main, qui décidaient
+de l'ordre d'affichage.
+
+`completudeFiche` existe désormais dans `@lerenom/core`, avec douze critères pondérés, tous
+écrits au même endroit et consignés en Q24. Le principe : **le poids mesure l'utilité pour la
+personne qui cherche, pas l'effort du professionnel.** Une présentation vaut 20 %, un slogan
+2 %. Une attestation décennale expirée ne compte pas — l'afficher comme acquise reviendrait à
+mieux classer une entreprise qui n'est plus couverte.
+
+Et rien n'est exigé. Une fiche incomplète existe, s'affiche et reçoit des demandes. La
+complétude la classe, elle ne la conditionne pas : c'est la différence entre un annuaire et un
+péage.
+
+### L'écran dit ce que chaque champ rapporte
+
+La colonne de droite n'est pas un ornement. Elle liste les douze critères avec leur poids, du
+plus utile au moins utile, et l'anneau bouge à la frappe — avec la fonction qui sert au
+classement, pas une approximation d'affichage. Un professionnel qui n'a dix minutes doit savoir
+où les passer.
+
+Les quatre éléments qu'on ne saisit pas sur cet écran — photos, logo, couverture, horaires —
+sont nommés quand même. Les taire afficherait une fiche « complète » à 100 % qui ne l'est pas.
+
+### Ce que la construction a rattrapé
+
+Mon composant client importait une **valeur** depuis le module qui ouvre la base. Résultat :
+Prisma, puis `pg`, puis `dns` et `fs` embarqués dans le paquet envoyé au navigateur. Turbopack
+a refusé, et il avait raison. La constante est partie dans `@lerenom/core`, où vivent les règles
+partagées entre le serveur et l'écran ; le composant n'importe plus qu'un type.
+
+Deux autres corrections sont venues en regardant les captures : l'anneau écrivait « 72% » quand
+le texte voisin écrivait « 72 % », dans la même carte ; et le téléphone s'affichait brut
+(`+33199000010`) dans un champ qu'on vient modifier.
+
+### Le jeu de démonstration remis d'aplomb
+
+Une fois la complétude calculée pour de bon, les sept plombiers fictifs tombaient tous à 0,45 :
+pas de photos, pas d'assurance, pas d'horaires. La démonstration du classement perdait son
+sens. Le jeu d'essai a reçu des éléments **vérifiables** — horaires, slogan, attestation
+décennale à échéance glissante — gradués par formule. Le dégradé est de nouveau lisible (72 %,
+45 %, 40 %), et chacun de ces chiffres se vérifie champ par champ.
+
+Un défaut de mon propre correctif mérite d'être noté : j'avais d'abord calculé la complétude
+dans la boucle de semis, avant que les prestations ne soient créées. Tout le monde avait zéro
+prestation. Elle est maintenant calculée en une passe finale, une fois tout en place.
+
+### La vérification
+
+39 tests nouveaux : 21 sur les règles de complétude, 18 sur la route et la base. Deux d'entre
+eux gardent une frontière qui ne se voit pas à l'écran : l'entreprise modifiée est celle de la
+session, jamais celle que le corps de la requête désigne.
+
+Deux captures nouvelles aux deux largeurs, dont une qui remplit l'attestation sans enregistrer,
+pour vérifier que l'anneau et la liste bougent bien à la frappe.
+
+---
+
 ## Phases 5 à 11 · à venir
 
 Agenda et documents du pro, monétisation Stripe, back-office, personnalisation, avis et

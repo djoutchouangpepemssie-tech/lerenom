@@ -26,6 +26,7 @@ export default async function DispositionEspacePro({
   const onglets = [
     { href: '/pro/espace', libelle: 'Tableau de bord' },
     { href: '/pro/espace/demandes', libelle: 'Mes demandes' },
+    { href: '/pro/espace/fiche', libelle: 'Ma fiche' },
   ];
 
   return (

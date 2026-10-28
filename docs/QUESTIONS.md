@@ -513,3 +513,47 @@ honnête, remplacée dès que l'adresse est saisie depuis l'espace pro.
 **Ce qui reste à faire, et qui ne dépend pas de ces décisions** : la recherche automatique dans
 la base SIRENE (l'accès à l'API de l'Insee n'est pas ouvert sur cet environnement), l'envoi réel
 du code SMS, et le paiement.
+
+---
+
+## Q24 🟢 — La complétude d'une fiche : ce qui compte, et combien
+
+_(métier — tranché, consigné pour pouvoir être discuté)_
+
+`completude` alimente la composante **pertinence** du score de qualité, donc le classement
+naturel. Personne ne la calculait : le semis écrivait 0,45 pour une fiche gratuite et 0,92 pour
+une Exclusif, au jugé. Une entrée du classement était donc une constante inventée.
+
+Elle est désormais calculée par `completudeFiche` (`packages/core/src/fiche.ts`), avec les
+poids suivants :
+
+| Critère               | Poids | Pourquoi ce poids                                          |
+| --------------------- | ----- | ---------------------------------------------------------- |
+| Présentation          | 20 %  | Le seul texte que le visiteur lit avant d'appeler          |
+| Photos de chantiers   | 18 %  | Ce qui prouve le travail mieux que n'importe quelle phrase |
+| Assurance décennale   | 15 %  | Ce qui engage l'artisan, et protège le client              |
+| Prestations déclarées | 12 %  | Un métier coché ne dit pas ce qu'on sait faire             |
+| Horaires              | 10 %  | Savoir si l'on peut appeler maintenant                     |
+| Téléphone             | 7 %   | Évident, donc peu discriminant                             |
+| Logo                  | 6 %   | Reconnaissance, pas information                            |
+| Atouts                | 5 %   | Trois lignes sur la carte de résultats                     |
+| Image de couverture   | 3 %   | Agrément                                                   |
+| Slogan                | 2 %   | Agrément                                                   |
+| Site internet         | 1 %   | Beaucoup d'artisans n'en ont pas, et n'ont pas à en avoir  |
+| Adresse électronique  | 1 %   | Peu utilisée par les clients de ce secteur                 |
+
+**Le principe appliqué** : le poids mesure l'utilité pour la personne qui cherche, pas l'effort
+du professionnel. Il ne récompense pas la bonne volonté, il classe l'information utile.
+
+**Deux règles qui en découlent et qui méritent d'être dites** :
+
+- une **attestation décennale expirée ne compte pas**. L'afficher comme acquise reviendrait à
+  mieux classer une entreprise qui n'est plus couverte ;
+- **rien n'est exigé**. Une fiche gratuite incomplète existe, s'affiche et reçoit des demandes.
+  La complétude la classe, elle ne la conditionne pas. C'est la différence entre un annuaire et
+  un péage.
+
+**À confirmer par Arcel** : ces douze poids. Ils sont défendables et ils sont tous au même
+endroit, en clair — un seul fichier à relire pour les discuter. Le jeu de démonstration donne
+désormais 72 % aux fiches soignées, 45 % aux intermédiaires et 40 % aux minimales, et chacun de
+ces chiffres se vérifie champ par champ.

@@ -113,7 +113,9 @@ export function Anneau({
           dominantBaseline="central"
           className="fill-encre font-[family-name:var(--font-titre)] text-lg"
         >
-          {Math.round(part * 100)}%
+          {/* Espace insécable fine avant le pour-cent : c'est la règle typographique française,
+              et l'aria-label voisin l'applique déjà. Les deux doivent dire la même chose. */}
+          {Math.round(part * 100)}&#8239;%
         </text>
       </svg>
       <span className="text-encre-55 text-xs font-semibold">{etiquette}</span>
