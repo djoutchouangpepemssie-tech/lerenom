@@ -32,11 +32,21 @@ const connectionString = process.env['DATABASE_URL'];
 if (connectionString === undefined || connectionString === '') {
   throw new Error('DATABASE_URL est requis.');
 }
-if (process.env['NODE_ENV'] === 'production') {
-  throw new Error(
-    'Le seed contient des données de démonstration fictives : il ne tourne pas en production.',
-  );
-}
+/**
+ * Deux jeux de données, deux statuts.
+ *
+ * Les **référentiels** — 1 285 communes, 18 univers, 69 métiers, 479 prestations, les prix
+ * indicatifs et les paramètres — sont des données de production : sans eux, le site n'a rien à
+ * montrer. Ils se chargent partout.
+ *
+ * La **démonstration** — sept plombiers fictifs à Paris 11e — n'en est pas. Elle ne se charge
+ * jamais en production, sauf demande explicite : un faux plombier affiché comme un vrai sur un
+ * site ouvert au public serait une tromperie, et le cahier des charges l'interdit.
+ */
+const enProduction = process.env['NODE_ENV'] === 'production';
+const avecDemonstration = enProduction
+  ? process.env['AVEC_DEMONSTRATION'] === '1'
+  : process.env['AVEC_DEMONSTRATION'] !== '0';
 
 const prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString }) });
 
@@ -679,6 +689,10 @@ async function semeDemonstration(idsMetier: Map<string, string>): Promise<void> 
  *
  * `FORCE_SEMIS=1` le force malgré tout : c'est ce qu'on veut après avoir changé le jeu de
  * données, sans quoi les corrections ne s'appliqueraient jamais.
+ *
+ * Le contrôle ne porte que sur les référentiels : la démonstration, elle, est absente en
+ * production par construction, et son absence ne doit pas déclencher un semis à chaque
+ * déploiement.
  */
 async function dejaSeme(): Promise<boolean> {
   if (process.env['FORCE_SEMIS'] === '1') return false;
@@ -723,7 +737,13 @@ async function main(): Promise<void> {
   await semeGeographie();
   const idsMetier = await semeCatalogue();
   await semeParametres();
-  await semeDemonstration(idsMetier);
+
+  if (avecDemonstration) {
+    await semeDemonstration(idsMetier);
+  } else {
+    console.log('  démonstration : écartée (production). AVEC_DEMONSTRATION=1 pour la forcer.');
+  }
+
   console.log('Terminé.');
 }
 
