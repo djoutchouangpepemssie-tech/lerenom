@@ -11,6 +11,33 @@
 
 CREATE EXTENSION IF NOT EXISTS postgis;
 
+-- Prisma crée ces trois colonnes comme des colonnes **ordinaires** : il sait qu'elles
+-- existent — c'est ce qui l'empêche de les supprimer — mais pas qu'elles se calculent toutes
+-- seules. Le bloc ci-dessous les convertit en colonnes générées, une fois, puis ne fait plus
+-- rien : `is_generated` dit si le travail a déjà été fait.
+--
+-- La conversion passe forcément par une suppression et un ajout — PostgreSQL ne transforme
+-- pas une colonne ordinaire en colonne générée. Elle est donc sans danger seulement parce que
+-- la valeur est entièrement dérivée de `latitude` et `longitude` : rien n'est perdu qui ne se
+-- recalcule dans la même instruction.
+DO $$
+DECLARE
+  cible text;
+BEGIN
+  FOREACH cible IN ARRAY ARRAY['agences', 'communes', 'demandes'] LOOP
+    IF to_regclass('public.' || cible) IS NULL THEN CONTINUE; END IF;
+
+    IF EXISTS (
+      SELECT 1 FROM information_schema.columns
+      WHERE table_schema = 'public' AND table_name = cible
+        AND column_name = 'point' AND is_generated = 'NEVER'
+    ) THEN
+      EXECUTE format('ALTER TABLE %I DROP COLUMN point', cible);
+    END IF;
+  END LOOP;
+END
+$$;
+
 -- Agences : c'est sur elles que porte l'éligibilité d'un pro à une demande.
 ALTER TABLE agences
   ADD COLUMN IF NOT EXISTS point geography(Point, 4326)

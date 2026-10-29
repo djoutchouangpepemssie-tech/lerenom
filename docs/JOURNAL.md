@@ -1370,6 +1370,84 @@ sert qu'une fois, et il n'accepte rien de périmé.
 
 ---
 
+## Hors phase · Les communes retrouvent leurs coordonnées
+
+Q26 était le seul point marqué bloquant du projet : aucune des 1 285 communes n'avait de
+coordonnées, donc la distance valait `null` pour tout le monde, le rayon d'intervention d'une
+agence n'avait aucun effet, et la page publique « Comment nous classons » promettait un
+critère inerte.
+
+La cause tenait en une ligne : `geo.api.gouv.fr` est refusé par la politique réseau de cette
+machine. La leçon aussi : **une source refusée ne veut pas dire une donnée inaccessible.**
+`raw.githubusercontent.com`, lui, répond, et la base officielle des codes postaux de La Poste
+y est redistribuée en données ouvertes.
+
+### Juger la source plutôt que lui faire confiance
+
+`scripts/coordonnees-communes.mjs` la télécharge et **refuse d'écrire** si l'un de quatre
+contrôles échoue : couverture des 1 285 communes, appartenance au cadre francilien, vingt
+points distincts pour les vingt arrondissements de Paris, et sept communes témoins à moins de
+cinq kilomètres de positions connues par ailleurs.
+
+Le troisième contrôle est celui qui importe le plus. Un jeu de données communal peut très bien
+donner le même point à tout Paris : la couverture serait parfaite, le cadre respecté, et la
+proximité intra-parisienne ne voudrait plus rien dire — précisément là où elle compte le plus.
+
+Au recoupement, l'écart va de 50 mètres à 2,3 kilomètres. C'est la précision d'un point de
+référence communal, et c'est assez pour **classer** — « celui-ci est plus près que celui-là ».
+Pas pour un itinéraire, et l'écran ne prétend pas le contraire : « dans votre ville » en deçà
+d'un kilomètre et demi, le kilomètre entier en deçà de dix, par tranches de cinq au-delà.
+« À 1,2 km » aurait revendiqué cent mètres de précision que la donnée n'a pas.
+
+### Trois défauts qui dormaient depuis le premier jour
+
+C'est la partie intéressante. Remplir le champ a réveillé trois chemins jamais éprouvés.
+
+**Le semis ne convergeait pas.** `createMany` avec `skipDuplicates` **saute** les lignes
+existantes. Le référentiel pouvait naître du fichier sur une base vierge, jamais s'y
+conformer ensuite : les 1 285 communes ont été sautées en silence, et relancer le semis n'a
+rien changé. Il ajuste désormais ce que le fichier possède légitimement — coordonnées,
+population, ouverture — et laisse le nom et le slug, qui vivent dans des adresses indexées.
+
+**`db push` supprimait les colonnes PostGIS à chaque passage.** Les points générés des
+agences, communes et demandes n'existaient pas dans le schéma Prisma : il les effaçait, le
+fichier SQL les recréait juste après, et personne ne le voyait puisqu'elles étaient vides. Le
+jour où elles ont contenu 1 281 valeurs, Prisma a refusé — ce qui est le bon comportement, et
+la seule raison pour laquelle le défaut s'est révélé. Les trois colonnes sont maintenant
+déclarées `Unsupported(...)` avec `@default(dbgenerated())` ; `postgis.sql` convertit en
+colonne générée ce que Prisma crée en colonne ordinaire, une fois, puis ne fait plus rien.
+Le chemin d'une base vierge a été éprouvé pour de bon, sur une base jetable.
+
+**Deux tests détruisaient le référentiel.** Ils posaient des coordonnées sur quatre
+arrondissements de Paris, puis les remettaient à `null` — une restauration écrite quand `null`
+était la valeur d'origine. Le commentaire disait « un test ne laisse pas de données derrière
+lui, pas même des données justes » : principe juste, prémisse devenue fausse. Ils relisent
+désormais ce qu'ils trouvent et le rendent tel quel.
+
+### La règle qui en sort
+
+Les trois défauts ont la même forme, et elle est écrite dans `docs/PLAN.md` :
+
+> **Un champ vide ne prouve rien.** Tant qu'une donnée manque, tout ce qui la traverse est
+> exercé à blanc : les contrôles passent, les suppressions sont indolores, les restaurations
+> sont justes par accident.
+
+Quand un champ passe de « toujours vide » à « renseigné », il faut relire ce qui l'écrit, ce
+qui le supprime, ce qui le restaure et ce qui l'affiche. Les quatre mentaient ici, et la porte
+de validation était verte.
+
+### La vérification
+
+854 tests verts. Un test neuf garde ce que tout ceci devait débloquer : deux serruriers
+identiques en tout sauf leur commune — Melun et Montreuil —, et le plus proche passe devant.
+Un critère silencieusement neutre ne casse aucun test ; celui-là en casserait un.
+
+La page « Comment nous classons » dit maintenant la vérité, y compris sa limite : la
+proximité se mesure de commune à commune, elle distingue un artisan de votre ville d'un
+artisan à trente kilomètres, pas deux artisans de votre quartier.
+
+---
+
 ## Phases 5 à 11 · à venir
 
 Agenda et documents du pro, monétisation Stripe, back-office, personnalisation, avis et

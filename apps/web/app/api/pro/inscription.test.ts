@@ -137,11 +137,16 @@ describe('création', () => {
   });
 
   it('donne à l’agence principale les coordonnées de sa commune', async () => {
-    // Sans coordonnées, aucune distance ne se calcule. Aucune commune n'en a aujourd'hui
-    // (Q26) : comparer les deux valeurs reviendrait à vérifier que `null` vaut `null`. Le
-    // test en pose donc une, pour éprouver le chemin, puis la retire.
+    // Une coordonnée connue est posée sur la commune pour que l'assertion porte sur des
+    // valeurs choisies, et non sur celles du référentiel qui peuvent changer. Ce que la
+    // commune portait est relu d'abord et lui est rendu ensuite : remettre `null` était
+    // exact quand aucune commune n'avait de coordonnées, et destructeur depuis.
     const cible = villes[0];
     if (cible === undefined) throw new Error('ville manquante');
+    const avant = await prisma.commune.findUniqueOrThrow({
+      where: { code: cible },
+      select: { latitude: true, longitude: true },
+    });
     await prisma.commune.update({
       where: { code: cible },
       data: { latitude: 48.8566, longitude: 2.3522 },
@@ -158,10 +163,7 @@ describe('création', () => {
       expect(agence.latitude).toBe(48.8566);
       expect(agence.longitude).toBe(2.3522);
     } finally {
-      await prisma.commune.update({
-        where: { code: cible },
-        data: { latitude: null, longitude: null },
-      });
+      await prisma.commune.update({ where: { code: cible }, data: avant });
     }
   });
 

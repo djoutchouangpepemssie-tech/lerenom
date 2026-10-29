@@ -82,3 +82,25 @@ export function scoreProximite(distanceEnKm: number, rayonReferenceKm: number): 
   if (distanceEnKm >= rayonReferenceKm) return 0;
   return 1 - distanceEnKm / rayonReferenceKm;
 }
+
+/**
+ * La distance, écrite comme on peut l'affirmer.
+ *
+ * Les positions dont dispose Le Renom sont des **points de référence communaux** tant que les
+ * adresses ne sont pas géocodées une à une. Afficher « à 1,2 km » revendiquerait une
+ * précision de cent mètres que cette donnée n'a pas : deux artisans de la même rue auraient
+ * le même chiffre, et deux artisans de la même commune aussi.
+ *
+ * On écrit donc ce qu'on sait, et à la maille où on le sait :
+ *
+ *   * même commune, ou presque : « dans votre ville » — c'est l'information utile, et elle
+ *     est vraie ;
+ *   * en deçà de dix kilomètres : le kilomètre entier ;
+ *   * au-delà : par cinq, parce que la différence entre 42 et 43 km ne change aucune
+ *     décision et que la donnée ne la garantit pas.
+ */
+export function distanceLisible(distanceEnKm: number): string {
+  if (distanceEnKm < 1.5) return 'dans votre ville';
+  if (distanceEnKm < 10) return `à ${String(Math.round(distanceEnKm))} km`;
+  return `à ${String(Math.round(distanceEnKm / 5) * 5)} km`;
+}

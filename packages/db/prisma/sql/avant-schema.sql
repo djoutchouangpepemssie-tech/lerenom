@@ -11,6 +11,13 @@
 --
 --   psql "$DATABASE_URL" -f packages/db/prisma/sql/avant-schema.sql
 
+-- PostGIS, avant tout le reste.
+--
+-- Le schéma Prisma déclare trois colonnes `geography(Point, 4326)` — les points des agences,
+-- des communes et des demandes. Le type n'existe pas sans l'extension : sur une base vierge,
+-- `db push` échouerait avant d'avoir rien créé.
+CREATE EXTENSION IF NOT EXISTS postgis;
+
 -- Numérotation : une série par entreprise, pas une série pour toute la plateforme.
 --
 -- Le défaut corrigé n'était pas théorique : le numéro était unique **globalement**, alors que

@@ -248,6 +248,29 @@ La règle qui en découle, et qui s'applique désormais à toute valeur dérivé
 Une valeur dérivée est stockée pour épargner un calcul à la lecture, jamais pour devenir une
 seconde source de vérité.
 
+### Une seconde règle, née du jour où les coordonnées sont arrivées
+
+Combler Q26 — donner enfin leurs coordonnées aux 1 285 communes — a fait apparaître **trois
+défauts qui dormaient depuis le premier jour**, tous invisibles parce que le champ était vide :
+
+| Défaut                                                                                  | Pourquoi il dormait                                   |
+| --------------------------------------------------------------------------------------- | ----------------------------------------------------- |
+| Le semis **sautait** les lignes existantes : le référentiel ne pouvait jamais converger | Sans donnée nouvelle, rien à converger                |
+| `db push` **supprimait** les colonnes PostGIS générées à chaque passage                 | Une colonne vide se supprime sans perte ni message    |
+| Deux tests **remettaient à `null`** les coordonnées de quatre communes après usage      | « Restaurer `null` » était exact quand tout était nul |
+
+La règle qui en découle :
+
+> **Un champ vide ne prouve rien.** Tant qu'une donnée manque, tout ce qui la traverse est
+> exercé à blanc : les contrôles passent, les suppressions sont indolores, les restaurations
+> sont justes par accident. Le jour où la donnée arrive, ces chemins s'éprouvent pour la
+> première fois — et c'est ce jour-là qu'il faut les relire, un par un, plutôt que de se fier
+> à une porte de validation qui était verte hier pour de mauvaises raisons.
+
+Concrètement, quand un champ passe de « toujours vide » à « renseigné » : relire ce qui
+l'écrit, ce qui le supprime, ce qui le restaure, et ce qui l'affiche. Les quatre ont menti
+ici, et aucun test n'échouait.
+
 ---
 
 ## 6. Risques techniques identifiés et parades

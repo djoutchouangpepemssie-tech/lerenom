@@ -151,6 +151,13 @@ model Commune {
   @@index([departementId])
   @@index([statut])
   @@index([latitude, longitude])
+  /// Colonne **générée** par PostgreSQL à partir de `latitude` et `longitude`, posée par
+  /// `sql/postgis.sql`. Prisma ne sait pas déclarer une colonne générée, mais il doit savoir
+  /// qu'elle existe : sans cette ligne, `db push` la supprimait à chaque passage, puis le
+  /// fichier SQL la recréait. Invisible tant qu'elle était vide — et refusé net le jour où
+  /// elle a contenu des données, ce qui est le bon comportement.
+  point Unsupported("geography(Point, 4326)")? @default(dbgenerated())
+
   @@map("communes")
 }
 
@@ -418,6 +425,13 @@ model Agence {
   @@index([entrepriseId])
   @@index([communeId])
   @@index([latitude, longitude])
+  /// Colonne **générée** par PostgreSQL à partir de `latitude` et `longitude`, posée par
+  /// `sql/postgis.sql`. Prisma ne sait pas déclarer une colonne générée, mais il doit savoir
+  /// qu'elle existe : sans cette ligne, `db push` la supprimait à chaque passage, puis le
+  /// fichier SQL la recréait. Invisible tant qu'elle était vide — et refusé net le jour où
+  /// elle a contenu des données, ce qui est le bon comportement.
+  point Unsupported("geography(Point, 4326)")? @default(dbgenerated())
+
   @@map("agences")
 }
 
@@ -866,6 +880,13 @@ model Demande {
   @@index([statut, deposeeLe])
   @@index([communeId, metierId])
   @@index([clientTelephone])
+  /// Colonne **générée** par PostgreSQL à partir de `latitude` et `longitude`, posée par
+  /// `sql/postgis.sql`. Prisma ne sait pas déclarer une colonne générée, mais il doit savoir
+  /// qu'elle existe : sans cette ligne, `db push` la supprimait à chaque passage, puis le
+  /// fichier SQL la recréait. Invisible tant qu'elle était vide — et refusé net le jour où
+  /// elle a contenu des données, ce qui est le bon comportement.
+  point Unsupported("geography(Point, 4326)")? @default(dbgenerated())
+
   @@map("demandes")
 }
 

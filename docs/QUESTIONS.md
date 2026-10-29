@@ -587,9 +587,41 @@ un remboursement au prorata, et cette règle-là n'est pas écrite. Elle le sera
 
 ---
 
-## Q26 🔴 — Aucune commune n'a de coordonnées : la proximité ne joue pas
+## Q26 🟢 — Les communes ont leurs coordonnées : la proximité joue · **résolue**
 
-_(donnée manquante — bloquant pour une ouverture au public)_
+_(donnée manquante — était le seul point bloquant du projet)_
+
+**Résolu.** Les 1 285 communes portent désormais un point de référence, et la distance entre
+l'agence d'un professionnel et la commune d'une demande est calculée, stockée sur la
+distribution, affichée au pro et prise en compte dans le classement. Ce qui suit décrit le
+problème tel qu'il était, puis comment il a été comblé.
+
+### Comment il a été comblé
+
+`geo.api.gouv.fr` reste refusé par la politique réseau. Mais `raw.githubusercontent.com` ne
+l'est pas, et la base officielle des codes postaux de La Poste y est redistribuée en données
+ouvertes. `scripts/coordonnees-communes.mjs` la télécharge, la juge, puis écrit dans
+`donnees/communes-ile-de-france.json`.
+
+**La juge, et refuse d'écrire si elle ne convient pas** — une source distante recopiée sans
+examen est une source qu'on ne connaît pas. Quatre contrôles : couverture des 1 285 communes,
+appartenance au cadre francilien, vingt points distincts pour les vingt arrondissements de
+Paris, et sept communes témoins à moins de cinq kilomètres de positions connues par ailleurs.
+Au recoupement, l'écart constaté va de 50 mètres à 2,3 kilomètres.
+
+**Ce que cette donnée n'est pas.** Un point de référence communal, pas un centroïde calculé
+sur le contour, et surtout pas l'adresse du professionnel. La précision est de l'ordre du
+kilomètre, ce qui suffit pour **classer** — « celui-ci est plus près que celui-là » — et ne
+suffit pas pour un itinéraire. L'écran le dit à cette maille : « dans votre ville » en deçà
+d'un kilomètre et demi, le kilomètre entier en deçà de dix, par tranches de cinq au-delà.
+Afficher « à 1,2 km » revendiquerait cent mètres de précision que la donnée n'a pas.
+
+**Ce qui reste à faire pour aller plus loin** : géocoder les adresses, une à une, pour que le
+rayon d'intervention d'une agence discrimine à l'intérieur d'une commune. Tant que ce n'est
+pas fait, le rayon reste une borne grossière et la liste de communes déclarée garde le
+dernier mot sur l'éligibilité.
+
+### Le problème tel qu'il était
 
 **Le constat.** Les 1 285 communes du jeu de données ont bien des colonnes `latitude`,
 `longitude` et `sourceCoordonnees` — toutes à `null`. Le géocodage n'a jamais tourné. Aucune
@@ -611,18 +643,17 @@ zone déclarée **par liste de communes** autant que par rayon, et traite une di
 comme neutre plutôt que comme nulle. Rien ne casse, rien ne ment dans le code — mais une
 fonctionnalité annoncée est inerte.
 
-**Ce qu'il faut pour la combler.** Les centroïdes des communes sont une donnée publique et
-gratuite (`geo.api.gouv.fr`, champ `centre`). Un script de quelques lignes remplirait le
-fichier `donnees/communes-ile-de-france.json`. **Cet environnement ne peut pas y accéder** : sa
-politique réseau refuse le domaine. Deux voies :
+**Ce qu'il fallait pour la combler** : les centroïdes publics, qu'une politique réseau
+empêchait d'aller chercher là où nous les cherchions. La leçon vaut d'être gardée : _une
+source refusée ne veut pas dire une donnée inaccessible_. Il a suffi de chercher la même
+donnée ailleurs, et de la juger à l'entrée plutôt que de lui faire confiance.
 
-1. autoriser `geo.api.gouv.fr` dans les réglages réseau de l'environnement, et le script se
-   fait en une passe ;
-2. fournir le fichier de centroïdes par un autre moyen.
-
-Tant que ce point n'est pas réglé, **la phrase de « Comment nous classons » doit être corrigée
-ou la fonctionnalité livrée** : promettre publiquement un critère de classement qui ne
-s'applique pas est le genre d'inexactitude qu'un annuaire ne peut pas se permettre.
+**Un défaut découvert au passage, plus grave que le manque lui-même.** Une fois le fichier
+rempli, relancer le semis n'a rien changé : `createMany` avec `skipDuplicates` **saute** les
+lignes existantes. Le référentiel ne pouvait donc naître du fichier que sur une base vierge,
+jamais converger vers lui. Les 1 285 communes ont été sautées en silence. Le semis ajuste
+maintenant les champs que le fichier possède légitimement — coordonnées, population, statut
+d'ouverture — et laisse le nom et le slug, qui vivent dans des adresses déjà indexées.
 
 ---
 

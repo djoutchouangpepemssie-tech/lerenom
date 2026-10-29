@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { boiteEnglobante, couvre, distanceKm, scoreProximite } from './geo.ts';
+import { boiteEnglobante, couvre, distanceKm, distanceLisible, scoreProximite } from './geo.ts';
 
 const PARIS_11 = { latitude: 48.8594, longitude: 2.3765 };
 const MONTREUIL = { latitude: 48.8638, longitude: 2.4485 };
@@ -96,5 +96,32 @@ describe('scoreProximite', () => {
 
   it('vaut 0 si le rayon de référence est nul', () => {
     expect(scoreProximite(1, 0)).toBe(0);
+  });
+});
+
+describe('distanceLisible', () => {
+  it('ne chiffre pas ce qui se dit mieux en mots', () => {
+    // Un point de référence communal ne permet pas d'affirmer « à 0,4 km ».
+    expect(distanceLisible(0)).toBe('dans votre ville');
+    expect(distanceLisible(1.4)).toBe('dans votre ville');
+  });
+
+  it('arrondit au kilomètre en deçà de dix', () => {
+    expect(distanceLisible(1.5)).toBe('à 2 km');
+    expect(distanceLisible(4.4)).toBe('à 4 km');
+    expect(distanceLisible(9.6)).toBe('à 10 km');
+  });
+
+  it('arrondit par cinq au-delà', () => {
+    // 42 ou 43 km ne change aucune décision, et la donnée ne garantit pas la différence.
+    expect(distanceLisible(42)).toBe('à 40 km');
+    expect(distanceLisible(43)).toBe('à 45 km');
+    expect(distanceLisible(61)).toBe('à 60 km');
+  });
+
+  it('n’écrit jamais de décimale', () => {
+    for (const km of [0, 1.7, 8.3, 12.6, 57.2]) {
+      expect(distanceLisible(km)).not.toMatch(/[.,]\d/);
+    }
   });
 });

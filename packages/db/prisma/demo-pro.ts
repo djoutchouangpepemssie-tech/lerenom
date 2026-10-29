@@ -15,6 +15,7 @@ import { createHmac, randomBytes, scrypt } from 'node:crypto';
 import { PrismaPg } from '@prisma/adapter-pg';
 import {
   calculeTotaux,
+  distanceKm,
   prepareFactureAcompte,
   prepareFactureSolde,
   prochainNumero,
@@ -138,6 +139,28 @@ async function main(): Promise<void> {
   // Deux demandes de démonstration, repérables à leur référence.
   await prisma.demande.deleteMany({ where: { reference: { startsWith: 'DEMO-PRO-' } } });
 
+  // La distance entre l'agence du pro et la commune de la demande, calculée par la fonction
+  // du produit. Les deux étant à Paris 11e, elle vaut zéro — et l'écran écrit « dans votre
+  // ville », ce qui est la vérité de ce jeu d'essai plutôt qu'un chiffre arrangeant.
+  const communeDemande = await prisma.commune.findUniqueOrThrow({
+    where: { code: '75111' },
+    select: { latitude: true, longitude: true },
+  });
+  const agenceDemo = await prisma.agence.findFirstOrThrow({
+    where: { entrepriseId: entreprise.id },
+    select: { commune: { select: { latitude: true, longitude: true } } },
+  });
+  const distanceEntreCommunes =
+    communeDemande.latitude === null ||
+    communeDemande.longitude === null ||
+    agenceDemo.commune.latitude === null ||
+    agenceDemo.commune.longitude === null
+      ? null
+      : distanceKm(
+          { latitude: agenceDemo.commune.latitude, longitude: agenceDemo.commune.longitude },
+          { latitude: communeDemande.latitude, longitude: communeDemande.longitude },
+        );
+
   const scenarios = [
     {
       reference: 'DEMO-PRO-ATTENTE',
@@ -202,7 +225,10 @@ async function main(): Promise<void> {
         ...(scenario.accepte
           ? { repondueLe: new Date(Date.now() - 2.5 * 3_600_000), consommeForfait: true }
           : {}),
-        distanceKm: scenario.accepte ? 1.2 : 2.4,
+        // Calculée, pas inventée. Un jeu d'essai qui chiffre de son côté finit par
+        // illustrer autre chose que le produit — c'est déjà arrivé deux fois ici, avec la
+        // complétude des fiches puis les totaux des devis.
+        distanceKm: distanceEntreCommunes,
       },
     });
   }

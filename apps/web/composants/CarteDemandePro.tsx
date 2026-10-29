@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Bouton, Carte, Minuteur, Puce, cn } from '@lerenom/ui';
+import { distanceLisible } from '@lerenom/core';
 import { dateEtHeure, telephoneLisible } from '@/lib/affichage';
 import type { DemandeAcceptee, DemandeEnAttente } from '@/lib/espace-pro';
 
@@ -80,7 +81,7 @@ export function CarteDemandePro({
           <p className="text-encre-55 mt-1 text-sm">
             {demande.ville}
             {demande.quartier !== null && ` · ${demande.quartier}`}
-            {demande.distanceKm !== null && ` · à ${demande.distanceKm.toFixed(1)} km`}
+            {demande.distanceKm !== null && ` · ${distanceLisible(demande.distanceKm)}`}
           </p>
         </div>
         {!acceptee && <Minuteur echeance={demande.echeanceLe} />}

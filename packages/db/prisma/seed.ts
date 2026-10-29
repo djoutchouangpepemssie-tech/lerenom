@@ -133,11 +133,59 @@ async function semeGeographie(): Promise<void> {
     skipDuplicates: true,
   });
 
+  // `createMany` + `skipDuplicates` insère les nouvelles communes et **ignore** les
+  // existantes. C'est ce qu'il faut pour ne pas écraser ce que la base sait en plus du
+  // fichier — mais cela rendait le semis incapable de corriger ou d'enrichir un référentiel
+  // déjà posé. Le jour où les coordonnées des communes sont arrivées, relancer le semis n'a
+  // rien changé : les 1 285 lignes existaient, donc toutes ont été sautées, en silence.
+  //
+  // Un référentiel doit **converger** vers son fichier, pas seulement naître de lui. Les
+  // champs repris ici sont ceux que le fichier possède légitimement et qui peuvent changer :
+  // la géolocalisation, la population, l'ouverture commerciale. Le nom et le slug, eux, ne
+  // sont pas repris : un slug vit dans des adresses déjà indexées, et le changer est une
+  // décision éditoriale, pas une synchronisation.
+  //
+  // `IS DISTINCT FROM` rend l'instruction gratuite quand rien n'a bougé — et dit, à la
+  // lecture, que cette mise à jour n'a pas vocation à réécrire tout le référentiel.
+  const codes = fichier.communes.map((c) => c.code);
+  const latitudes = fichier.communes.map((c) => c.latitude);
+  const longitudes = fichier.communes.map((c) => c.longitude);
+  const sources = fichier.communes.map((c) => c.sourceCoordonnees);
+  const populations = fichier.communes.map((c) => c.population);
+  const statuts = fichier.communes.map((c) => c.statut);
+
+  const ajustees = await prisma.$executeRaw`
+    UPDATE communes AS c SET
+      latitude = v.latitude,
+      longitude = v.longitude,
+      source_coordonnees = v.source,
+      population = v.population,
+      statut = v.statut::"StatutCommune",
+      modifie_le = now()
+    FROM (
+      SELECT
+        unnest(${codes}::text[]) AS code,
+        unnest(${latitudes}::double precision[]) AS latitude,
+        unnest(${longitudes}::double precision[]) AS longitude,
+        unnest(${sources}::text[]) AS source,
+        unnest(${populations}::integer[]) AS population,
+        unnest(${statuts}::text[]) AS statut
+    ) AS v
+    WHERE c.code = v.code
+      AND (
+        c.latitude IS DISTINCT FROM v.latitude
+        OR c.longitude IS DISTINCT FROM v.longitude
+        OR c.source_coordonnees IS DISTINCT FROM v.source
+        OR c.population IS DISTINCT FROM v.population
+        OR c.statut::text IS DISTINCT FROM v.statut
+      )
+  `;
+
   const ouvertes = fichier.communes.filter((c) => c.statut === 'ouvert').length;
   const bientot = fichier.communes.filter((c) => c.statut === 'bientot').length;
   console.log(
     `  géographie : ${fichier.departements.length} départements, ${fichier.communes.length} communes ` +
-      `(${ouvertes} ouvertes, ${bientot} bientôt)`,
+      `(${ouvertes} ouvertes, ${bientot} bientôt, ${ajustees} ajustées)`,
   );
 }
 

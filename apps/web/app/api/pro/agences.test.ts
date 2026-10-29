@@ -22,6 +22,12 @@ const MARQUE = 'test-agences';
 let entrepriseId = '';
 let villes: readonly { code: string; latitude: number | null; longitude: number | null }[] = [];
 
+/** Ce que chaque commune portait avant que ce test n'y touche. */
+const coordonneesInitiales = new Map<
+  string,
+  { latitude: number | null; longitude: number | null }
+>();
+
 const session = vi.hoisted(() => ({ courante: null as null | { entrepriseId: string } }));
 
 vi.mock('@/lib/session-pro', () => ({
@@ -87,6 +93,15 @@ beforeAll(async () => {
     longitude: 2.35 + rang / 100,
   }));
   for (const ville of villes) {
+    // Ce que la commune portait avant ce test, pour le lui rendre ensuite. Supposer `null`
+    // était exact tant qu'aucune commune n'avait de coordonnées ; depuis qu'elles en ont,
+    // la même ligne détruisait quatre arrondissements de Paris à chaque exécution.
+    const avant = await prisma.commune.findUniqueOrThrow({
+      where: { code: ville.code },
+      select: { latitude: true, longitude: true },
+    });
+    coordonneesInitiales.set(ville.code, avant);
+
     await prisma.commune.update({
       where: { code: ville.code },
       data: { latitude: ville.latitude, longitude: ville.longitude },
@@ -110,13 +125,10 @@ beforeEach(async () => {
 
 afterAll(async () => {
   await nettoieLesDonneesDeTest(MARQUE);
-  // Les coordonnées posées plus haut sont retirées : un test ne laisse pas de données
-  // derrière lui, pas même des données justes.
-  for (const ville of villes) {
-    await prisma.commune.update({
-      where: { code: ville.code },
-      data: { latitude: null, longitude: null },
-    });
+  // Les communes retrouvent exactement ce qu'elles portaient : un test ne laisse pas de
+  // données derrière lui, et n'en emporte pas non plus.
+  for (const [code, avant] of coordonneesInitiales) {
+    await prisma.commune.update({ where: { code }, data: avant });
   }
   await prisma.$disconnect();
 });

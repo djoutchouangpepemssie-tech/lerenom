@@ -100,16 +100,6 @@
     "erreursConsole": []
   },
   {
-    "page": "Comment nous classons",
-    "largeur": 390,
-    "fichier": "comment-nous-classons-390.png",
-    "defilementHorizontal": false,
-    "largeurDocument": 390,
-    "largeurFenetre": 390,
-    "debordements": [],
-    "erreursConsole": []
-  },
-  {
     "page": "Résultats filtrés",
     "largeur": 390,
     "fichier": "resultats-filtres-390.png",
@@ -310,16 +300,6 @@
     "erreursConsole": []
   },
   {
-    "page": "Comment nous classons",
-    "largeur": 1440,
-    "fichier": "comment-nous-classons-1440.png",
-    "defilementHorizontal": false,
-    "largeurDocument": 1440,
-    "largeurFenetre": 1440,
-    "debordements": [],
-    "erreursConsole": []
-  },
-  {
     "page": "Résultats filtrés",
     "largeur": 1440,
     "fichier": "resultats-filtres-1440.png",
@@ -470,16 +450,6 @@
     "erreursConsole": []
   },
   {
-    "page": "Espace pro — demandes à répondre",
-    "largeur": 390,
-    "fichier": "pro-demandes-390.png",
-    "defilementHorizontal": false,
-    "largeurDocument": 390,
-    "largeurFenetre": 390,
-    "debordements": [],
-    "erreursConsole": []
-  },
-  {
     "page": "Espace pro — ma fiche",
     "largeur": 390,
     "fichier": "pro-fiche-390.png",
@@ -513,16 +483,6 @@
     "page": "Espace pro — ma fiche, complétude en hausse",
     "largeur": 390,
     "fichier": "pro-fiche-completee-390.png",
-    "defilementHorizontal": false,
-    "largeurDocument": 390,
-    "largeurFenetre": 390,
-    "debordements": [],
-    "erreursConsole": []
-  },
-  {
-    "page": "Espace pro — demandes acceptées",
-    "largeur": 390,
-    "fichier": "pro-demandes-acceptees-390.png",
     "defilementHorizontal": false,
     "largeurDocument": 390,
     "largeurFenetre": 390,
@@ -590,16 +550,6 @@
     "erreursConsole": []
   },
   {
-    "page": "Espace pro — demandes à répondre",
-    "largeur": 1440,
-    "fichier": "pro-demandes-1440.png",
-    "defilementHorizontal": false,
-    "largeurDocument": 1440,
-    "largeurFenetre": 1440,
-    "debordements": [],
-    "erreursConsole": []
-  },
-  {
     "page": "Espace pro — ma fiche",
     "largeur": 1440,
     "fichier": "pro-fiche-1440.png",
@@ -633,16 +583,6 @@
     "page": "Espace pro — ma fiche, complétude en hausse",
     "largeur": 1440,
     "fichier": "pro-fiche-completee-1440.png",
-    "defilementHorizontal": false,
-    "largeurDocument": 1440,
-    "largeurFenetre": 1440,
-    "debordements": [],
-    "erreursConsole": []
-  },
-  {
-    "page": "Espace pro — demandes acceptées",
-    "largeur": 1440,
-    "fichier": "pro-demandes-acceptees-1440.png",
     "defilementHorizontal": false,
     "largeurDocument": 1440,
     "largeurFenetre": 1440,
@@ -833,6 +773,66 @@
     "page": "Le devis reçu par le client",
     "largeur": 1440,
     "fichier": "devis-client-1440.png",
+    "defilementHorizontal": false,
+    "largeurDocument": 1440,
+    "largeurFenetre": 1440,
+    "debordements": [],
+    "erreursConsole": []
+  },
+  {
+    "page": "Espace pro — demandes à répondre",
+    "largeur": 390,
+    "fichier": "pro-demandes-390.png",
+    "defilementHorizontal": false,
+    "largeurDocument": 390,
+    "largeurFenetre": 390,
+    "debordements": [],
+    "erreursConsole": []
+  },
+  {
+    "page": "Espace pro — demandes acceptées",
+    "largeur": 390,
+    "fichier": "pro-demandes-acceptees-390.png",
+    "defilementHorizontal": false,
+    "largeurDocument": 390,
+    "largeurFenetre": 390,
+    "debordements": [],
+    "erreursConsole": []
+  },
+  {
+    "page": "Espace pro — demandes à répondre",
+    "largeur": 1440,
+    "fichier": "pro-demandes-1440.png",
+    "defilementHorizontal": false,
+    "largeurDocument": 1440,
+    "largeurFenetre": 1440,
+    "debordements": [],
+    "erreursConsole": []
+  },
+  {
+    "page": "Espace pro — demandes acceptées",
+    "largeur": 1440,
+    "fichier": "pro-demandes-acceptees-1440.png",
+    "defilementHorizontal": false,
+    "largeurDocument": 1440,
+    "largeurFenetre": 1440,
+    "debordements": [],
+    "erreursConsole": []
+  },
+  {
+    "page": "Comment nous classons",
+    "largeur": 390,
+    "fichier": "comment-nous-classons-390.png",
+    "defilementHorizontal": false,
+    "largeurDocument": 390,
+    "largeurFenetre": 390,
+    "debordements": [],
+    "erreursConsole": []
+  },
+  {
+    "page": "Comment nous classons",
+    "largeur": 1440,
+    "fichier": "comment-nous-classons-1440.png",
     "defilementHorizontal": false,
     "largeurDocument": 1440,
     "largeurFenetre": 1440,

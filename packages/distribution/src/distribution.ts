@@ -83,7 +83,9 @@ async function candidats(
       zones: { some: { communeId: communeCode } },
     },
     include: {
-      agences: true,
+      // La commune de l'agence vient avec : elle porte un point de référence, qui sert de
+      // position de repli tant que l'adresse exacte n'est pas géocodée. Voir plus bas.
+      agences: { include: { commune: { select: { latitude: true, longitude: true } } } },
       abonnements: { where: { statut: 'actif' }, take: 1 },
       quotas: { where: { mois }, take: 1 },
       exclusivites: { where: { metierId, communeId: communeCode, active: true }, take: 1 },
@@ -109,9 +111,7 @@ async function candidats(
       compteAJour: abonnement === undefined || abonnement.statut === 'actif',
       agences: entreprise.agences.map((agence) => ({
         agenceId: agence.id,
-        ...(agence.latitude !== null && agence.longitude !== null
-          ? { position: { latitude: agence.latitude, longitude: agence.longitude } }
-          : {}),
+        ...positionDe(agence),
         rayonKm: agence.rayonKm,
         // Tant que le géocodage n'a pas tourné, ce sont les villes déclarées par le pro qui
         // définissent sa zone — le cahier des charges autorise explicitement ce mode.
@@ -120,6 +120,49 @@ async function candidats(
       demandesAccepteesCeMois: entreprise.quotas[0]?.demandesAcceptees ?? 0,
     };
   });
+}
+
+/** La position d'une demande : l'adresse du client si elle est géocodée, sa commune sinon. */
+function positionDemande(demande: {
+  readonly latitude: number | null;
+  readonly longitude: number | null;
+  readonly commune: { readonly latitude: number | null; readonly longitude: number | null };
+}): { latitude: number; longitude: number } | null {
+  if (demande.latitude !== null && demande.longitude !== null) {
+    return { latitude: demande.latitude, longitude: demande.longitude };
+  }
+  if (demande.commune.latitude !== null && demande.commune.longitude !== null) {
+    return { latitude: demande.commune.latitude, longitude: demande.commune.longitude };
+  }
+  return null;
+}
+
+/**
+ * La position d'une agence : son adresse géocodée, sinon le point de sa commune.
+ *
+ * Le repli n'est pas un pis-aller honteux, c'est la granularité dont on dispose : les
+ * communes franciliennes sont distantes de kilomètres, et ce qu'on calcule est un
+ * **classement** — « celui-ci est plus près que celui-là » —, pas un itinéraire. Deux
+ * artisans de la même commune se retrouvent à égalité de distance, et les autres critères
+ * les départagent ; c'est exactement ce qu'on veut dire quand on ne sait rien de plus.
+ *
+ * Le repli est calculé **à la lecture** et non recopié dans la colonne de l'agence. Trois
+ * valeurs dérivées stockées nous ont déjà menti dans ce projet (voir `docs/PLAN.md`) : une
+ * position recopiée ne suivrait pas une correction du point de la commune, et personne ne
+ * s'en apercevrait.
+ */
+function positionDe(agence: {
+  readonly latitude: number | null;
+  readonly longitude: number | null;
+  readonly commune: { readonly latitude: number | null; readonly longitude: number | null };
+}): { position?: { latitude: number; longitude: number } } {
+  if (agence.latitude !== null && agence.longitude !== null) {
+    return { position: { latitude: agence.latitude, longitude: agence.longitude } };
+  }
+  if (agence.commune.latitude !== null && agence.commune.longitude !== null) {
+    return { position: { latitude: agence.commune.latitude, longitude: agence.commune.longitude } };
+  }
+  return {};
 }
 
 /** Les entreprises déjà sollicitées sur cette demande, à ne jamais solliciter deux fois. */
@@ -211,13 +254,15 @@ export async function avanceCascade(demandeId: string): Promise<ResultatDistribu
   }
 
   const sollicites = await dejaSollicites(demandeId);
+  // Même repli que pour les agences : l'adresse du client si elle a été géocodée, le point
+  // de sa commune sinon. Comparer une adresse précise à un point communal n'aurait d'ailleurs
+  // pas grand sens — mieux vaut deux approximations de même grain.
+  const position = positionDemande(demande);
   const { retenus, ecartes } = rapproche(
     await candidats(demande.metierId, demande.communeId, sollicites),
     {
       communeCode: demande.communeId,
-      ...(demande.latitude !== null && demande.longitude !== null
-        ? { position: { latitude: demande.latitude, longitude: demande.longitude } }
-        : {}),
+      ...(position !== null ? { position } : {}),
     },
     parametres,
   );

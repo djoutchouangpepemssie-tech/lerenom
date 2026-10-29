@@ -26,7 +26,7 @@ const POIDS = [
     critere: 'Pertinence pour votre besoin',
     part: PARAMETRES_PAR_DEFAUT.poidsScore.pertinence,
     detail:
-      'La correspondance entre votre prestation et les métiers déclarés, et la complétude de la fiche du professionnel. La proximité entre l’adresse des travaux et l’agence la plus proche entrera dans ce critère dès que nos communes seront géocodées : aujourd’hui, seule la ville déclarée est prise en compte, et elle l’est de la même façon pour tous.',
+      'La correspondance entre votre prestation et les métiers déclarés, la complétude de la fiche du professionnel, et la proximité entre votre commune et celle de son agence la plus proche. Cette proximité est mesurée de commune à commune : elle distingue un artisan de votre ville d’un artisan à trente kilomètres, pas deux artisans de votre quartier. Nous l’écrivons donc à cette échelle, sans fausse précision.',
   },
   {
     critere: 'Réactivité',
