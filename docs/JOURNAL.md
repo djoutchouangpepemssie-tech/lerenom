@@ -2863,6 +2863,57 @@ domaine, toutes celles de l'environnement, aucune de la production.
 
 ---
 
+## Phase 10 · les images de partage
+
+### Un rectangle gris là où passe le bouche-à-oreille
+
+Le balisage désignait `/opengraph.png` ; le fichier n'existait pas. Une fiche collée dans une
+conversation n'affichait donc ni titre, ni image — un rectangle gris et une adresse. C'est
+pourtant par là que passent les recommandations entre voisins, qui sont le bouche-à-oreille
+de ce métier.
+
+Les images sont maintenant **générées par page** : la racine, la page métier × ville, la
+fiche d'entreprise. Un seul gabarit les produit toutes. Trois images dessinées séparément
+divergeraient à la première retouche de l'identité, et l'une d'elles resterait à l'ancienne
+charte pendant des mois — on ne regarde jamais ses propres aperçus de partage.
+
+L'image désignée dans les métadonnées a dû disparaître en même temps : elle l'aurait emporté
+sur les fichiers générés, et la plus précise des deux aurait été ignorée.
+
+### Ce que l'aperçu refuse de dire
+
+La note n'apparaît sur une fiche **que si elle repose sur de vrais avis**. Le classement, lui,
+retombe sur une note de repli quand une entreprise n'a pas d'historique — c'est légitime pour
+ordonner une liste, et ce serait un mensonge sur une image de partage : on prêterait à une
+entreprise une réputation qu'elle n'a pas encore, dans le format le plus recopié qui soit.
+
+### Trois corrections, dont une de méthode
+
+**Les `fontFamily` ne faisaient rien.** Le gabarit déclarait `serif` sur le titre et
+`sans-serif` ailleurs ; le moteur n'a qu'une police intégrée et rendait tout à l'identique.
+Les laisser aurait donné à lire un choix typographique qui n'existait pas.
+
+**Le point doré était séparé du nom** par un écart de quatorze pixels : « Le Renom . » au lieu
+de « Le Renom. ». Le point est la marque, pas une ponctuation qui suit le mot.
+
+**Et mes deux premières corrections n'ont pas été appliquées.** Le fichier avait été reformaté
+entre-temps, mes remplacements de texte ne correspondaient plus à rien, et ils ont échoué
+**en silence** — faute d'assertion. J'ai rebâti, relancé, regardé l'image : identique, au
+hachage près. C'est le même travers que les contrôles qui ne savent pas échouer, appliqué
+cette fois à l'outil qui modifie le code.
+
+> **Règle retenue** — _un remplacement de texte sans vérification que le motif existe n'est
+> pas une modification, c'est un vœu._ Deux images rendues identiques l'ont prouvé mieux
+> qu'une relecture.
+
+Un dernier détail mérite d'être noté pour ce qu'il dit de la méthode : une espace trop large
+suivait « professionnels » sur l'image. J'ai cru à une interpolation coupée en morceaux par
+le moteur de rendu, corrigé en ce sens, et **l'image est revenue identique**. L'explication
+était fausse. Le code garde la version plus lisible, et le commentaire dit ce qu'on sait —
+que la cause est ailleurs — plutôt que ce qu'on avait supposé.
+
+---
+
 ## Phases 5 à 11 · à venir
 
 Agenda et documents du pro, monétisation Stripe, back-office, personnalisation, avis et

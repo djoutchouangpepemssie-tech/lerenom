@@ -43,7 +43,10 @@ export interface PartageSocial {
   readonly titre: string;
   readonly description: string;
   readonly chemin: string;
-  /** Image de partage, absolue. L'image par défaut du site si rien n'est fourni. */
+  /**
+   * Image de partage, absolue. À ne renseigner que pour désigner une image qui n'est pas
+   * celle du segment de route — sinon, laisser `opengraph-image.tsx` s'en charger.
+   */
   readonly image?: string;
 }
 
@@ -56,7 +59,12 @@ export interface PartageSocial {
  */
 export function partage(options: PartageSocial) {
   const url = canonique(options.chemin);
-  const image = options.image ?? `${baseDuSite()}/opengraph.png`;
+
+  // **Aucune image n'est désignée ici.** Les images de partage sont produites par les
+  // fichiers `opengraph-image.tsx`, que Next rattache automatiquement à leur segment de
+  // route et fait hériter aux pages filles. Une image désignée dans les métadonnées
+  // l'emporterait sur ces fichiers : on annoncerait une adresse fixe à la place de l'image
+  // générée pour la page, et la plus précise des deux serait ignorée.
   return {
     alternates: { canonical: url },
     openGraph: {
@@ -66,13 +74,13 @@ export function partage(options: PartageSocial) {
       title: options.titre,
       description: options.description,
       url,
-      images: [{ url: image }],
+      ...(options.image === undefined ? {} : { images: [{ url: options.image }] }),
     },
     twitter: {
       card: 'summary_large_image' as const,
       title: options.titre,
       description: options.description,
-      images: [image],
+      ...(options.image === undefined ? {} : { images: [options.image] }),
     },
   };
 }
