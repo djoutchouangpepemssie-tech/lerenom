@@ -8,6 +8,7 @@ import {
   type PourcentAcompte,
   type TauxTva,
 } from '@lerenom/core';
+import { factureAImprimer } from './document-a-imprimer';
 
 /**
  * Les factures d'un professionnel.
@@ -264,6 +265,27 @@ export async function emetFacture(
       ok: false,
       message:
         'Cette facture est déjà émise. Une facture émise ne se modifie pas : corrigez-la par un avoir.',
+    };
+  }
+
+  // ── La conformité, avant le numéro ───────────────────────────────────────────────────────
+  //
+  // `factureConforme` existait et vérifiait les mentions obligatoires — mais **rien ne
+  // l'appelait avant l'émission** : elle ne servait qu'à afficher un avertissement sur le
+  // document imprimable. Une facture incomplète pouvait donc être émise, recevoir son numéro
+  // définitif et devenir immuable.
+  //
+  // L'ordre des conséquences compte : une fois émise, une facture ne se corrige plus, elle
+  // s'annule par un avoir. Laisser passer une facture sans nom de client, c'est obliger le
+  // professionnel à émettre un avoir pour une faute que l'écran voyait avant lui.
+  //
+  // Le contrôle est posé ici, dans la fonction d'émission, et non dans la route : c'est
+  // l'émission qui engage, quel que soit le chemin par lequel on l'appelle.
+  const aImprimer = await factureAImprimer(entrepriseId, factureId);
+  if (aImprimer !== null && !aImprimer.conformite.conforme) {
+    return {
+      ok: false,
+      message: `Cette facture ne peut pas être émise : il manque ${aImprimer.conformite.manquants.join(', ').toLowerCase()}. Une facture émise ne se corrige plus — elle s’annule par un avoir.`,
     };
   }
 

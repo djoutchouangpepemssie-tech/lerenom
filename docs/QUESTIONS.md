@@ -1353,3 +1353,39 @@ classée et repartait à d'autres mauvais professionnels. Elle entre désormais 
 Le contrôle porte un fichier d'attendus : chaque absence connue y figure avec sa raison et le
 numéro de la question qui en dépend. Une entrée sans raison serait pire que pas d'entrée — elle
 ferait taire le contrôle sans que personne sache pourquoi.
+
+---
+
+## Q47 🔴 · Le carnet de clients manquait, et une facture pouvait s'émettre sans destinataire
+
+L'audit des tables orphelines a mené à un défaut en chaîne, dont chaque maillon était
+invisible seul.
+
+1. **Rien ne créait jamais de `ClientPro`.** Le code _vérifiait_ qu'un client appartient bien
+   à l'entreprise et en _listait_ pour un menu déroulant — mais aucune interface, aucune
+   route ne permettait d'en ajouter un. Le menu était donc toujours vide pour un vrai
+   professionnel.
+2. **Un devis partait donc sans client**, et la facture qui en naît aussi.
+3. **`factureConforme` repérait le manque** — « Nom du client » — mais ne servait qu'à
+   afficher un avertissement sur le document imprimable.
+4. **Rien ne bloquait l'émission.** La facture recevait son numéro définitif et devenait
+   immuable. Une facture sans destinataire identifié n'est pas une facture au sens de
+   l'article L441-9 du code de commerce, et une fois émise elle ne se corrige plus : il faut
+   un avoir.
+
+Les quatre maillons sont traités : le carnet existe, et l'émission refuse une facture non
+conforme en nommant ce qui manque.
+
+**Deux choix appliqués par défaut, à confirmer :**
+
+- **seul le nom est exigé à la création d'un client.** Un artisan qui prépare un devis sur un
+  chantier n'a pas toujours l'adresse ; la réclamer tout de suite le ferait renoncer au devis,
+  pas chercher l'adresse. L'écran signale les fiches incomplètes et l'adresse redevient
+  obligatoire à l'émission — c'est le moment où elle l'est vraiment ;
+- **aucune suppression de client.** Un client porte des factures émises ; l'effacer laisserait
+  une facture numérotée sans destinataire. Faut-il un archivage, qui retirerait le client des
+  menus sans toucher à ses documents ? C'est le geste qui manque, et il n'est pas urgent.
+
+**Et un contrôle du SIREN volontairement faible :** neuf chiffres, sans clé de Luhn. Refuser
+un SIREN valide à cause d'un contrôle trop zélé bloquerait une facture légitime, ce qui coûte
+plus cher qu'un chiffre erroné.

@@ -2981,6 +2981,84 @@ tranchée : les garder documente l'intention, les retirer dit la vérité.
 
 ---
 
+## Le carnet de clients, et la facture sans destinataire
+
+### Quatre maillons, chacun invisible seul
+
+L'audit des tables orphelines avait laissé une piste : `ClientPro`, jamais créée par le
+produit. En la tirant, une chaîne entière est venue.
+
+Le code **vérifiait** qu'un client appartient bien à l'entreprise. Il en **listait** pour un
+menu déroulant. Et rien, nulle part, n'en créait jamais. Pour un vrai professionnel, le menu
+était donc toujours vide — un devis partait sans client, et la facture qui en naît aussi.
+
+`factureConforme` repérait pourtant le manque : « Nom du client » figurait dans ses mentions
+obligatoires. Mais la fonction ne servait qu'à afficher un avertissement sur le document
+imprimable. **Rien ne l'appelait avant l'émission.** La facture recevait son numéro définitif,
+devenait immuable, et n'était pas une facture au sens de l'article L441-9.
+
+Chaque maillon, pris seul, se défend. Le menu vide passe pour un carnet neuf. L'avertissement
+sur le document passe pour un rappel. Le contrôle existe et il est juste. C'est l'absence de
+liaison entre eux qui fait le défaut, et c'est pourquoi aucun des quatre ne se voyait en
+regardant le fichier où il vit.
+
+> **Règle retenue** — _un contrôle qui n'est pas branché sur la décision qu'il protège n'est
+> pas un contrôle, c'est un commentaire exécutable._
+
+### Le refus, posé là où il engage
+
+Le contrôle est appelé dans `emetFacture`, pas dans la route : c'est l'émission qui engage,
+quel que soit le chemin par lequel on l'appelle. Et il nomme ce qui manque plutôt que de
+refuser sèchement — « il manque nom du client, adresse de facturation du client » — parce
+qu'une facture bloquée sans explication envoie chercher dans l'écran précédent.
+
+Éprouvé dans les deux sens, contre la vraie base. Une facture fabriquée sans client : refusée,
+avec la liste. Une facture complète : émise, numéro FA-2026-0002.
+
+### Ce que la réparation m'a appris sur ma propre protection
+
+L'épreuve a émis une facture de démonstration pour de bon. Pour remettre l'état d'avant, j'ai
+voulu la supprimer — et **le déclencheur d'immuabilité l'a refusé**, suppression comprise :
+« Une facture émise ne peut être ni modifiée ni supprimée : corrigez-la par un avoir. »
+
+Il a fallu le lever le temps de la réparation, puis le reposer depuis son fichier SQL, qui en
+est la référence. C'est le genre de vérification qu'on ne pense jamais à écrire : la
+protection a été éprouvée par accident, sur une base de développement, et elle a tenu — y
+compris contre celui qui l'avait écrite.
+
+### Les tests émettaient des factures vides, et passaient
+
+Le contrôle posé, dix-huit tests de facturation et dix-neuf tests d'avoirs sont tombés d'un
+coup. Leur fixture ne créait qu'une entreprise nue : pas d'adresse, pas de forme juridique,
+pas de client. Ils émettaient donc des factures **sans aucune mention obligatoire**, et
+passaient — puisque rien ne vérifiait la conformité avant l'émission.
+
+C'est la démonstration involontaire du défaut, et elle vaut mieux que mon raisonnement : une
+suite verte prouvait qu'on pouvait émettre une facture à personne. Les fixtures décrivent
+maintenant une entreprise réellement en état d'émettre, ce qui rend les tests plus proches de
+ce qui se passe en production — et c'est tout le bénéfice.
+
+La tentation était d'assouplir le contrôle pour que les tests repassent. Elle méritait d'être
+nommée pour être écartée : des tests qui passent parce qu'on a baissé l'exigence ne testent
+plus que l'exigence baissée.
+
+### Ce que la saisie exige, et ce qu'elle laisse
+
+Seul le nom est obligatoire. Un artisan qui prépare un devis dans sa camionnette n'a pas
+toujours l'adresse ; la lui réclamer tout de suite le ferait renoncer au devis, pas chercher
+l'adresse. L'écran signale les fiches incomplètes, et l'adresse redevient obligatoire à
+l'émission — là où elle l'est vraiment.
+
+Le SIREN est exigé des clients professionnels, et de ceux-là seulement : c'est une mention
+obligatoire de la facture entre professionnels. Le contrôle est volontairement faible — neuf
+chiffres, sans clé de Luhn. Refuser un SIREN valide à cause d'un contrôle trop zélé bloquerait
+une facture légitime, ce qui coûte plus cher qu'un chiffre erroné.
+
+Et le SIREN d'un client repassé en particulier est **effacé** plutôt que gardé : un numéro qui
+ne le concerne plus n'a pas à traîner dans une base que la facture irait republier.
+
+---
+
 ## Phases 5 à 11 · à venir
 
 Agenda et documents du pro, monétisation Stripe, back-office, personnalisation, avis et

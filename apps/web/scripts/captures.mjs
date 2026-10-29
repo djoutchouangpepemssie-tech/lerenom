@@ -625,6 +625,12 @@ const PAGES = [
     connexionAdmin: true,
   },
   {
+    nom: 'pro-clients',
+    chemin: '/pro/espace/clients',
+    titre: 'Espace pro — mon carnet de clients',
+    connexionPro: true,
+  },
+  {
     nom: 'pro-zones',
     chemin: '/pro/espace/zones',
     titre: 'Espace pro — mes places et les listes d’attente',

@@ -25,6 +25,7 @@ import { factureDuPro, listeFactures } from '@/lib/factures-pro';
 const MARQUE = 'test-factures';
 
 let entrepriseId = '';
+let clientId = '';
 
 const session = vi.hoisted(() => ({ courante: null as null | { entrepriseId: string } }));
 
@@ -59,7 +60,7 @@ function saisieDevis(acomptePourcent = 30): Request {
     method: 'PUT',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({
-      clientId: null,
+      clientId,
       type: 'estimatif',
       lignes: [
         {
@@ -92,6 +93,55 @@ async function devisEnvoye(acomptePourcent = 30): Promise<string> {
   return id;
 }
 
+/**
+ * Une entreprise en état d'émettre une facture, et un client à qui l'adresser.
+ *
+ * Jusqu'ici la fixture ne créait qu'une entreprise nue : ni adresse, ni forme juridique, ni
+ * client. Les tests émettaient donc des factures **sans aucune mention obligatoire**, et
+ * passaient — parce que rien ne vérifiait la conformité avant l'émission. C'est précisément
+ * le défaut que le contrôle corrige, et ces tests en étaient la démonstration involontaire.
+ *
+ * Les mentions posées ici sont celles qu'exige `factureConforme` : dénomination, forme
+ * juridique, adresse du siège, SIRET, immatriculation, capital social, TVA, et le médiateur
+ * de la consommation puisque le client de test est un particulier.
+ */
+async function entrepriseFacturable(id: string): Promise<void> {
+  const commune = await prisma.commune.findFirstOrThrow({ select: { code: true } });
+  await prisma.agence.create({
+    data: {
+      entrepriseId: id,
+      adresse: '1 rue du Test',
+      codePostal: '75011',
+      communeId: commune.code,
+      principale: true,
+    },
+  });
+  await prisma.parametresDocuments.create({
+    data: {
+      entrepriseId: id,
+      formeJuridique: 'SARL',
+      capitalSocialEuros: 10_000,
+      immatriculationRegistre: 'rm',
+      immatriculationLieu: 'Paris',
+      numeroTva: 'FR80800000001',
+      franchiseTva: false,
+      mediateurNom: 'Médiateur de test',
+      mediateurUrl: 'https://mediation.exemple.test',
+      delaiPaiementJours: 30,
+    },
+  });
+  const client = await prisma.clientPro.create({
+    data: {
+      entrepriseId: id,
+      nom: `${MARQUE} Cliente`,
+      adresse: '18 rue du Client',
+      codePostal: '75011',
+      ville: 'Paris 11e',
+    },
+  });
+  clientId = client.id;
+}
+
 beforeAll(async () => {
   await nettoieLesDonneesDeTest(MARQUE);
 });
@@ -99,10 +149,18 @@ beforeAll(async () => {
 beforeEach(async () => {
   await nettoieLesDonneesDeTest(MARQUE);
   const entreprise = await prisma.entreprise.create({
-    data: { nom: `${MARQUE} Entreprise`, slug: `${MARQUE}-entreprise`, source: 'inscription' },
+    data: {
+      nom: `${MARQUE} Entreprise`,
+      slug: `${MARQUE}-entreprise`,
+      source: 'inscription',
+      // Un SIRET propre au test : `siret` est unique sur toute la plateforme, et reprendre
+      // celui de la démonstration faisait échouer la création avant le premier test.
+      siret: '09900000000901',
+    },
   });
   entrepriseId = entreprise.id;
   session.courante = { entrepriseId };
+  await entrepriseFacturable(entrepriseId);
 });
 
 afterAll(async () => {

@@ -520,6 +520,16 @@
     "erreursConsole": []
   },
   {
+    "page": "Espace pro — mon carnet de clients",
+    "largeur": 390,
+    "fichier": "pro-clients-390.png",
+    "defilementHorizontal": false,
+    "largeurDocument": 390,
+    "largeurFenetre": 390,
+    "debordements": [],
+    "erreursConsole": []
+  },
+  {
     "page": "Espace pro — mes places et les listes d’attente",
     "largeur": 390,
     "fichier": "pro-zones-390.png",
@@ -1173,6 +1183,16 @@
     "page": "Back-office — catalogue",
     "largeur": 1440,
     "fichier": "administration-catalogue-1440.png",
+    "defilementHorizontal": false,
+    "largeurDocument": 1440,
+    "largeurFenetre": 1440,
+    "debordements": [],
+    "erreursConsole": []
+  },
+  {
+    "page": "Espace pro — mon carnet de clients",
+    "largeur": 1440,
+    "fichier": "pro-clients-1440.png",
     "defilementHorizontal": false,
     "largeurDocument": 1440,
     "largeurFenetre": 1440,

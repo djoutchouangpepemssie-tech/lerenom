@@ -30,6 +30,7 @@ const MARQUE = 'test-avoirs';
 const MOTIF = 'Erreur de quantité sur la main-d’œuvre';
 
 let entrepriseId = '';
+let clientId = '';
 
 const session = vi.hoisted(() => ({ courante: null as null | { entrepriseId: string } }));
 
@@ -72,7 +73,7 @@ function saisieDevis(): Request {
     method: 'PUT',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({
-      clientId: null,
+      clientId,
       type: 'estimatif',
       lignes: [
         {
@@ -114,13 +115,65 @@ beforeAll(async () => {
   await nettoieLesDonneesDeTest(MARQUE);
 });
 
+/**
+ * Une entreprise en état d'émettre, et un client à qui adresser la facture.
+ *
+ * Ces tests créditent des factures **émises** : il leur faut donc une entreprise dont les
+ * mentions obligatoires sont complètes, sans quoi l'émission est refusée. La fixture ne
+ * créait qu'une entreprise nue — les factures s'émettaient sans client ni adresse, parce que
+ * rien ne vérifiait la conformité avant l'émission.
+ */
+async function entrepriseFacturable(id: string): Promise<void> {
+  const commune = await prisma.commune.findFirstOrThrow({ select: { code: true } });
+  await prisma.agence.create({
+    data: {
+      entrepriseId: id,
+      adresse: '1 rue du Test',
+      codePostal: '75011',
+      communeId: commune.code,
+      principale: true,
+    },
+  });
+  await prisma.parametresDocuments.create({
+    data: {
+      entrepriseId: id,
+      formeJuridique: 'SARL',
+      capitalSocialEuros: 10_000,
+      immatriculationRegistre: 'rm',
+      immatriculationLieu: 'Paris',
+      numeroTva: 'FR80800000001',
+      franchiseTva: false,
+      mediateurNom: 'Médiateur de test',
+      mediateurUrl: 'https://mediation.exemple.test',
+      delaiPaiementJours: 30,
+    },
+  });
+  const client = await prisma.clientPro.create({
+    data: {
+      entrepriseId: id,
+      nom: `${MARQUE} Cliente`,
+      adresse: '18 rue du Client',
+      codePostal: '75011',
+      ville: 'Paris 11e',
+    },
+  });
+  clientId = client.id;
+}
+
 beforeEach(async () => {
   await nettoieLesDonneesDeTest(MARQUE);
   const entreprise = await prisma.entreprise.create({
-    data: { nom: `${MARQUE} Entreprise`, slug: `${MARQUE}-entreprise`, source: 'inscription' },
+    data: {
+      nom: `${MARQUE} Entreprise`,
+      slug: `${MARQUE}-entreprise`,
+      source: 'inscription',
+      // Un SIRET propre au test : la colonne est unique sur toute la plateforme.
+      siret: '09900000000902',
+    },
   });
   entrepriseId = entreprise.id;
   session.courante = { entrepriseId };
+  await entrepriseFacturable(entrepriseId);
 });
 
 afterAll(async () => {
