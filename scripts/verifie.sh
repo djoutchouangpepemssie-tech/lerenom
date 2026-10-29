@@ -47,6 +47,12 @@ etape "Formatage" pnpm run format:verifie
 etape "Lint" pnpm run lint
 etape "Types" pnpm run typecheck
 etape "Tests" pnpm run test
+# Deux audits structurels, posés après les tests parce qu'ils ne lisent que le code source :
+# une table nouvellement orpheline, ou un bouton qui appelle une route absente. Les deux
+# échappent au typage et aux tests — tout compile, tout passe, et le défaut n'apparaît qu'à
+# l'exécution ou jamais. Leur liste d'attendus porte la dette connue, chacune avec sa raison.
+etape "Tables orphelines" node outils/tables-orphelines.mjs
+etape "Routes orphelines" node outils/routes-orphelines.mjs
 etape "Build" pnpm run build
 
 # Le worker n'a pas de test propre — c'est du câblage — donc rien ne vérifiait qu'il

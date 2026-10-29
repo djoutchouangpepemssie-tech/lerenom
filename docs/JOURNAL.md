@@ -3059,6 +3059,64 @@ ne le concerne plus n'a pas à traîner dans une base que la facture irait repub
 
 ---
 
+## Relecture · les routes, et deux audits devenus des portes
+
+### Le silence qui valait une réponse
+
+Même exercice qu'avec les tables, appliqué à l'autre bout de la chaîne : quelles routes
+personne n'appelle, et quels appels ne mènent nulle part ? Le second cas est le plus grave
+et le moins visible — un bouton qui échoue chez le visiteur pendant que tout compile.
+
+Résultat, après dégrossissage : **zéro orpheline, zéro appel dans le vide.** Toute route
+déclarée est appelée, tout appel atteint une route. C'est un résultat silencieux, et il vaut
+d'être noté : la surface d'interface n'a ni code mort ni bouton cassé.
+
+### Quatre faux positifs avant le premier vrai résultat
+
+L'outil a d'abord annoncé seize routes mortes sur une quarantaine. Chaque correction dit
+comment on appelle réellement une route depuis du code :
+
+**Les gabarits.** Mon extraction s'arrêtait à l'accolade fermante de `${id}` — donc aucune
+adresse construite dynamiquement n'était vue. Or une adresse d'interface sans partie variable
+est l'exception, pas la règle.
+
+**La chaîne de requête.** `/api/recherche?genre=…&q=…` ne correspondait à aucune route, et la
+barre de recherche de l'accueil passait pour du code mort.
+
+**Les parenthèses dans un gabarit.** `encodeURIComponent(texte)` tronquait l'adresse avant sa
+fin. Corrigé en capturant jusqu'au guillemet de même nature, au lieu d'exclure une liste de
+caractères — une exclusion devine ce qu'elle va rencontrer, une capture délimitée ne devine
+rien.
+
+**Et `'/api/'` tout court**, qui n'est pas un appel mais le préfixe interdit aux moteurs dans
+le fichier robots.
+
+> **Règle retenue** — _chaque outil d'audit que j'écris commence par sous-détecter, et la
+> sous-détection se présente comme une trouvaille._ Il n'y a pas d'exception jusqu'ici : la
+> discipline est de vérifier chaque alerte à la main avant d'y croire, et surtout avant de
+> la rapporter.
+
+### De rapport à porte
+
+Les deux audits renvoient désormais un code de sortie non nul sur une orpheline **inattendue**,
+et la porte de validation les joue. La dette connue est inscrite dans une liste d'attendus,
+chaque entrée avec sa raison et le numéro de la question qui en dépend : neuf tables, chacune
+correspondant à une fonctionnalité annoncée et non construite.
+
+Inscrire cette dette n'est pas l'absoudre. C'est la différence entre « on sait, c'est écrit »
+et « personne n'a remarqué » — et cela libère le contrôle pour ce qu'il sait faire : attraper
+la **prochaine**.
+
+Les deux portes ont été éprouvées à l'envers, comme il se doit. En retirant la raison d'une
+table : code 1, la porte s'arrête. En détournant un `fetch` vers une adresse inventée : code
+1 également, avec le nom de l'appel fautif. Une porte qu'on n'a pas vue refuser n'est pas une
+porte.
+
+Un dernier signe que l'outil suit la réalité : `TacheAValider`, orpheline hier, a disparu de
+la liste — c'est la correction du refus « pas mon métier » qui l'a branchée.
+
+---
+
 ## Phases 5 à 11 · à venir
 
 Agenda et documents du pro, monétisation Stripe, back-office, personnalisation, avis et

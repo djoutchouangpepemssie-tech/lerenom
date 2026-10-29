@@ -40,6 +40,22 @@ const ATTENDUS = {
   SignalementAvis: 'Q38 — rien ne permet encore de signaler un avis publié.',
   CampagnePub: 'Phase ultérieure : la régie publicitaire n’est pas ouverte.',
   DemandeRgpd: 'Les demandes RGPD arrivent par courriel et se traitent à la main.',
+
+  // ── Dette connue, consignée en Q46 ───────────────────────────────────────────────────────
+  //
+  // Ces tables décrivent des fonctionnalités annoncées et non construites. Les inscrire ici
+  // n'est pas les absoudre : c'est la différence entre « on sait, c'est écrit » et « personne
+  // n'a remarqué ». Le contrôle n'attrape plus qu'une orpheline **nouvelle** — et c'est tout
+  // ce qu'on lui demande désormais.
+  Photo: 'Q46 — les photos de fiche demandent un stockage de fichiers, qui n’existe pas.',
+  PhotoDemande: 'Q46 — même raison : une demande ne peut pas encore porter de photo.',
+  ReponseAvis: 'Q38 — le professionnel ne peut pas encore répondre à un avis.',
+  Verification: 'Q46 — la vérification de documents (Kbis, décennale) n’est pas construite.',
+  Garantie: 'Q46 — la garantie de résultat de l’Exclusif n’est pas branchée.',
+  Publication: 'Q46 — la publication sur les réseaux, prévue en phase ultérieure.',
+  Paiement: 'Q44 — rien n’encaisse : aucun paiement à enregistrer.',
+  AlerteOuverture: 'Q46 — l’alerte « votre ville ouvre » n’est pas construite.',
+  Quartier: 'Q46 — le découpage par quartier n’est utilisé par aucun écran.',
 };
 
 /** Les répertoires où du code applicatif lit et écrit. */
@@ -255,6 +271,11 @@ async function principal() {
     `\n${inattendues.length === 0 ? 'Aucune table orpheline inattendue.' : `${inattendues.length} table(s) orpheline(s) sans explication : ${inattendues.map((r) => r.modele).join(', ')}`}`,
   );
   console.log('\n◦ = absence connue et consignée · • = à regarder');
+
+  // Sortie non nulle : c'est ce qui transforme un rapport en porte. Une table nouvellement
+  // orpheline arrête la porte de validation ; pour la faire passer, il faut soit la brancher,
+  // soit écrire pourquoi elle ne l'est pas. Les deux sont acceptables, l'oubli ne l'est pas.
+  if (inattendues.length > 0) process.exitCode = 1;
 }
 
 await principal();
