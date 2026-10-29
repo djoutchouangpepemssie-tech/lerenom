@@ -896,3 +896,69 @@ vivants pour un même rendez-vous n'ouvrent rien de plus, mais c'est une surface
 sans permettre au client de dire _quand_ il serait disponible. L'écran l'invite à appeler. Un
 formulaire de contre-proposition serait plus commode, mais ferait de l'agenda une messagerie
 — à trancher avec Arcel.
+
+---
+
+## Q35 🔴 — Les mentions obligatoires d'une facture : à faire valider par un conseil
+
+_(juridique — défauts prudents appliqués, validation professionnelle nécessaire)_
+
+Le Renom émet désormais des factures. Une facture incomplète n'est pas un document mal
+présenté : c'est une infraction, sanctionnée jusqu'à 75 000 € pour une personne physique et
+375 000 € pour une société (article L441-9 du code de commerce), plus 15 € par mention
+manquante et par facture au titre de l'article 1737 du CGI. Le professionnel qui facture
+depuis notre outil nous fait confiance sur ce point précis.
+
+**La liste appliquée** vit dans `factureConforme` (`packages/core/src/document.ts`), en un
+seul endroit, testée mention par mention. Elle couvre l'identité de l'émetteur — dénomination,
+forme juridique, adresse, SIRET, immatriculation RCS ou répertoire des métiers, capital social
+des sociétés, numéro de TVA —, celle du client, les dates, les conditions de règlement avec les
+pénalités de retard et l'indemnité forfaitaire de 40 €, l'assurance professionnelle des métiers
+du bâtiment et le médiateur de la consommation face à un particulier.
+
+**Cette liste n'a pas été validée par un juriste.** Elle a été établie à partir des textes et de
+sources secondaires concordantes, et elle est probablement juste ; « probablement » n'est pas
+le mot qu'on veut sur ce sujet. **À faire valider**, avant toute ouverture commerciale, par un
+avocat ou un expert-comptable.
+
+**Trois décisions prises sans certitude.**
+
+**Le taux des pénalités n'est pas écrit en dur.** Il suit le taux de refinancement de la BCE et
+change chaque semestre. Faute de stipulation du professionnel, le document imprime la **formule
+légale** — « taux appliqué par la BCE à son opération de refinancement la plus récente, majoré
+de dix points » — plutôt que le chiffre du jour. Un chiffre périmé sur une facture est plus
+dangereux qu'une formule, parce qu'il a l'air juste. **À confirmer** : les clients
+professionnels acceptent-ils cette rédaction, ou réclament-ils un pourcentage ?
+
+**La qualification « bâtiment » est portée par l'univers**, en base (`univers.batiment`), et
+non par une liste enfouie dans le code. Sept univers sur dix-huit sont marqués ainsi :
+plomberie et chauffage, électricité, serrurerie, rénovation et second œuvre, maçonnerie,
+énergie et confort, bricolage. C'est cette marque qui rend l'assurance professionnelle
+obligatoire sur les documents. **À valider par Arcel** : c'est une qualification juridique, pas
+un rangement de catalogue, et la frontière du « bâtiment » n'est pas évidente pour le bricolage
+ni pour le nettoyage de façade.
+
+**Les quatre mentions de la facturation électronique sont déjà traitées.** Le décret
+n° 2022-1299 du 7 octobre 2022 en ajoute quatre : le SIREN du client, l'adresse de livraison
+lorsqu'elle diffère, la catégorie de l'opération et l'option du paiement de la TVA sur les
+débits. L'obligation d'**émission** n'atteint les petites entreprises qu'après les grandes,
+mais une facture qui les porte déjà n'aura rien à rattraper. La catégorie de l'opération est
+**déduite des lignes** plutôt que demandée : une quantité en m², en mètre linéaire ou à l'unité
+est un bien, une heure, un jour ou un forfait est un service. **À vérifier** : cette déduction
+tient-elle pour un artisan qui facture une pièce au forfait ?
+
+**Ce qui n'est pas fait, et qui reste de la phase 5.**
+
+**Le PDF n'est pas produit par le serveur.** Le document est une page web, et le bouton ouvre
+la boîte d'impression du navigateur, où « Enregistrer en PDF » est une destination. Cela suffit
+au professionnel qui veut un fichier, pas à l'envoi automatique d'une facture en pièce jointe.
+La génération serveur suppose un Chromium dans l'image — la page est le document, et la
+reconstruire avec une bibliothèque de PDF créerait une seconde mise en page, donc un jour un
+écart entre l'écran et le fichier.
+
+**Factur-X n'est pas produit.** Les colonnes existent (`factures.pdf_url`,
+`factures.facturx_url`), la structure de données aussi ; il manque le XML CII et son
+incorporation au PDF, qui dépend du point précédent.
+
+**L'acceptation d'un devis n'est toujours pas matérialisée par un écrit** (voir Q31). La
+question se posera avec le PDF, comme annoncé.

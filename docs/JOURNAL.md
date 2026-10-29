@@ -1726,6 +1726,97 @@ surface visible, les captures du parcours tiennent toujours.
 
 ---
 
+## La facture, et ce que la loi exige d'elle
+
+Le Renom calculait des factures depuis la phase 5 ; il n'en imprimait aucune. C'est la pièce
+qui manquait, et elle n'est pas une mise en page : une facture incomplète n'est pas un document
+mal présenté, c'est une infraction — jusqu'à 75 000 € pour une personne physique, 375 000 €
+pour une société, plus 15 € par mention manquante et par facture au titre du CGI.
+
+Trois partis pris ont décidé du reste.
+
+**La page est le document.** Il n'y a pas une version à l'écran et une autre dans le PDF : le
+PDF sera l'impression de cette page. C'est ce qui garantit qu'ils ne divergeront pas, et c'est
+pourquoi la mise en page est en millimètres plutôt qu'en `rem`, et en noir sur blanc plutôt
+qu'aux couleurs de la marque — le crème et l'or ne survivent pas à une photocopie.
+
+**Rien de ce qui varie n'est écrit en dur.** Le taux des pénalités de retard suit le taux de
+refinancement de la BCE et change chaque semestre. Faute de stipulation, le document imprime la
+**formule légale** plutôt que le chiffre du jour : un taux périmé sur une facture est plus
+dangereux qu'une formule, parce qu'il a l'air juste.
+
+**Ce que nous ne savons pas, nous le réclamons.** La forme juridique, le numéro de TVA,
+l'assurance, le médiateur : rien de cela n'est dans SIRENE. Plutôt que de le deviner ou de le
+taire, `factureConforme` le déclare manquant, et un écran — « Mes documents » — existe pour le
+remplir une fois pour toutes.
+
+### Un contrôle qui réclamait l'impossible
+
+La première version du contrôle rapportait neuf mentions manquantes sur une facture prête.
+Quatre d'entre elles — le numéro, la date d'émission, celle de la prestation, l'échéance —
+sont posées par l'**émission elle-même**. Les afficher en rouge revenait à demander au
+professionnel de corriger ce qu'il ne pouvait pas corriger, et à noyer les cinq qui le
+concernaient vraiment.
+
+Le contrôle porte désormais sur la facture **telle qu'elle sera émise**. La question à laquelle
+l'artisan a besoin d'une réponse n'est pas « cette facture est-elle complète maintenant ? »,
+qui n'a pas de sens avant l'émission, mais « sera-t-elle en règle quand je l'émettrai ? ».
+
+D'où une règle : **un contrôle ne doit signaler que ce que son lecteur peut changer.** Le reste
+n'est pas de l'information, c'est du bruit — et le bruit fait fermer les avertissements sans
+les lire, y compris les cinq qui comptaient.
+
+Même raisonnement pour les marques « à compléter » sur le document : elles ne s'affichent
+qu'avant l'émission. Après, elles demanderaient de modifier ce qui ne se modifie plus — et
+surtout, elles s'imprimeraient en rouge sur l'exemplaire du client.
+
+### Une règle juste qui devient un piège
+
+Le design system interdit le défilement horizontal partout : `overflow-x: hidden` sur `html` et
+sur `body`. C'est la bonne règle pour un site qui se lit au pouce, et elle a protégé cinquante
+écrans.
+
+Sur le document, elle rendait **la moitié droite de la facture inatteignable sur un
+téléphone** : le titre, le numéro, les dates, tous les montants. Pas rognés avec une barre de
+défilement pour le dire — simplement coupés, en silence. Le professionnel aurait consulté sa
+propre facture sans jamais voir ce qu'il demandait à son client de payer.
+
+Le défaut a failli passer. La première capture à 390 px montrait un document apparemment net,
+et le script ne signalait aucun débordement : le conteneur intérieur défilait, donc la page,
+elle, ne débordait pas. Un contrôle qui mesure la page ne voit pas ce qu'un `overflow`
+intérieur cache.
+
+Deux corrections. C'est la **page** qui défile désormais, de sorte qu'une capture pleine page
+photographie tout le document. Et l'exception à la règle du design system est **nominative** :
+elle se déclare page par page dans le script de captures, elle ne se devine pas — une règle de
+vérification qu'on peut désactiver par inadvertance ne vérifie plus rien.
+
+### Une facture d'acompte qui avait l'air fausse
+
+La capture de la facture d'acompte annonçait « Total TTC 1 234,20 € » puis « Net à payer
+370,26 € », sans un mot entre les deux. Un client lit cela comme une erreur, et il appelle. Le
+document dit maintenant « Acompte à régler », et une ligne ajoute que le solde fera l'objet
+d'une facture à l'achèvement.
+
+Rien de tout cela n'apparaît dans un test. Il a fallu regarder.
+
+### Ce qui reste
+
+Le PDF n'est pas produit par le serveur : le bouton ouvre la boîte d'impression du navigateur.
+Cela suffit au professionnel qui veut un fichier, pas à l'envoi d'une facture en pièce jointe.
+Factur-X non plus — les colonnes existent, le XML manque. Les deux dépendent d'un Chromium dans
+l'image de déploiement, et c'est un coût qu'on pose les yeux ouverts plutôt que de reconstruire
+le document avec une bibliothèque de PDF, ce qui créerait la seconde mise en page qu'on vient
+justement d'éviter.
+
+La liste des mentions, enfin, **n'a pas été validée par un juriste**. Elle est établie d'après
+les textes et probablement juste ; « probablement » n'est pas le mot qu'on veut ici. Voir
+`QUESTIONS.md` §Q35, ouverte en rouge.
+
+985 tests verts, porte de validation franchie, six captures à 390 et 1440 px.
+
+---
+
 ## Phases 5 à 11 · à venir
 
 Agenda et documents du pro, monétisation Stripe, back-office, personnalisation, avis et

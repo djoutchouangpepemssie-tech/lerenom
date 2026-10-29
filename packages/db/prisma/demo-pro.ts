@@ -234,6 +234,7 @@ async function main(): Promise<void> {
     });
   }
 
+  await semeParametresDocuments(entreprise.id);
   const devisId = await semeDevisDeDemonstration(entreprise.id);
   await semeFacturesDeDemonstration(entreprise.id);
   await semeDevisEnvoyeAuClient(entreprise.id);
@@ -242,6 +243,42 @@ async function main(): Promise<void> {
   process.stdout.write(
     `Compte de démonstration prêt.\n  adresse     : ${EMAIL}\n  mot de passe : ${MOT_DE_PASSE}\n  devis       : ${devisId}\n`,
   );
+}
+
+/**
+ * Les mentions légales de l'entreprise de démonstration.
+ *
+ * Sans elles, tout document de démonstration s'affiche criblé de « à compléter » : on ne
+ * verrait jamais à quoi ressemble une facture en règle, qui est pourtant le cas normal. Les
+ * valeurs sont **manifestement fictives** — assureur « Assurances du Faubourg », médiateur
+ * « exemple.test » — comme le reste de la démonstration.
+ */
+async function semeParametresDocuments(entrepriseId: string): Promise<void> {
+  const donnees = {
+    formeJuridique: 'SARL',
+    capitalSocialEuros: 10_000,
+    immatriculationRegistre: 'rm',
+    immatriculationLieu: 'Paris',
+    numeroTva: 'FR80800000001',
+    franchiseTva: false,
+    assuranceAssureur: 'Assurances du Faubourg (fictif)',
+    assuranceContrat: 'RC-DEC-000000',
+    assuranceCouverture: 'France métropolitaine',
+    mediateurNom: 'Médiateur de l’artisanat (fictif)',
+    mediateurUrl: 'https://mediation.exemple.test',
+    penalitesTauxAnnuel: null,
+    delaiPaiementJours: 30,
+    escompte: null,
+    conditionsGenerales:
+      'Travaux garantis deux ans, pièces et main-d’œuvre. Les pièces remplacées restent à votre disposition pendant trente jours.',
+    piedDePage: 'Plomberie Martin — entreprise de démonstration, aucune prestation réelle.',
+  };
+
+  await prisma.parametresDocuments.upsert({
+    where: { entrepriseId },
+    update: donnees,
+    create: { entrepriseId, ...donnees },
+  });
 }
 
 /**

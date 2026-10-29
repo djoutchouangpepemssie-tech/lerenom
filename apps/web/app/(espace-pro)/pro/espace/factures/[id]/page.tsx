@@ -44,9 +44,17 @@ export default async function PageUneFacture({
         ← Toutes mes factures
       </Link>
 
-      <h1 className="mt-4 text-[clamp(1.6rem,3.6vw,2.2rem)]">
-        {facture.numero ?? 'Facture prête à émettre'}
-      </h1>
+      <div className="mt-4 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
+        <h1 className="text-[clamp(1.6rem,3.6vw,2.2rem)]">
+          {facture.numero ?? 'Facture prête à émettre'}
+        </h1>
+        <Link
+          href={`/document/facture/${id}`}
+          className="text-encre hover:text-or-fonce text-sm font-semibold underline decoration-[1.5px] underline-offset-4 transition-colors"
+        >
+          Voir le document imprimable
+        </Link>
+      </div>
       <p className="text-encre-70 mt-2 max-w-[62ch]">
         {facture.emettable
           ? 'Vérifiez-la avant de l’émettre : une fois émise, elle ne se modifie plus et une erreur se corrige par un avoir.'

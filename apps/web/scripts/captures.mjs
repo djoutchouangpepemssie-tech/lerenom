@@ -59,6 +59,16 @@ function cheminDeLaFactureEmise() {
   return valeur === null ? null : `/pro/espace/factures/${valeur}`;
 }
 
+function cheminDuDocumentFacture() {
+  const valeur = jeton('facture');
+  return valeur === null ? null : `/document/facture/${valeur}`;
+}
+
+function cheminDuDocumentFactureEmise() {
+  const valeur = jeton('facture-emise');
+  return valeur === null ? null : `/document/facture/${valeur}`;
+}
+
 function cheminDuDevisClient() {
   const valeur = jeton('devis-client');
   return valeur === null ? null : `/devis/${valeur}`;
@@ -396,6 +406,29 @@ const PAGES = [
     connexionPro: true,
   },
   {
+    nom: 'pro-documents-reglages',
+    chemin: '/pro/espace/documents',
+    titre: 'Espace pro — réglages des documents',
+    connexionPro: true,
+  },
+  {
+    nom: 'document-facture',
+    chemin: cheminDuDocumentFacture,
+    titre: 'Document — facture prête à émettre',
+    connexionPro: true,
+    // Le document fait 210 mm de large : à 390 px il défile horizontalement, et c'est voulu.
+    // Reflouer une facture donnerait à l'écran une mise en page que le papier n'aura pas, et
+    // c'est précisément cette mise en page qu'on vient vérifier.
+    debordementAutorise: true,
+  },
+  {
+    nom: 'document-facture-emise',
+    chemin: cheminDuDocumentFactureEmise,
+    titre: 'Document — facture émise',
+    connexionPro: true,
+    debordementAutorise: true,
+  },
+  {
     nom: 'pro-facture-avoir',
     chemin: cheminDeLaFactureEmise,
     titre: 'Espace pro — une facture émise et son avoir',
@@ -620,8 +653,14 @@ async function main() {
       await onglet.screenshot({ path: fichier, fullPage: true });
 
       const defilementHorizontal = controle.largeurDocument > controle.largeurFenetre + 1;
+      // Un document imprimable fait 210 mm : sous cette largeur, il défile, et il le doit.
+      // Le reflouer donnerait à l'écran une mise en page que le papier n'aura jamais, donc
+      // une vérification qui ne vérifie pas le document qu'on imprimera. L'exception est
+      // nominative — elle se déclare page par page, elle ne se devine pas.
       const probleme =
-        defilementHorizontal || controle.nombreDebordements > 0 || erreurs.length > 0;
+        (defilementHorizontal && page.debordementAutorise !== true) ||
+        controle.nombreDebordements > 0 ||
+        erreurs.length > 0;
       if (probleme) defauts += 1;
 
       rapport.push({
@@ -637,7 +676,7 @@ async function main() {
 
       const etat = probleme ? '✗' : '✓';
       console.log(`${etat} ${page.titre} — ${vue.largeur} px → ${path.basename(fichier)}`);
-      if (defilementHorizontal) {
+      if (defilementHorizontal && page.debordementAutorise !== true) {
         console.log(
           `    défilement horizontal : document ${controle.largeurDocument} px pour une fenêtre de ${controle.largeurFenetre} px`,
         );

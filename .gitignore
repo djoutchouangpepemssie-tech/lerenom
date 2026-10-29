@@ -48,3 +48,6 @@ next-env.d.ts
 # Rapports Lighthouse, régénérés par scripts/lighthouse.mjs
 docs/lighthouse/*.json
 .lighthouse-sortie.txt
+
+# Généré par `next build` à chaque construction : ce n’est pas une source.
+apps/web/AGENTS.md

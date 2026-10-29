@@ -36,6 +36,10 @@ model Univers {
   masque  Boolean @default(false)
   /// Reconstruction en attente de validation par Arcel (docs/QUESTIONS.md Q1).
   aValider Boolean @default(true) @map("a_valider")
+  /// Métiers du bâtiment : l'assurance professionnelle devient une mention obligatoire de
+  /// leurs devis et factures. C'est une qualification juridique, pas une commodité
+  /// d'affichage — voir `docs/QUESTIONS.md` §Q35.
+  batiment Boolean @default(false)
 
   metiers Metier[]
 
@@ -1201,6 +1205,11 @@ model ClientPro {
   codePostal String? @map("code_postal")
   ville      String?
 
+  /// Client professionnel : son SIREN devient une mention obligatoire de la facture, et la
+  /// médiation de la consommation cesse de s'appliquer.
+  professionnel Boolean @default(false)
+  siren         String?
+
   devis      Devis[]
   factures   Facture[]
   rendezVous RendezVous[]
@@ -1470,6 +1479,33 @@ model ParametresDocuments {
   styleTitres String  @default("classique") @map("style_titres")
   piedDePage String? @db.Text @map("pied_de_page")
   conditionsGenerales String? @db.Text @map("conditions_generales")
+
+  /// Les mentions légales que SIRENE ne contient pas et qu'il faut donc déclarer. Leur
+  /// absence ferme le bouton « Émettre » : voir `factureConforme` dans `@lerenom/core`.
+  formeJuridique String? @map("forme_juridique")
+  capitalSocialEuros Decimal? @db.Decimal(14, 2) @map("capital_social_euros")
+  /// `rcs` pour les sociétés et commerçants, `rm` pour les artisans.
+  immatriculationRegistre String? @map("immatriculation_registre")
+  /// Ville du greffe pour le RCS, département pour le répertoire des métiers.
+  immatriculationLieu String? @map("immatriculation_lieu")
+  numeroTva String? @map("numero_tva")
+  /// Franchise en base (article 293 B du CGI) : dispense du numéro de TVA.
+  franchiseTva Boolean @default(false) @map("franchise_tva")
+
+  /// Assurance professionnelle, obligatoire sur les documents des métiers du bâtiment.
+  assuranceAssureur String? @map("assurance_assureur")
+  assuranceContrat String? @map("assurance_contrat")
+  assuranceCouverture String? @map("assurance_couverture")
+
+  /// Médiateur de la consommation, obligatoire dès qu'on facture un particulier.
+  mediateurNom String? @map("mediateur_nom")
+  mediateurUrl String? @map("mediateur_url")
+
+  /// Conditions de règlement. `null` sur le taux signifie « taux légal » — la facture imprime
+  /// alors la formule de la BCE plutôt qu'un chiffre qui sera faux dans six mois.
+  penalitesTauxAnnuel Decimal? @db.Decimal(5, 2) @map("penalites_taux_annuel")
+  delaiPaiementJours Int @default(30) @map("delai_paiement_jours")
+  escompte String? @db.Text
 
   prefixeDevis String @default("DV") @map("prefixe_devis")
   prefixeFacture String @default("FA") @map("prefixe_facture")

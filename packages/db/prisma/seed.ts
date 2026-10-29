@@ -80,6 +80,7 @@ interface FichierCatalogue {
     couleur: string;
     icone: string;
     rang: number;
+    batiment: boolean;
     metiers: {
       slug: string;
       nom: string;
@@ -226,6 +227,7 @@ async function semeCatalogue(): Promise<Map<string, string>> {
         couleur: univers.couleur,
         icone: univers.icone,
         rang: univers.rang,
+        batiment: univers.batiment,
       },
     });
 
@@ -873,12 +875,36 @@ async function calculeLesCompletudes(): Promise<void> {
   console.log(`  complétudes : ${String(fiches.length)} fiches recalculées`);
 }
 
+/**
+ * Aligne la qualification « bâtiment » des univers sur le fichier.
+ *
+ * Même raison que pour les communes : `update: {}` au moment de l'upsert protège ce que la
+ * base sait en plus du fichier, mais rend le semis incapable de poser un champ **nouveau** sur
+ * un référentiel déjà en place. Cette qualification conditionne une mention obligatoire de
+ * facture ; elle ne peut pas attendre une base vierge.
+ */
+async function aligneLesUnivers(catalogue: FichierCatalogue): Promise<number> {
+  const slugs = catalogue.univers.map((u) => u.slug);
+  const batiment = catalogue.univers.map((u) => u.batiment);
+
+  return prisma.$executeRaw`
+    UPDATE univers AS u SET batiment = v.batiment, modifie_le = now()
+    FROM (
+      SELECT unnest(${slugs}::text[]) AS slug, unnest(${batiment}::boolean[]) AS batiment
+    ) AS v
+    WHERE u.slug = v.slug AND u.batiment IS DISTINCT FROM v.batiment
+  `;
+}
+
 async function main(): Promise<void> {
   // Le référentiel des communes s'aligne sur le fichier **avant** tout raccourci : une
   // correction de données doit arriver en production même quand le semis complet n'a plus
   // lieu d'être. Voir `aligneLesCommunes`.
   const ajustees = await aligneLesCommunes(lit<FichierCommunes>('communes-ile-de-france.json'));
   if (ajustees > 0) console.log(`  communes ajustées : ${String(ajustees)}`);
+
+  const universAjustes = await aligneLesUnivers(lit<FichierCatalogue>('catalogue.json'));
+  if (universAjustes > 0) console.log(`  univers ajustés : ${String(universAjustes)}`);
 
   if (await dejaSeme()) {
     console.log('Semis déjà fait : rien à reposer. FORCE_SEMIS=1 pour le refaire.');
