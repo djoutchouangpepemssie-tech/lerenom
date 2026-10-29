@@ -29,6 +29,7 @@ import {
   montantFacturx,
   totauxRamenesA,
   xmlFacturx,
+  xmpFacturx,
   type FactureFacturx,
 } from './facturx.ts';
 
@@ -596,5 +597,48 @@ describe('totauxRamenesA', () => {
     expect(sommes['ram:GrandTotalAmount']?.['#text']).toBe('300.00');
     expect(sommes['ram:DuePayableAmount']?.['#text']).toBe('300.00');
     expect(sommes['ram:TotalPrepaidAmount']).toBeUndefined();
+  });
+});
+
+describe('xmpFacturx', () => {
+  it('déclare le profil et le nom de fichier que le lecteur cherche', () => {
+    const xmp = xmpFacturx({ creeLe: new Date('2026-03-04T10:00:00Z') });
+    expect(xmp).toContain('<fx:DocumentFileName>factur-x.xml</fx:DocumentFileName>');
+    expect(xmp).toContain('<fx:ConformanceLevel>BASIC WL</fx:ConformanceLevel>');
+    expect(xmp).toContain('<fx:DocumentType>INVOICE</fx:DocumentType>');
+    expect(xmp).toContain('<fx:Version>1.0</fx:Version>');
+  });
+
+  it('annonce PDF/A-3 B', () => {
+    const xmp = xmpFacturx();
+    expect(xmp).toContain('<pdfaid:part>3</pdfaid:part>');
+    expect(xmp).toContain('<pdfaid:conformance>B</pdfaid:conformance>');
+  });
+
+  it('décrit son extension, faute de quoi PDF/A refuse un espace de noms inconnu', () => {
+    const xmp = xmpFacturx();
+    expect(xmp).toContain('urn:factur-x:pdfa:CrossIndustryDocument:invoice:1p0#');
+    expect(xmp).toContain('<pdfaSchema:prefix>fx</pdfaSchema:prefix>');
+    // Les quatre propriétés de l'extension doivent être décrites une à une.
+    for (const nom of ['DocumentFileName', 'DocumentType', 'Version', 'ConformanceLevel']) {
+      expect(xmp).toContain(`<pdfaProperty:name>${nom}</pdfaProperty:name>`);
+    }
+  });
+
+  it('échappe le titre et l’auteur : une esperluette dans un nom casserait le paquet', () => {
+    const xmp = xmpFacturx({ titre: 'Facture F-2026-0001', auteur: 'Durand & Fils' });
+    expect(xmp).toContain('Durand &amp; Fils');
+    expect(xmp).not.toContain('Durand & Fils');
+  });
+
+  it('écrit une date sans millisecondes, comme XMP l’attend', () => {
+    const xmp = xmpFacturx({ creeLe: new Date('2026-03-04T10:00:00.123Z') });
+    expect(xmp).toContain('<xmp:CreateDate>2026-03-04T10:00:00Z</xmp:CreateDate>');
+  });
+
+  it('ouvre et ferme le paquet xpacket, que les lecteurs repèrent pour le trouver', () => {
+    const xmp = xmpFacturx();
+    expect(xmp.startsWith('<?xpacket begin=')).toBe(true);
+    expect(xmp.trimEnd().endsWith('<?xpacket end="w"?>')).toBe(true);
   });
 });

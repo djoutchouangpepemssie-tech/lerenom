@@ -55,15 +55,26 @@ export default async function PageUneFacture({
           >
             Voir le document imprimable
           </Link>
-          {/* Le XML ne s'offre que sur une facture émise : avant, il n'y a ni numéro ni date,
-              donc rien qui constitue une facture au sens comptable. */}
+          {/* Ni le PDF ni le XML ne s'offrent avant l'émission : avant, il n'y a ni numéro
+              ni date, donc rien qui constitue une facture au sens comptable. */}
           {!facture.emettable && (
-            <a
-              href={`/api/pro/factures/${id}/facturx`}
-              className="text-encre-55 hover:text-encre text-sm font-semibold underline decoration-[1.5px] underline-offset-4 transition-colors"
-            >
-              Télécharger le XML Factur-X
-            </a>
+            <>
+              <a
+                href={`/api/pro/factures/${id}/pdf`}
+                className="text-encre hover:text-or-fonce text-sm font-semibold underline decoration-[1.5px] underline-offset-4 transition-colors"
+              >
+                Télécharger la facture (PDF Factur-X)
+              </a>
+              {/* Le XML seul reste offert : un comptable peut vouloir la pièce sans le PDF.
+                  Mais c'est le fichier ci-dessus qu'on envoie au client — une facture
+                  électronique est un seul fichier, pas deux à rapprocher. */}
+              <a
+                href={`/api/pro/factures/${id}/facturx`}
+                className="text-encre-55 hover:text-encre text-sm font-semibold underline decoration-[1.5px] underline-offset-4 transition-colors"
+              >
+                XML seul
+              </a>
+            </>
           )}
         </span>
       </div>

@@ -1134,3 +1134,30 @@ sort-elle de la table ? Les deux réponses se défendent. Un taux de TVA ou une 
 conservation RGPD n'ont sans doute pas à se changer sans relecture ni déploiement ; les poids
 du classement, si. Tant que rien n'est tranché, la table contient deux choses de nature
 différente sous la même forme, et c'est cela qui finira par tromper quelqu'un.
+
+---
+
+## Q40 🟠 · Le PDF Factur-X : conformité PDF/A-3 et navigateur en production
+
+La facture se télécharge désormais en un seul fichier : un PDF lisible qui porte son XML
+Factur-X, sous le nom `factur-x.xml`, avec la relation `Alternative` et les métadonnées XMP
+qu'un logiciel comptable interroge. Vérifié sur une vraie facture émise.
+
+**Deux limites, écrites ici plutôt que tues.**
+
+**La conformité PDF/A-3 n'est pas certifiée.** Le XMP annonce `pdfaid:part 3` et le fichier en
+a la forme, mais PDF/A-3 exige en plus un profil colorimétrique de sortie (`OutputIntent`) et
+des polices intégralement incorporées. Ces deux points dépendent du moteur de rendu et aucun
+test d'ici ne les vérifie. Un logiciel de comptabilité acceptera le fichier ; un validateur
+strict peut le refuser. **Ce qu'il faudrait :** faire passer un exemplaire à un validateur
+PDF/A (veraPDF) et, selon le verdict, incorporer un profil sRGB. C'est une demi-journée, et
+elle n'a de sens qu'une fois le profil Factur-X validé par un comptable (§Q35).
+
+**Le serveur de production n'a pas de navigateur.** Le PDF est rendu à partir de la page que
+le professionnel voit déjà — un seul gabarit, donc aucune divergence possible entre le
+document à l'écran et celui qu'on envoie au client. Le prix de ce choix est un Chromium sur le
+serveur, et l'image actuelle, construite par détection automatique, n'en contient pas. La
+route le dit alors en français et renvoie un 503 : le professionnel imprime depuis son
+navigateur et télécharge le XML à part, comme avant. **La décision revient à Arcel** —
+installer Chromium triple le poids de l'image de production d'un site déjà en ligne, et ce
+n'est pas un changement à faire sans qu'il le sache.

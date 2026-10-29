@@ -415,3 +415,117 @@ export function xmlFacturx(facture: FactureFacturx): string {
     '</rsm:CrossIndustryInvoice>'
   );
 }
+
+/* ------------------------------------------------------------------------- */
+/* Métadonnées XMP du PDF porteur                                            */
+/* ------------------------------------------------------------------------- */
+
+/**
+ * Le nom court du profil, tel que le XMP l'attend.
+ *
+ * Le XMP ne reprend pas l'URN complète mais son dernier segment en majuscules : `BASIC WL`
+ * pour `urn:factur-x.eu:1p0:basicwl`. Un lecteur qui cherche `fx:ConformanceLevel` compare à
+ * cette forme-là, et l'URN entière ne lui dirait rien.
+ */
+export const CONFORMANCE_FACTURX = 'BASIC WL';
+
+/** La version de la spécification déclarée dans le XMP. */
+export const VERSION_FACTURX = '1.0';
+
+/**
+ * Les métadonnées XMP qui font d'un PDF un porteur Factur-X.
+ *
+ * Sans elles, le XML reste une pièce jointe ordinaire : un lecteur comptable ne la cherche
+ * pas, parce que rien ne lui dit qu'elle est là ni ce qu'elle contient. L'extension
+ * `urn:factur-x:pdfa:CrossIndustryDocument:invoice:1p0#` déclare trois choses — le nom du
+ * fichier joint, le profil, et la version — et c'est ce triplet qu'un logiciel de
+ * comptabilité interroge avant d'ouvrir quoi que ce soit.
+ *
+ * La description `pdfaExtension` est obligatoire et verbeuse : PDF/A interdit les espaces de
+ * noms XMP inconnus, et la seule façon d'en introduire un est de le décrire dans le document
+ * lui-même. C'est pour cela que ce bloc répète chaque propriété avec son type et sa
+ * catégorie ; ce n'est pas de la redondance, c'est la déclaration qui rend l'extension
+ * légale.
+ */
+export function xmpFacturx(options?: {
+  readonly titre?: string;
+  readonly auteur?: string;
+  readonly creeLe?: Date;
+}): string {
+  const date = (options?.creeLe ?? new Date()).toISOString().replace(/\.\d{3}Z$/, 'Z');
+  const titre = echappe(options?.titre ?? 'Facture');
+  const auteur = echappe(options?.auteur ?? '');
+
+  // La marque d'ordre des octets ouvre le paquet : la spécification XMP l'exige, et un
+  // lecteur qui ne la trouve pas en déduit un encodage différent. Elle est écrite en
+  // séquence d'échappement plutôt qu'en clair — invisible dans un éditeur, elle passerait
+  // pour une espace parasite et finirait supprimée par quelqu'un de bien intentionné.
+  const bom = '\u{FEFF}';
+  return `<?xpacket begin="${bom}" id="W5M0MpCehiHzreSzNTczkc9d"?>
+<x:xmpmeta xmlns:x="adobe:ns:meta/">
+ <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+  <rdf:Description rdf:about="" xmlns:dc="http://purl.org/dc/elements/1.1/">
+   <dc:title><rdf:Alt><rdf:li xml:lang="x-default">${titre}</rdf:li></rdf:Alt></dc:title>
+   <dc:creator><rdf:Seq><rdf:li>${auteur}</rdf:li></rdf:Seq></dc:creator>
+  </rdf:Description>
+  <rdf:Description rdf:about="" xmlns:xmp="http://ns.adobe.com/xap/1.0/">
+   <xmp:CreateDate>${date}</xmp:CreateDate>
+   <xmp:ModifyDate>${date}</xmp:ModifyDate>
+   <xmp:CreatorTool>Le Renom</xmp:CreatorTool>
+  </rdf:Description>
+  <rdf:Description rdf:about="" xmlns:pdfaid="http://www.aiim.org/pdfa/ns/id/">
+   <pdfaid:part>3</pdfaid:part>
+   <pdfaid:conformance>B</pdfaid:conformance>
+  </rdf:Description>
+  <rdf:Description rdf:about="" xmlns:fx="urn:factur-x:pdfa:CrossIndustryDocument:invoice:1p0#">
+   <fx:DocumentType>INVOICE</fx:DocumentType>
+   <fx:DocumentFileName>${NOM_FICHIER_FACTURX}</fx:DocumentFileName>
+   <fx:Version>${VERSION_FACTURX}</fx:Version>
+   <fx:ConformanceLevel>${CONFORMANCE_FACTURX}</fx:ConformanceLevel>
+  </rdf:Description>
+  <rdf:Description rdf:about=""
+    xmlns:pdfaExtension="http://www.aiim.org/pdfa/ns/extension/"
+    xmlns:pdfaSchema="http://www.aiim.org/pdfa/ns/schema#"
+    xmlns:pdfaProperty="http://www.aiim.org/pdfa/ns/property#">
+   <pdfaExtension:schemas>
+    <rdf:Bag>
+     <rdf:li rdf:parseType="Resource">
+      <pdfaSchema:schema>Factur-X PDFA Extension Schema</pdfaSchema:schema>
+      <pdfaSchema:namespaceURI>urn:factur-x:pdfa:CrossIndustryDocument:invoice:1p0#</pdfaSchema:namespaceURI>
+      <pdfaSchema:prefix>fx</pdfaSchema:prefix>
+      <pdfaSchema:property>
+       <rdf:Seq>
+        <rdf:li rdf:parseType="Resource">
+         <pdfaProperty:name>DocumentFileName</pdfaProperty:name>
+         <pdfaProperty:valueType>Text</pdfaProperty:valueType>
+         <pdfaProperty:category>external</pdfaProperty:category>
+         <pdfaProperty:description>Name of the embedded XML invoice file</pdfaProperty:description>
+        </rdf:li>
+        <rdf:li rdf:parseType="Resource">
+         <pdfaProperty:name>DocumentType</pdfaProperty:name>
+         <pdfaProperty:valueType>Text</pdfaProperty:valueType>
+         <pdfaProperty:category>external</pdfaProperty:category>
+         <pdfaProperty:description>INVOICE</pdfaProperty:description>
+        </rdf:li>
+        <rdf:li rdf:parseType="Resource">
+         <pdfaProperty:name>Version</pdfaProperty:name>
+         <pdfaProperty:valueType>Text</pdfaProperty:valueType>
+         <pdfaProperty:category>external</pdfaProperty:category>
+         <pdfaProperty:description>The version of the Factur-X standard</pdfaProperty:description>
+        </rdf:li>
+        <rdf:li rdf:parseType="Resource">
+         <pdfaProperty:name>ConformanceLevel</pdfaProperty:name>
+         <pdfaProperty:valueType>Text</pdfaProperty:valueType>
+         <pdfaProperty:category>external</pdfaProperty:category>
+         <pdfaProperty:description>The conformance level of the embedded invoice</pdfaProperty:description>
+        </rdf:li>
+       </rdf:Seq>
+      </pdfaSchema:property>
+     </rdf:li>
+    </rdf:Bag>
+   </pdfaExtension:schemas>
+  </rdf:Description>
+ </rdf:RDF>
+</x:xmpmeta>
+<?xpacket end="w"?>`;
+}

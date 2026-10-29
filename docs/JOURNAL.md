@@ -2469,6 +2469,67 @@ entre « on ne sait plus qui » et « personne » n'est pas un détail sur un é
 
 ---
 
+## Phase 5 · la facture en un seul fichier
+
+### Deux moitiés ne font pas une facture électronique
+
+Le professionnel disposait d'une page imprimable qu'il devait imprimer lui-même, et d'un XML à
+télécharger à part. C'est exactement ce que Factur-X existe pour éviter : **une facture
+électronique est un seul fichier**, lisible par un humain et exploitable par une machine. Deux
+fichiers séparés demandent au destinataire de les rapprocher, et il ne le fera pas.
+
+Trois choses sont nécessaires pour qu'un logiciel comptable reconnaisse le fichier, et aucune
+ne suffit seule : le XML joint sous le nom `factur-x.xml`, imposé par la norme ; la relation
+`/Alternative`, qui dit que la pièce jointe n'est pas un supplément mais une autre expression
+du même document ; et les métadonnées XMP, que le logiciel interroge _avant_ d'ouvrir quoi que
+ce soit. `pdf-lib` écrit `/Unspecified` par défaut — ce qui vide l'opération de son sens.
+
+### Un seul gabarit, et ce qu'il coûte
+
+Le PDF est rendu à partir de la page que le professionnel voit déjà. L'autre voie — redessiner
+la facture avec une bibliothèque PDF — donnerait un fichier plus léger à produire et **deux
+mises en page à maintenir**. Elles divergeraient, et la divergence se verrait le jour où un
+client comparerait le document reçu à celui qu'il avait à l'écran. Une facture est une pièce
+qui fait foi ; elle n'a pas deux versions.
+
+Le prix est un navigateur sur le serveur, et il n'y en a pas en production. La route renvoie
+alors un 503 avec une phrase en français et la marche à suivre, plutôt qu'une erreur
+technique. Éprouvé dans les deux sens : avec un Chromium, un PDF de 192 ko ; avec un chemin
+inexistant, le message et rien d'autre. Installer Chromium dans l'image d'un site en ligne
+n'est pas une décision que je prends seul — consignée en Q40.
+
+### Le contrôle qui ne pouvait pas échouer
+
+Le moment utile de ce module. J'avais écrit un contrôle qui cherchait `factur-x.xml` dans les
+octets du PDF et le trouvait. Il passait. Deux tests sur six échouaient pourtant — la
+relation `/Alternative` et le contenu du XML, introuvables en recherche de texte.
+
+En inspectant la structure réelle, l'explication : le nom d'une pièce jointe est écrit en
+UTF-16 gros-boutiste, `<FEFF006600610063...>`, et son contenu vit dans un flux compressé.
+Rien de tout cela n'apparaît en clair. **Mon contrôle « nom présent » ne trouvait pas la pièce
+jointe : il trouvait le nom cité dans les métadonnées XMP.** Il aurait donc passé sur un PDF
+sans aucune pièce jointe — c'est-à-dire exactement sur le défaut qu'il existait pour attraper.
+
+Le contrôle lit maintenant la structure : table `EmbeddedFiles`, nom décodé, relation,
+contenu décompressé. Et un test de plus, qui vérifie qu'il **échoue** sur un PDF sans pièce
+jointe.
+
+> **Règle retenue** — _un contrôle qui ne peut pas échouer ne vérifie rien._ Celui-ci passait
+> pour une coïncidence de chaîne de caractères, et deux autres tests l'ont démasqué.
+
+### Vérifié sur une vraie facture
+
+Pas sur un PDF de test : la facture d'acompte FA-2026-0001 de la démonstration, demandée par
+HTTP avec une vraie session. Pièce jointe `factur-x.xml`, relation `Alternative`, XMP
+déclarant l'extension, 4 631 caractères de XML portant le bon numéro — et, rendue en image,
+une facture A4 complète avec ses mentions légales, son acompte expliqué et son IBAN figé.
+
+Une facture sans numéro est refusée net : la règle BR-02 d'EN 16931 l'exige, et l'article
+L441-9 du code de commerce avant elle. Produire le fichier quand même donnerait une pièce que
+le destinataire ne pourra pas comptabiliser.
+
+---
+
 ## Phases 5 à 11 · à venir
 
 Agenda et documents du pro, monétisation Stripe, back-office, personnalisation, avis et
