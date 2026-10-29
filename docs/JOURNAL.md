@@ -2733,6 +2733,64 @@ douter de l'un des deux, ils font douter de tous les autres.
 
 ---
 
+## Back-office · les finances, et le dernier onglet
+
+### Un prévisionnel assumé, pas un chiffre d'affaires déguisé
+
+`FactureLeRenom` est vide et le restera tant que rien n'encaisse. La tentation était de
+titrer « chiffre d'affaires » sur la somme des abonnements : le chiffre aurait été juste et
+le mot faux.
+
+Ce que l'écran additionne est pourtant réel, et personne ne le regardait : les abonnements en
+cours, dont le prix est une règle validée, et surtout **`QuotaMensuel.depenseHT`** — la
+dépense hors forfait que la distribution accumule à chaque fois qu'un professionnel accepte
+une demande au-delà de son forfait. C'est de la consommation vraie, enregistrée depuis le
+début, jamais totalisée nulle part.
+
+L'avertissement passe donc **avant** les chiffres, pas en note de bas de page. Un prévisionnel
+lu comme une recette est un mensonge comptable, et celui qui le lit prendra des décisions
+dessus.
+
+Vérifié à la main contre la base avant de regarder la capture : 229 + 79 + 79 + 29 + 29 = 445
+d'abonnements, 24 € de hors forfait, 469 € HT, 562,80 € TTC. L'écran affiche exactement cela.
+
+Deux pièges évités en chemin. L'annuel se paie **dix mois pour douze** : le compter douze mois
+pleins aurait gonflé le prévisionnel de 20 % sur chaque abonné annuel, et l'erreur ne se
+serait vue qu'au moment de rapprocher les encaissements. Et les `Decimal` de Prisma
+s'additionnent avec un `number` en produisant une **chaîne**, silencieusement : la conversion
+est explicite.
+
+### Neuf univers sur neuf
+
+Le back-office est complet : Accueil, Demandes, Premium et Exclusif, Professionnels,
+Catalogue, Finances, Croissance, Confiance, Réglages. Plus un seul onglet grisé.
+
+Ce qui vaut d'être noté, ce n'est pas le compte : c'est que **sept de ces neuf écrans ont
+commencé par révéler une règle écrite et jamais appliquée.** Une entreprise non vérifiée
+recevait des demandes. Aucun avis n'était jamais publié. La note moyenne ne se recalculait
+pas. Un Premium occupait une place sponsorisée partout au lieu de là où il l'avait achetée.
+Aucun réglage ne pouvait changer sans déploiement. Rien ne comptait les affichages. Aucune
+liste d'attente ne recueillait la demande sur les zones saturées.
+
+Dans chaque cas, le modèle de données prévoyait la règle, un commentaire la décrivait, et
+rien ne l'exécutait. Le back-office n'a pas seulement donné des écrans : il a obligé à
+demander, pour chaque table, **qui la lit** — et c'est cette question-là qui a trouvé les
+défauts, pas les écrans eux-mêmes.
+
+> **Règle retenue** — _avant d'écrire l'écran qui pilote une donnée, chercher ce qu'elle
+> commande déjà._ Sept fois sur neuf, la réponse était « rien », et l'écran aurait piloté un
+> levier débranché.
+
+### Note d'environnement
+
+Postgres s'est arrêté trois fois pendant cette session, Redis une fois. Les deux sont des
+incidents de la machine, pas du projet — mais le premier arrêt a coûté une fausse piste
+entière, parce que le service système a relancé **une autre base** que celle du projet. Le
+signe n'était pas l'absence de données : c'était une migration oubliée. Les relances sont
+désormais scriptées.
+
+---
+
 ## Phases 5 à 11 · à venir
 
 Agenda et documents du pro, monétisation Stripe, back-office, personnalisation, avis et

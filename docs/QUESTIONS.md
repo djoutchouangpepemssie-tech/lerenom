@@ -1261,3 +1261,35 @@ Les deux premières le sont maintenant. La conséquence était commerciale : un 
   sans fin. Faut-il agréger au mois au-delà d'un an, et au bout de combien de temps effacer ?
   La conservation touche au RGPD même sur des compteurs anonymes, et ce n'est pas à moi de
   fixer la durée.
+
+---
+
+## Q44 🔴 · Facturer : il ne manque plus que l'encaissement
+
+L'écran Finances additionne deux sources réelles et jamais lues jusqu'ici : les abonnements
+en cours, et la dépense hors forfait déjà accumulée dans `QuotaMensuel.depenseHT` à chaque
+acceptation au-delà du forfait. La somme est ce qui serait facturé aujourd'hui.
+
+**C'est un prévisionnel, et l'écran le dit avant tout chiffre.** `FactureLeRenom` est vide :
+Le Renom n'a émis aucune facture et n'encaisse rien. Un prévisionnel présenté comme une
+recette est un mensonge comptable, et celui qui le lit prendrait des décisions dessus.
+
+**Ce qu'il manque pour facturer pour de bon :**
+
+- **les clés Stripe**, à brancher à la fin comme convenu. Le modèle les attend déjà
+  (`stripeAbonnementId`, `stripeClientId`, `stripeFactureId`) ;
+- **la numérotation des factures du Renom.** Elle obéit aux mêmes règles que celles des
+  professionnels — séquence continue, sans trou, art. L441-9 du code de commerce — et rien
+  ne la pose ;
+- **le PDF de la facture du Renom.** Le gabarit des professionnels existe et fonctionne ; le
+  réutiliser demande seulement d'y brancher Le Renom comme émetteur.
+
+**Deux décisions avant d'écrire la facturation :**
+
+- **quand le mois est-il clos ?** La dépense hors forfait court jusqu'au dernier jour ;
+  facturer le 1er à 00 h 00 ou le 5 change ce qui tombe dans le mois, et un professionnel qui
+  accepte une demande le 31 au soir doit savoir sur quelle facture elle apparaîtra ;
+- **que fait-on d'un impayé ?** Le statut `impaye` existe sur l'abonnement, l'écran le
+  signale — « une recette qu'on compte et qu'on ne touchera peut-être pas » — mais rien ne
+  décide au bout de combien de temps la place payée s'éteint. La couper trop vite perd un
+  client qui a changé de carte ; trop tard, c'est du service offert.

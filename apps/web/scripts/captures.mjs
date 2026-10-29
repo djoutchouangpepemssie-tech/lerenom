@@ -613,6 +613,12 @@ const PAGES = [
     connexionAdmin: true,
   },
   {
+    nom: 'administration-finances',
+    chemin: '/administration/finances',
+    titre: 'Back-office — finances',
+    connexionAdmin: true,
+  },
+  {
     nom: 'administration-catalogue',
     chemin: '/administration/catalogue',
     titre: 'Back-office — catalogue',
