@@ -2322,6 +2322,81 @@ défaut là où il n'y en avait pas.
 
 ---
 
+## Back-office · la confiance
+
+### Deux trous, et ils se tenaient par la main
+
+Même méthode qu'au module précédent : regarder ce que la règle commande vraiment avant
+d'écrire l'écran. Deux choses manquaient.
+
+**Aucun avis n'était jamais publié.** Le dépôt crée bien l'avis en `en_attente` et pose une
+tâche `avis_a_moderer`. Rien, nulle part, ne lisait cette file. Un client pouvait écrire, son
+avis était enregistré, et il n'apparaissait jamais. Du point de vue du client comme du
+professionnel, la fonctionnalité n'existait pas — et elle était pourtant annoncée sur le site.
+
+**La note moyenne n'était jamais recalculée.** `noteMoyenne` et `nombreAvis` ne valaient que
+ce que le semis y avait mis. Or ce sont les deux chiffres affichés sur la fiche **et** ceux
+que la cascade utilise pour classer : une note figée, c'est un classement fondé sur une
+fiction. La publication les recalcule maintenant à partir des seuls avis publiés, dans la même
+transaction que la publication — un recalcul qui peut échouer après coup laisserait une note
+fausse sur une fiche vraie.
+
+### Caviarder plutôt que refuser
+
+`packages/core` portait déjà la règle, elle n'avait jamais servi : un avis contenant un numéro
+de téléphone ne se refuse pas, il se publie **sans** le numéro, et le retrait est visible —
+« [numéro retiré] ». L'auteur a pris la peine d'écrire, son avis compte, et il n'a
+généralement pas voulu mal faire. Mais réécrire le propos de quelqu'un sans le dire serait
+pire que ne rien publier.
+
+L'écran en tire sa disposition : quand un retrait s'applique, le texte d'origine et l'aperçu
+publié s'affichent **côte à côte**. Le relecteur doit voir ce qu'on lui a confié _et_ ce qui
+sortira ; ne montrer que l'un reviendrait à lui faire signer sans lire. Quand rien n'est
+retiré — le cas général — un seul texte s'affiche, parce qu'un doublon identique ferait croire
+à une intervention qui n'a pas eu lieu.
+
+Les signaux automatiques sont nommés comme des alertes, jamais comme des verdicts.
+« Accusation grave » ne dit pas que l'avis est faux ; il dit qu'un humain doit le lire avant
+qu'il engage la plateforme. Un écran de modération qui pré-juge fabrique des refus.
+
+### Ce que l'écran refuse de faire
+
+Deux files sont affichées et **pas** actionnables, et c'est écrit dessus.
+
+Trancher une contestation engage un recrédit, donc une ligne de facturation : tant que la
+facturation n'est pas branchée, accepter ici promettrait un remboursement que rien ne
+verserait. L'écran les liste, signale celles qui ont dépassé les 48 heures promises — il y en
+a — et s'arrête là. Un signalement DSA, lui, demande une décision motivée et un recours ouvert
+à son auteur ; recueillir cela demande un écran à soi.
+
+> **Règle retenue** — _afficher un problème qu'on ne sait pas encore résoudre vaut mieux que
+> de le cacher, à condition de dire pourquoi on s'arrête._ Un bouton « accepter » qui ne
+> rembourse rien serait pire que pas de bouton du tout.
+
+### Éprouvé contre la base, pas contre le typeur
+
+Après deux épisodes de code qui compile et tombe à la première ouverture, la publication a été
+exercée par HTTP, avec une vraie session et le code TOTP : clé inconnue refusée en bloc, motif
+de refus trop court refusé, publication, republication refusée, refus motivé accepté. Puis
+vérification en base : note recalculée à 4,5 sur deux avis publiés — l'avis refusé exclu —,
+texte d'origine intact, version caviardée à côté, et trois lignes au journal d'audit portant
+l'avant, l'après et jusqu'à la nature du retrait.
+
+Une erreur du test lui-même mérite d'être notée : le motif « trop court » que j'utilisais pour
+éprouver la limite fait exactement dix caractères, soit la limite. Le contrôle passait, et
+j'ai failli conclure qu'il ne fonctionnait pas. **Un test qui tombe pile sur la borne ne
+teste pas la borne.**
+
+### Une fuite trouvée en chemin
+
+Cinquante-quatre tâches `avis_a_moderer` pointaient vers des avis supprimés : le script de
+démonstration du suivi efface les avis à chaque passage, jamais leurs tâches. Bouché dans le
+script, et les orphelines nettoyées. Elles ne se voyaient pas, parce que l'écran lit la table
+des avis et non celle des tâches — mais une file de travail qui accumule des objets disparus
+finit par n'être plus consultée du tout.
+
+---
+
 ## Phases 5 à 11 · à venir
 
 Agenda et documents du pro, monétisation Stripe, back-office, personnalisation, avis et

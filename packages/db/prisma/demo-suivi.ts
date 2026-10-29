@@ -158,6 +158,17 @@ async function main(): Promise<void> {
         { demandeId: demande.id, entrepriseId: premier.id, etape: 'travaux_realises' },
       ],
     });
+    // La tâche de modération part avec l'avis. Sans cette ligne, chaque passage laissait
+    // derrière lui une tâche `avis_a_moderer` pointant vers un avis supprimé : cinquante-quatre
+    // orphelines s'étaient accumulées avant qu'on s'en aperçoive, et elles auraient gonflé la
+    // file de modération avec des objets qui n'existent plus.
+    const avisEffaces = await prisma.avis.findMany({
+      where: { demandeId: demande.id },
+      select: { id: true },
+    });
+    await prisma.tacheAValider.deleteMany({
+      where: { type: 'avis_a_moderer', objetId: { in: avisEffaces.map((a) => a.id) } },
+    });
     await prisma.avis.deleteMany({ where: { demandeId: demande.id } });
     jetonAvis = await lien('deposer_avis', premier.id);
   }

@@ -1066,3 +1066,48 @@ facture, puisque chaque envoi se paie. L'écran le dit en toutes lettres plutôt
 Tant que ces trois points ne sont pas tranchés, le back-office **observe** la distribution sans
 pouvoir la corriger. C'est une limite réelle du module, et elle est assumée : une action de
 redistribution posée au jugé coûterait de l'argent à des professionnels qui n'ont rien demandé.
+
+---
+
+## Q38 🔴 · Les avis : délai de publication, droit de réponse, contestation
+
+La modération existe désormais : un avis se publie, se caviarde ou se refuse, et la note de
+l'entreprise se recalcule. Trois décisions manquent, et elles engagent juridiquement.
+
+**Défauts appliqués** — la publication est **immédiate** dès qu'un relecteur valide ; un avis
+contenant un numéro, une adresse ou un lien est **publié caviardé** plutôt que refusé, le
+retrait restant visible ; un avis refusé sort de la moyenne.
+
+**Ce qu'il faudrait trancher avec Arcel, et sans doute avec un juriste :**
+
+- **le professionnel doit-il pouvoir répondre avant publication ?** Le modèle `ReponseAvis`
+  existe, mais rien ne la recueille, et aucun délai n'est posé. La pratique du secteur est de
+  laisser quelques jours ; la norme NF Z74-501 sur les avis en ligne va plus loin. Publier
+  immédiatement est le défaut, et c'est le choix le plus favorable au client ;
+- **que répond-on à un auteur dont l'avis est refusé ?** Le motif est enregistré, mais rien
+  ne le lui transmet, et le DSA prévoit qu'il puisse contester une décision de modération.
+  Aujourd'hui, un avis refusé disparaît sans un mot ;
+- **un professionnel peut-il contester un avis publié ?** `SignalementAvis` existe et l'écran
+  en compte les occurrences, mais rien ne permet de les déposer ni de les traiter.
+
+**Et deux limites assumées, visibles à l'écran :**
+
+- **trancher une contestation de demande n'est pas outillé.** Accepter une contestation
+  engage un recrédit, donc une ligne de facturation ; tant que la facturation n'est pas
+  branchée, accepter ici promettrait un remboursement que rien ne verserait. L'écran les
+  affiche, signale celles qui ont dépassé les 48 heures promises, et s'arrête là ;
+- **les signalements DSA sont affichés, pas traités.** Une décision DSA doit porter sa
+  motivation et ouvrir un recours à son auteur ; recueillir cela demande un écran à soi.
+
+### Deux incohérences de données repérées en chemin
+
+Elles ne demandent pas de décision, seulement du travail, et sont consignées pour ne pas être
+redécouvertes :
+
+- le **semis de base annonce des notes sans avis** : « 4,7 / 5 sur 84 avis » sans une seule
+  ligne d'avis en base. La première modération d'un avis réel sur ces entreprises recalculerait
+  leur note à partir de ce seul avis. Les avis de démonstration sont donc posés sur les
+  entreprises du script de back-office, jamais sur celles du semis de base ;
+- le semis de base crée des entreprises **revendiquées sans compte utilisateur**, état que le
+  produit ne peut pas produire. L'écran Professionnels le signale honnêtement ; c'est le semis
+  qu'il faudra reprendre.

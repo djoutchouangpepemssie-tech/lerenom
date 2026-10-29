@@ -549,6 +549,24 @@ const PAGES = [
     },
   },
   {
+    nom: 'administration-confiance',
+    chemin: '/administration/confiance',
+    titre: 'Back-office — avis à relire',
+    connexionAdmin: true,
+  },
+  {
+    nom: 'administration-confiance-contestations',
+    chemin: '/administration/confiance',
+    titre: 'Back-office — contestations',
+    connexionAdmin: true,
+    // La contestation hors délai : un professionnel attend une réponse promise sous
+    // 48 heures. C'est le seul endroit de l'écran qui signale un engagement non tenu.
+    scenario: async (onglet) => {
+      await onglet.getByRole('tab', { name: /Contestations/ }).click();
+      await onglet.waitForTimeout(250);
+    },
+  },
+  {
     nom: 'administration-catalogue',
     chemin: '/administration/catalogue',
     titre: 'Back-office — catalogue',

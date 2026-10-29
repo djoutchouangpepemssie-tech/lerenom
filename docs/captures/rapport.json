@@ -430,6 +430,26 @@
     "erreursConsole": []
   },
   {
+    "page": "Back-office — avis à relire",
+    "largeur": 390,
+    "fichier": "administration-confiance-390.png",
+    "defilementHorizontal": false,
+    "largeurDocument": 390,
+    "largeurFenetre": 390,
+    "debordements": [],
+    "erreursConsole": []
+  },
+  {
+    "page": "Back-office — contestations",
+    "largeur": 390,
+    "fichier": "administration-confiance-contestations-390.png",
+    "defilementHorizontal": false,
+    "largeurDocument": 390,
+    "largeurFenetre": 390,
+    "debordements": [],
+    "erreursConsole": []
+  },
+  {
     "page": "Back-office — catalogue",
     "largeur": 390,
     "fichier": "administration-catalogue-390.png",
@@ -993,6 +1013,26 @@
     "page": "Back-office — suspendre un professionnel",
     "largeur": 1440,
     "fichier": "administration-professionnels-suspension-1440.png",
+    "defilementHorizontal": false,
+    "largeurDocument": 1440,
+    "largeurFenetre": 1440,
+    "debordements": [],
+    "erreursConsole": []
+  },
+  {
+    "page": "Back-office — avis à relire",
+    "largeur": 1440,
+    "fichier": "administration-confiance-1440.png",
+    "defilementHorizontal": false,
+    "largeurDocument": 1440,
+    "largeurFenetre": 1440,
+    "debordements": [],
+    "erreursConsole": []
+  },
+  {
+    "page": "Back-office — contestations",
+    "largeur": 1440,
+    "fichier": "administration-confiance-contestations-1440.png",
     "defilementHorizontal": false,
     "largeurDocument": 1440,
     "largeurFenetre": 1440,

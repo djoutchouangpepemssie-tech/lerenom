@@ -289,6 +289,156 @@ async function semeDesProfessionnels(): Promise<void> {
   }
 }
 
+/**
+ * Pose la file de modération : trois avis, une contestation, un signalement.
+ *
+ * Les trois avis couvrent les trois lectures différentes que l'écran doit permettre.
+ *
+ * 1. Un avis contenant un **numéro de téléphone**. Il ne se refuse pas : il se publie
+ *    caviardé, et l'écran doit montrer côte à côte ce que l'auteur a écrit et ce qui sortira.
+ * 2. Un avis portant une **accusation grave** — « arnaque ». Rien à retirer, tout à lire : le
+ *    signal appelle un humain, il ne tranche pas. C'est le cas où l'écran ne doit surtout pas
+ *    pré-juger.
+ * 3. Un avis **propre**, sans signal. C'est le cas général, et il doit se publier en un geste.
+ *
+ * Les avis sont posés sur les entreprises de démonstration de ce script, jamais sur celles du
+ * semis de base : celles-là annoncent « 84 avis » sans porter une seule ligne d'avis, et la
+ * première publication recalculerait leur note à partir du seul avis réel — 5 sur 5 sur 1 avis
+ * au lieu de 4,7 sur 84. L'incohérence est dans le semis, pas dans le recalcul.
+ */
+async function semeLaModeration(): Promise<void> {
+  const commune = await prisma.commune.findFirst({ select: { code: true } });
+  const metier = await prisma.metier.findFirst({
+    where: { masque: false },
+    orderBy: { rang: 'asc' },
+    select: { id: true },
+  });
+  const entreprise = await prisma.entreprise.findUnique({
+    where: { slug: 'demo-bo-a-verifier' },
+    select: { id: true },
+  });
+  if (commune === null || entreprise === null) return;
+
+  const scenarios = [
+    {
+      reference: 'DEMO-BO-AVIS-NUMERO',
+      prenom: 'Sandrine',
+      note: 4,
+      commentaire:
+        'Travail soigné et ponctuel. Si quelqu’un cherche, je donne son numéro : 06 12 34 56 78. Je referai appel à lui.',
+    },
+    {
+      reference: 'DEMO-BO-AVIS-GRAVE',
+      prenom: 'Mathieu',
+      note: 1,
+      commentaire:
+        'Devis doublé une fois le chantier commencé, et impossible de le joindre ensuite. Pour moi c’est une arnaque.',
+    },
+    {
+      reference: 'DEMO-BO-AVIS-PROPRE',
+      prenom: 'Léa',
+      note: 5,
+      commentaire:
+        'Intervention le jour même, prix annoncé respecté, et il a pris le temps d’expliquer ce qu’il faisait.',
+    },
+  ];
+
+  for (const scenario of scenarios) {
+    let demande = await prisma.demande.findUnique({
+      where: { reference: scenario.reference },
+      select: { id: true },
+    });
+    if (demande === null) {
+      demande = await prisma.demande.create({
+        data: {
+          reference: scenario.reference,
+          type: 'partagee',
+          statut: 'gagnee',
+          communeId: commune.code,
+          description: 'Demande de démonstration, close, ayant donné lieu à un avis.',
+          urgence: 'normale',
+          clientPrenom: scenario.prenom,
+          clientEmail: `${scenario.prenom.toLowerCase()}.demo@exemple.test`,
+          clientTelephone: '+33199000080',
+          telephoneVerifieLe: new Date(),
+          consentementTexte: 'Consentement de démonstration.',
+          consentementDonneLe: new Date(),
+          deposeeLe: new Date(Date.now() - 12 * 86_400_000),
+          objectifPros: 3,
+          ...(metier !== null ? { metierId: metier.id } : {}),
+        },
+        select: { id: true },
+      });
+    }
+
+    // Le statut est remis à `en_attente` à chaque passage : une exécution précédente a pu
+    // publier ou refuser l'avis depuis l'écran, et il ne serait plus dans la file qu'il sert
+    // à montrer.
+    await prisma.avis.upsert({
+      where: { demandeId: demande.id },
+      update: {
+        statut: 'en_attente',
+        commentairePublic: null,
+        publieLe: null,
+        modereLe: null,
+        motifRefus: null,
+      },
+      create: {
+        entrepriseId: entreprise.id,
+        demandeId: demande.id,
+        note: scenario.note,
+        commentaire: scenario.commentaire,
+        auteurPrenom: scenario.prenom,
+        statut: 'en_attente',
+        creeLe: new Date(Date.now() - 6 * 86_400_000),
+      },
+    });
+  }
+
+  // Une contestation déjà hors délai : c'est le cas que l'écran doit rendre visible, parce
+  // qu'un professionnel attend une réponse qu'on lui a promise sous 48 heures.
+  const demandeContestee = await prisma.demande.findUnique({
+    where: { reference: 'DEMO-BO-AVIS-GRAVE' },
+    select: { id: true },
+  });
+  if (demandeContestee !== null) {
+    const existante = await prisma.contestation.findFirst({
+      where: { demandeId: demandeContestee.id, entrepriseId: entreprise.id },
+      select: { id: true },
+    });
+    if (existante === null) {
+      await prisma.contestation.create({
+        data: {
+          demandeId: demandeContestee.id,
+          entrepriseId: entreprise.id,
+          motif: 'client_injoignable',
+          explication:
+            'Six appels sur trois jours, deux messages, aucune réponse. Le rendez-vous n’a jamais pu être fixé.',
+          deposeeLe: new Date(Date.now() - 5 * 86_400_000),
+          echeanceLe: new Date(Date.now() - 3 * 86_400_000),
+        },
+      });
+    }
+  }
+
+  const signalement = await prisma.signalementDsa.findFirst({
+    where: { contenuId: 'demo-bo-a-verifier' },
+    select: { id: true },
+  });
+  if (signalement === null) {
+    await prisma.signalementDsa.create({
+      data: {
+        typeContenu: 'fiche',
+        contenuId: 'demo-bo-a-verifier',
+        motif: 'Allégation de certification mensongère',
+        explication:
+          'La fiche annonce une qualification RGE que l’entreprise ne détient pas, d’après l’annuaire officiel.',
+        auteurEmail: 'signalant.demo@exemple.test',
+      },
+    });
+  }
+}
+
 async function main(): Promise<void> {
   const existant = await prisma.admin.findUnique({
     where: { email: EMAIL },
@@ -334,6 +484,7 @@ async function main(): Promise<void> {
 
   await semeDesDemandes();
   await semeDesProfessionnels();
+  await semeLaModeration();
 
   const racine = path.resolve(import.meta.dirname, '../../..');
   await writeFile(path.join(racine, '.jeton-administration'), `${totpSecret}\n`, 'utf8');
