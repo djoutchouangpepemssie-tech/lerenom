@@ -1932,6 +1932,49 @@ parce qu'aucun ne fabriquait une facture d'acompte à partir de vraies données.
 
 ---
 
+## L'intégration continue a enfin tourné, et elle a trouvé quelque chose
+
+Cinquante-trois exécutions depuis le premier commit, cinquante-trois échecs, chacun en deux à
+trois secondes. Le journal notait « l'intégration continue n'a jamais tourné » sans en avoir
+cherché la cause ; `scripts/verifie.sh` avait été écrit pour s'en passer.
+
+La cause n'était pas dans le fichier de workflow. L'interface de GitHub ne la disait pas non
+plus. C'est l'API qui l'a montrée : `runner_id: 0`, `runner_name: ""`, aucune étape, aucun
+journal téléchargeable. **Aucune machine n'avait jamais été attribuée.** Le dépôt était privé
+sur un compte gratuit, où les minutes d'Actions sont comptées ; le dépôt rendu public, les deux
+travaux ont démarré à la première poussée.
+
+### Ce qu'elle a trouvé en tournant une fois
+
+Le travail « base » est passé entièrement, du premier coup : schéma, extensions PostGIS,
+garde-fous SQL, semis, les comptes 1 285 / 18 / 69 / 479, les tests d'intégration de la cascade,
+et le contrôle « les tests ne laissent aucune trace ». Sur une base neuve, et sans que rien n'y
+ait jamais été éprouvé.
+
+Le travail de lint, lui, a échoué sur un défaut vieux de cinquante-trois commits :
+**`@lerenom/db:lint` tournait avant `@lerenom/db:build`.**
+
+`dependsOn: ["^build"]` construit les **dépendances** d'un paquet. `@lerenom/db` n'en a aucune :
+son propre `prisma generate` ne tournait donc jamais avant son lint ni son typecheck, alors que
+ses sources importent le client généré. Soixante-seize erreurs « type qui ne peut être
+résolu », sur une copie fraîche.
+
+Pourquoi personne ne l'avait vu : en local, `packages/db/src/genere` traîne toujours d'une
+construction précédente. `pnpm run lint` passait, la porte de validation était verte, et elle
+avait raison sur la machine où elle tournait. Reproduit en effaçant le dossier généré et les
+caches de Turbo — soixante-seize erreurs, à l'identique. Corrigé par deux surcharges nommées,
+puis revérifié sur un arbre entièrement propre.
+
+D'où une règle : **une porte de validation qui tourne toujours au même endroit ne vérifie que
+cet endroit.** Elle avait raison sur ma machine et se taisait sur une copie fraîche — et une
+copie fraîche, c'est exactement ce qu'est un déploiement.
+
+Et une leçon sur le diagnostic : « l'intégration continue ne marche pas » a été consigné
+pendant onze jours sans qu'on demande _pourquoi_. La réponse tenait dans un appel d'API, et
+elle cachait un vrai défaut du dépôt.
+
+---
+
 ## Phases 5 à 11 · à venir
 
 Agenda et documents du pro, monétisation Stripe, back-office, personnalisation, avis et

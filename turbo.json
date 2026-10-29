@@ -1,7 +1,7 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "ui": "stream",
-  "//": "Turbo ne transmet aux tâches que les variables déclarées : c'est ce qui rend son cache fiable, puisqu'une variable changée invalide le cache. La contrepartie est qu'une variable oubliée ici est simplement absente à l'exécution de la tâche — sans erreur, sans avertissement. C'est ainsi que la construction du site a cherché DATABASE_URL en vain alors qu'elle était bien déclarée sur le service.",
+  "//": "Turbo ne transmet aux tâches que les variables déclarées : c'est ce qui rend son cache fiable, puisqu'une variable changée invalide le cache. La contrepartie est qu'une variable oubliée ici est simplement absente à l'exécution de la tâche — sans erreur, sans avertissement. C'est ainsi que la construction du site a cherché DATABASE_URL en vain alors qu'elle était bien déclarée sur le service. — `^build` ne construit que les **dépendances** d'un paquet. @lerenom/db n'en a aucune : son propre `build` — `prisma generate` — ne tournait donc jamais avant son lint ni son typecheck, et ses sources importent le client généré. Invisible en local, où `src/genere` traîne d'une construction précédente ; fatal sur une copie fraîche, où lint rapportait 76 erreurs « type qui ne peut être résolu ». C'est l'intégration continue qui l'a montré, le jour où elle a enfin pu s'exécuter.",
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
@@ -22,6 +22,13 @@
     },
     "lint": {
       "dependsOn": ["^build"]
+    },
+    "@lerenom/db#lint": {
+      "dependsOn": ["build"]
+    },
+    "@lerenom/db#typecheck": {
+      "dependsOn": ["build"],
+      "env": ["DATABASE_URL"]
     },
     "typecheck": {
       "dependsOn": ["^build"],

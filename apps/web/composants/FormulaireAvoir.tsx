@@ -97,6 +97,13 @@ export function FormulaireAvoir({
                 {avoir.numero} · −{formatEuros(avoir.montantTTC)}
               </p>
               <p className="text-encre-70 mt-0.5 text-xs">{avoir.motif}</p>
+              {/* Un avoir se remet au client : il lui faut son document, comme la facture. */}
+              <a
+                href={`/document/avoir/${avoir.id}`}
+                className="text-encre-55 hover:text-encre mt-1 inline-block text-xs font-semibold underline decoration-[1.5px] underline-offset-4 transition-colors"
+              >
+                Voir le document imprimable
+              </a>
             </li>
           ))}
         </ul>
