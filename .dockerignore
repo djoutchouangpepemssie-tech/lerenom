@@ -1,0 +1,39 @@
+# Ce qui ne doit pas partir chez le constructeur.
+#
+# Le contexte de construction était de 73 Mo, dont 77 Mo de captures d'écran — autrement dit,
+# presque rien d'autre que de la documentation. Au-delà d'un certain volume, le constructeur
+# de Railway meurt avant même d'avoir lancé l'installation, avec un message qui ne dit rien
+# de la cause : « frontend grpc server closed unexpectedly ». Deux déploiements du service
+# web ont échoué ainsi, pendant que le worker — plus petit — passait sur le même commit.
+#
+# La croissance était continue : chaque module ajoutait ses captures, et le jour où le seuil
+# a été franchi n'avait aucun rapport avec ce que contenait le commit. C'est ce qui rendait
+# la panne illisible.
+#
+# Rien ici n'est nécessaire pour construire l'application.
+
+# Documentation, captures d'écran, journal : lus par des humains, jamais par le constructeur.
+docs/
+
+# Les scripts d'audit et d'outillage ne participent pas à la construction.
+outils/
+
+# Les notes de déploiement. La configuration, elle, vit dans le tableau de bord de Railway.
+deploiement/
+
+# Produits de construction locaux : régénérés par le constructeur, jamais réutilisés.
+**/node_modules/
+**/.next/
+**/.turbo/
+**/dist/
+
+# Environnements locaux. Les secrets de production viennent des variables du service.
+**/.env
+**/.env.*
+.jeton-administration
+
+# Historique et outils de développement.
+.git/
+.github/
+.claude/
+**/*.log
