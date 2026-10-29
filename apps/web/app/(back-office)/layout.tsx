@@ -40,7 +40,7 @@ const UNIVERS = [
   { href: '/administration/finances', libelle: 'Finances', prete: false },
   { href: '/administration/croissance', libelle: 'Croissance', prete: false },
   { href: '/administration/confiance', libelle: 'Confiance', prete: true },
-  { href: '/administration/reglages', libelle: 'Réglages', prete: false },
+  { href: '/administration/reglages', libelle: 'Réglages', prete: true },
 ];
 
 export default async function DispositionBackOffice({

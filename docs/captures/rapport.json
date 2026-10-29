@@ -450,6 +450,26 @@
     "erreursConsole": []
   },
   {
+    "page": "Back-office — réglages d’exploitation",
+    "largeur": 390,
+    "fichier": "administration-reglages-390.png",
+    "defilementHorizontal": false,
+    "largeurDocument": 390,
+    "largeurFenetre": 390,
+    "debordements": [],
+    "erreursConsole": []
+  },
+  {
+    "page": "Back-office — journal d’audit",
+    "largeur": 390,
+    "fichier": "administration-journal-390.png",
+    "defilementHorizontal": false,
+    "largeurDocument": 390,
+    "largeurFenetre": 390,
+    "debordements": [],
+    "erreursConsole": []
+  },
+  {
     "page": "Back-office — catalogue",
     "largeur": 390,
     "fichier": "administration-catalogue-390.png",
@@ -1033,6 +1053,26 @@
     "page": "Back-office — contestations",
     "largeur": 1440,
     "fichier": "administration-confiance-contestations-1440.png",
+    "defilementHorizontal": false,
+    "largeurDocument": 1440,
+    "largeurFenetre": 1440,
+    "debordements": [],
+    "erreursConsole": []
+  },
+  {
+    "page": "Back-office — réglages d’exploitation",
+    "largeur": 1440,
+    "fichier": "administration-reglages-1440.png",
+    "defilementHorizontal": false,
+    "largeurDocument": 1440,
+    "largeurFenetre": 1440,
+    "debordements": [],
+    "erreursConsole": []
+  },
+  {
+    "page": "Back-office — journal d’audit",
+    "largeur": 1440,
+    "fichier": "administration-journal-1440.png",
     "defilementHorizontal": false,
     "largeurDocument": 1440,
     "largeurFenetre": 1440,

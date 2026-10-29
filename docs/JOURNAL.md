@@ -2397,6 +2397,78 @@ finit par n'être plus consultée du tout.
 
 ---
 
+## Back-office · les réglages
+
+### Une chaîne construite aux deux bouts, coupée au milieu
+
+J'ai cru tenir un troisième trou de la même famille que les deux précédents, et j'avais à
+moitié tort — ce qui vaut d'être écrit, parce que la moitié fausse aurait fini dans un message
+de commit.
+
+Ce que je pensais : « la table `parametres` n'est jamais écrite, le lecteur retombe toujours
+sur les valeurs du code, la promesse est fausse ». Ce que la base a montré quand je l'ai
+interrogée : une ligne existait déjà pour la clé que je venais de modifier, datée du 28
+octobre, motif « Valeur initiale du 27 octobre 2026 ». **Le semis pose bien les vingt et une
+clés.** La lecture existait, l'écriture initiale aussi.
+
+Ce qui manquait vraiment est plus étroit, et suffit : **rien ne permettait de changer une
+valeur** autrement qu'en SQL, à la main, sur la base de production. La promesse « un délai
+changé par Arcel s'applique à la prochaine demande » tenait en théorie et demandait, en
+pratique, une requête écrite par quelqu'un qui sait ce qu'il fait.
+
+> **Règle retenue** — _une prémisse vérifiée à moitié se raconte en entier, et faux._ Deux
+> minutes de requête ont séparé « rien n'écrit jamais » de « rien ne permet de changer ».
+
+### Huit réglages, pas quarante
+
+`Parametres` compte une quarantaine de champs. La table en contient vingt et un. La
+distribution en relit **huit**. L'écran n'affiche que ces huit-là.
+
+C'est le choix qui structure le module. Montrer les treize autres donnerait un écran où l'on
+change une valeur et où rien ne bouge — le pire des écrans de réglages, parce qu'on n'en
+découvre l'inutilité qu'après avoir compté dessus. L'écart est consigné en Q39 : la table
+contient aujourd'hui deux choses de nature différente sous la même forme, et c'est cela qui
+finira par tromper quelqu'un.
+
+### Ce que chaque réglage porte
+
+Des bornes, qui refusent au lieu de conseiller. Un nombre de professionnels par demande à
+10 000 n'est pas une faute de frappe qu'on rattrape ensuite : c'est une facture envoyée à des
+entreprises qui n'ont rien demandé. Éprouvé : 9 000 refusé, 2,5 refusé sur un réglage entier,
+clé inventée refusée, clé en trop refusée en bloc, motif court refusé, et valeur déjà en
+vigueur refusée aussi — réécrire une ligne identique salirait l'historique sans rien changer.
+
+Un motif obligatoire, parce qu'un délai de cascade modifie les revenus de toutes les
+entreprises inscrites.
+
+Et la valeur par défaut du code, affichée **à côté** de la valeur en vigueur. Sans elle, on ne
+sait pas si 120 minutes est un choix ou un héritage, et on hésite à y toucher pour la mauvaise
+raison.
+
+### Rien n'est écrasé
+
+Changer un réglage **ferme** la ligne en vigueur et en ouvre une nouvelle, dans une
+transaction : deux lignes ouvertes sur la même clé rendraient le réglage indéterminé, aucune
+le ferait retomber en silence sur le défaut du code. Deux façons différentes de ne plus savoir
+ce qui s'applique.
+
+Vérifié de bout en bout : réglage posé par HTTP, puis `parametresEnVigueur()` appelé depuis
+`packages/distribution` — 90 au lieu de 120. La chaîne tient. La valeur d'essai a ensuite été
+remise à 120, par le même chemin, et l'historique garde les deux passages.
+
+### Le journal, et un détail de rédaction
+
+Le troisième onglet montre les cinquante dernières écritures du back-office avec leur avant et
+leur après. Il n'a aucun bouton, et c'est tout son intérêt : un journal qu'on peut corriger ne
+prouve rien.
+
+Les lignes posées par le semis n'ont pas d'auteur. L'écran affichait « réglé le 28/10/2026 par
+inconnu » — ce qui laisse croire à une trace perdue, alors que personne n'a jamais touché à la
+valeur. Elles disent maintenant « valeur initiale, jamais modifiée depuis ». La différence
+entre « on ne sait plus qui » et « personne » n'est pas un détail sur un écran d'audit.
+
+---
+
 ## Phases 5 à 11 · à venir
 
 Agenda et documents du pro, monétisation Stripe, back-office, personnalisation, avis et

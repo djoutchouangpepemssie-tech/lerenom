@@ -1111,3 +1111,26 @@ redécouvertes :
 - le semis de base crée des entreprises **revendiquées sans compte utilisateur**, état que le
   produit ne peut pas produire. L'écran Professionnels le signale honnêtement ; c'est le semis
   qu'il faudra reprendre.
+
+---
+
+## Q39 🟠 · Treize réglages posés en base que personne ne lit
+
+Le semis pose vingt et une clés dans la table `parametres`, historisée. La distribution en
+relit **huit**. Les treize autres — poids du classement, délais de contestation, taux de TVA
+du Renom, durée de conservation des demandes — sont en base, datées, et **aucun code ne les
+consulte** : leurs valeurs vivent en dur dans `packages/core`.
+
+Ce n'est pas un défaut visible : la plateforme se comporte correctement, puisque le code et
+la table disent la même chose. C'en est un le jour où quelqu'un change une de ces treize
+valeurs en base et constate que rien ne bouge — et ce jour-là, la table aura menti.
+
+**Défaut appliqué : l'écran des réglages n'affiche que les huit clés réellement relues.** Les
+offrir toutes donnerait des boutons sans effet, et on n'en découvrirait l'inutilité qu'après
+avoir compté dessus.
+
+**Ce qu'il faudra décider :** chacune des treize passe-t-elle sous lecture en base, ou
+sort-elle de la table ? Les deux réponses se défendent. Un taux de TVA ou une durée de
+conservation RGPD n'ont sans doute pas à se changer sans relecture ni déploiement ; les poids
+du classement, si. Tant que rien n'est tranché, la table contient deux choses de nature
+différente sous la même forme, et c'est cela qui finira par tromper quelqu'un.

@@ -567,6 +567,30 @@ const PAGES = [
     },
   },
   {
+    nom: 'administration-reglages',
+    chemin: '/administration/reglages',
+    titre: 'Back-office — réglages d’exploitation',
+    connexionAdmin: true,
+    // Un réglage ouvert : c'est le seul moment où l'écran montre ses bornes, son motif
+    // obligatoire et son bouton inerte. Replié, il ne montre que des nombres.
+    scenario: async (onglet) => {
+      await onglet.getByRole('button', { name: 'Changer' }).first().click();
+      await onglet.waitForTimeout(250);
+    },
+  },
+  {
+    nom: 'administration-journal',
+    chemin: '/administration/reglages',
+    titre: 'Back-office — journal d’audit',
+    connexionAdmin: true,
+    scenario: async (onglet) => {
+      await onglet.getByRole('tab', { name: /Journal/ }).click();
+      await onglet.waitForTimeout(200);
+      await onglet.getByRole('button', { name: 'avant / après' }).first().click();
+      await onglet.waitForTimeout(250);
+    },
+  },
+  {
     nom: 'administration-catalogue',
     chemin: '/administration/catalogue',
     titre: 'Back-office — catalogue',
