@@ -1872,6 +1872,66 @@ réglages qui les alimente tous.
 
 ---
 
+## Factur-X, et ce que la donnée réelle a révélé
+
+Une facture électronique au sens de la réforme n'est pas un PDF envoyé par courriel : c'est un
+PDF **qui porte en pièce jointe** un XML structuré, de sorte que le même fichier se lise à
+l'œil et se traite sans intervention humaine. Le XML existe maintenant ; son incorporation au
+PDF reste liée à la génération serveur.
+
+**Le profil est BASIC WL**, et le choix s'explique en une phrase : MINIMUM ne porte ni
+ventilation de TVA ni échéance — c'est un profil d'export comptable, pas une facture —, BASIC
+et EN 16931 exigent le détail ligne à ligne, que nos factures possèdent mais dont la mise en
+correspondance ouvre une surface d'erreur sans contrepartie immédiate. BASIC WL est **le
+profil le plus riche que nous puissions remplir sans rien inventer**.
+
+**La structure n'a pas été écrite de mémoire.** Les sources secondaires se contredisaient — six
+champs obligatoires pour l'une, sept pour une autre, dix pour une troisième. Un exemplaire de
+référence du profil a tranché. L'ordre des éléments est imposé par le schéma : un élément
+correct au mauvais endroit rend le document invalide, et rien dans le code ne le signale — deux
+tests le gardent, qui lisent l'ordre réel des enfants plutôt que le texte.
+
+### Deux défauts que les tests ne pouvaient pas voir
+
+Les deux sont sortis en **regardant le XML produit**, le premier sur une facture fabriquée, le
+second sur une vraie.
+
+**La remise était rattachée en bloc au premier taux.** Dans le modèle CII, une réduction
+appartient à une catégorie et à un taux ; l'attacher entière au premier contredisait les bases
+de TVA déclarées trois lignes plus haut, que `calculeTotaux` avait déjà réduites chacune de sa
+part. Un destinataire qui recalcule aurait vu la contradiction sans pouvoir dire laquelle des
+deux déclarations croire. Elle est désormais ventilée, la dernière part absorbant l'arrondi.
+
+**La facture d'acompte ne bouclait pas.** Le XML annonçait un total général de 1 234,20 € et un
+total dû de 370,26 €, sans rien entre les deux. La norme exige
+`GrandTotal − Prepaid = DuePayable` — c'est la règle BR-CO-16 d'EN 16931 — et tout destinataire
+qui vérifie aurait rejeté la facture.
+
+La tentation était de déclarer la différence comme déjà payée : l'égalité se serait fermée, et
+le document aurait menti, puisque rien n'avait été versé. Le XML est donc **ramené à ce que la
+facture réclame vraiment**, avec sa propre base et sa propre TVA au prorata de chaque taux. Le
+PDF continue de montrer le chantier entier : c'est ce que le client doit voir.
+
+D'où une règle : **un document pour machine et un document pour humain peuvent montrer des
+choses différentes, jamais des choses contradictoires.** Le PDF explique, le XML calcule ; ce
+qu'ils affirment tous les deux doit concorder au centime.
+
+### Ce que la vérification a coûté, et rapporté
+
+Les tests **analysent** le XML au lieu d'y chercher des morceaux de chaîne. La différence n'est
+pas cosmétique : un test qui cherche `<ram:GrandTotalAmount` passe encore quand la balise s'est
+retrouvée au mauvais niveau, ou quand le document n'est plus bien formé. Un analyseur a donc
+été ajouté aux dépendances de développement — c'est le prix d'un test qui vérifie ce que le
+destinataire vérifiera.
+
+Le fichier produit pour une vraie facture a ensuite été téléchargé par la route, analysé, et
+relu. C'est là que le défaut de l'acompte est apparu : aucun test unitaire ne l'aurait montré,
+parce qu'aucun ne fabriquait une facture d'acompte à partir de vraies données.
+
+1 026 tests verts, porte de validation franchie.
+
+---
+
 ## Phases 5 à 11 · à venir
 
 Agenda et documents du pro, monétisation Stripe, back-office, personnalisation, avis et

@@ -956,9 +956,26 @@ La génération serveur suppose un Chromium dans l'image — la page est le docu
 reconstruire avec une bibliothèque de PDF créerait une seconde mise en page, donc un jour un
 écart entre l'écran et le fichier.
 
-**Factur-X n'est pas produit.** Les colonnes existent (`factures.pdf_url`,
-`factures.facturx_url`), la structure de données aussi ; il manque le XML CII et son
-incorporation au PDF, qui dépend du point précédent.
+**Factur-X est produit, au profil BASIC WL.** _Comblé en partie_ : le XML existe, il se
+télécharge depuis la facture émise, et il est vérifié à la fois par trente-deux tests et
+contre un exemplaire de référence du profil. Reste son **incorporation au PDF**, qui dépend du
+point précédent — un XML seul n'est pas une facture électronique.
+
+Le profil mérite une phrase. Factur-X en définit plusieurs : MINIMUM ne porte ni ventilation
+de TVA ni échéance, BASIC et EN 16931 exigent le détail ligne à ligne. BASIC WL porte
+exactement ce que nos factures tiennent de sûr. C'est **le profil le plus riche que nous
+puissions remplir sans rien inventer**, et c'est le critère qui a décidé. **À confirmer** :
+les destinataires de nos professionnels — comptables, grands donneurs d'ordre — se
+contentent-ils de BASIC WL, ou en réclament-ils un qui détaille les lignes ?
+
+**Une décision prise sans certitude** : la facture d'acompte. Elle porte les lignes du
+chantier entier, et n'en réclame qu'une fraction. La norme exige que
+`GrandTotal − Prepaid = DuePayable` ; déclarer la différence comme déjà payée serait un
+mensonge, puisque rien n'a été versé. Le XML est donc **ramené à ce que la facture réclame
+vraiment** : l'acompte, avec sa propre base et sa propre TVA réparties au prorata de chaque
+taux. Le PDF, lui, continue de montrer le chantier entier — c'est ce que le client doit voir.
+**À faire valider** : un comptable attend-il de retrouver dans le XML le total du chantier, ou
+le montant réclamé ?
 
 **L'acceptation d'un devis n'est toujours pas matérialisée par un écrit** (voir Q31). La
 question se posera avec le PDF, comme annoncé.

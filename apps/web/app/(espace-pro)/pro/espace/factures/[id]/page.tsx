@@ -48,12 +48,24 @@ export default async function PageUneFacture({
         <h1 className="text-[clamp(1.6rem,3.6vw,2.2rem)]">
           {facture.numero ?? 'Facture prête à émettre'}
         </h1>
-        <Link
-          href={`/document/facture/${id}`}
-          className="text-encre hover:text-or-fonce text-sm font-semibold underline decoration-[1.5px] underline-offset-4 transition-colors"
-        >
-          Voir le document imprimable
-        </Link>
+        <span className="flex flex-wrap gap-x-5 gap-y-1">
+          <Link
+            href={`/document/facture/${id}`}
+            className="text-encre hover:text-or-fonce text-sm font-semibold underline decoration-[1.5px] underline-offset-4 transition-colors"
+          >
+            Voir le document imprimable
+          </Link>
+          {/* Le XML ne s'offre que sur une facture émise : avant, il n'y a ni numéro ni date,
+              donc rien qui constitue une facture au sens comptable. */}
+          {!facture.emettable && (
+            <a
+              href={`/api/pro/factures/${id}/facturx`}
+              className="text-encre-55 hover:text-encre text-sm font-semibold underline decoration-[1.5px] underline-offset-4 transition-colors"
+            >
+              Télécharger le XML Factur-X
+            </a>
+          )}
+        </span>
       </div>
       <p className="text-encre-70 mt-2 max-w-[62ch]">
         {facture.emettable
