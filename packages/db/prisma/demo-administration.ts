@@ -173,6 +173,122 @@ async function semeDesDemandes(): Promise<void> {
   }
 }
 
+/**
+ * Pose les trois cas que l'écran « Professionnels » existe pour traiter.
+ *
+ * Sans eux, la file « à vérifier » s'ouvre vide sur une base de développement où les sept
+ * entreprises semées sont toutes déjà vérifiées — et un écran vide ne montre pas s'il
+ * fonctionne. Les trois cas ne sont pas décoratifs : ce sont ceux qui se présentent vraiment.
+ *
+ * 1. Une fiche revendiquée, avec un métier : elle attend, et la vérifier la met au travail.
+ * 2. Une fiche revendiquée **sans métier** : la vérifier ne lui apportera rien, parce que la
+ *    cascade ne peut la rapprocher d'aucune demande. L'écran doit le dire avant le clic.
+ * 3. Une fiche suspendue, avec son motif : la file « écartées » doit montrer qu'on peut
+ *    revenir sur une décision.
+ */
+async function semeDesProfessionnels(): Promise<void> {
+  const commune = await prisma.commune.findFirst({ select: { code: true } });
+  if (commune === null) return;
+  const metier = await prisma.metier.findFirst({
+    where: { masque: false },
+    orderBy: { rang: 'asc' },
+    select: { id: true },
+  });
+
+  const scenarios = [
+    {
+      slug: 'demo-bo-a-verifier',
+      nom: 'Atelier Vaugirard (démonstration)',
+      siret: '09900000000071',
+      avecMetier: true,
+      verifiee: false,
+      suspendue: false,
+    },
+    {
+      slug: 'demo-bo-sans-metier',
+      nom: 'Maison Belleville (démonstration)',
+      siret: '09900000000072',
+      avecMetier: false,
+      verifiee: false,
+      suspendue: false,
+    },
+    {
+      slug: 'demo-bo-suspendue',
+      nom: 'Comptoir Montreuil (démonstration)',
+      siret: '09900000000073',
+      avecMetier: true,
+      verifiee: true,
+      suspendue: true,
+    },
+  ];
+
+  for (const scenario of scenarios) {
+    // Les drapeaux sont réécrits à chaque passage : une exécution précédente a pu vérifier ou
+    // réactiver la fiche depuis l'écran, et elle ne serait plus dans la file qu'elle sert à
+    // montrer.
+    const entreprise = await prisma.entreprise.upsert({
+      where: { slug: scenario.slug },
+      update: {
+        verifiee: scenario.verifiee,
+        suspendue: scenario.suspendue,
+        revendiquee: true,
+      },
+      create: {
+        slug: scenario.slug,
+        nom: scenario.nom,
+        siret: scenario.siret,
+        source: 'inscription',
+        revendiquee: true,
+        verifiee: scenario.verifiee,
+        suspendue: scenario.suspendue,
+        creeLe: new Date(Date.now() - 5 * 86_400_000),
+      },
+      select: { id: true },
+    });
+
+    const agences = await prisma.agence.count({ where: { entrepriseId: entreprise.id } });
+    if (agences === 0) {
+      await prisma.agence.create({
+        data: {
+          entrepriseId: entreprise.id,
+          adresse: '12 rue de la Démonstration',
+          codePostal: '75000',
+          communeId: commune.code,
+          principale: true,
+        },
+      });
+    }
+
+    // Un compte rattaché, parce qu'une fiche revendiquée en a forcément un : c'est la
+    // revendication qui le crée. Sans lui, la démonstration montrait une étiquette « aucun
+    // compte » sur un état qui ne peut pas exister, et l'écran mentait sur ce qu'il sait voir.
+    const comptes = await prisma.utilisateurPro.count({
+      where: { entrepriseId: entreprise.id },
+    });
+    if (comptes === 0) {
+      await prisma.utilisateurPro.create({
+        data: {
+          entrepriseId: entreprise.id,
+          email: `${scenario.slug}@exemple.test`,
+          nom: 'Gérant de démonstration',
+          emailVerifieLe: new Date(),
+        },
+      });
+    }
+
+    if (scenario.avecMetier && metier !== null) {
+      const lien = await prisma.metierPro.count({
+        where: { entrepriseId: entreprise.id, metierId: metier.id },
+      });
+      if (lien === 0) {
+        await prisma.metierPro.create({
+          data: { entrepriseId: entreprise.id, metierId: metier.id },
+        });
+      }
+    }
+  }
+}
+
 async function main(): Promise<void> {
   const existant = await prisma.admin.findUnique({
     where: { email: EMAIL },
@@ -217,6 +333,7 @@ async function main(): Promise<void> {
   }
 
   await semeDesDemandes();
+  await semeDesProfessionnels();
 
   const racine = path.resolve(import.meta.dirname, '../../..');
   await writeFile(path.join(racine, '.jeton-administration'), `${totpSecret}\n`, 'utf8');

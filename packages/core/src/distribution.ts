@@ -70,6 +70,15 @@ export interface ProCandidat {
   readonly metierCorrespond: boolean;
   /** Le pro s'est-il déclaré disponible ? */
   readonly disponible: boolean;
+  /**
+   * L'entreprise a-t-elle été vérifiée ?
+   *
+   * Une fiche non vérifiée existe dans l'annuaire et **ne reçoit aucune demande**. C'est la
+   * contrepartie de la revendication libre : n'importe qui peut réclamer une fiche, personne
+   * ne reçoit de client avant qu'un humain ait regardé. La règle était écrite à l'inscription
+   * et dans `QUESTIONS.md` §Q23 ; rien ne l'appliquait.
+   */
+  readonly verifiee: boolean;
   /** Abonnement à jour, compte non suspendu. */
   readonly compteAJour: boolean;
   readonly agences: readonly AgencePro[];
@@ -81,6 +90,7 @@ export type RaisonExclusion =
   | 'metier-different'
   | 'hors-zone'
   | 'indisponible'
+  | 'non-verifiee'
   | 'note-insuffisante'
   | 'compte-non-a-jour'
   | 'forfait-epuise-sans-recharge';
@@ -141,6 +151,18 @@ export function rapproche(
         entrepriseId: pro.entrepriseId,
         raison: 'compte-non-a-jour',
         explication: 'Compte suspendu ou abonnement impayé.',
+      });
+      continue;
+    }
+
+    // Avant la note, avant la zone : une fiche non vérifiée n'est pas un mauvais candidat,
+    // c'est un candidat dont on ne sait rien. Lui envoyer un client reviendrait à confier
+    // des coordonnées à quelqu'un que personne n'a regardé.
+    if (!pro.verifiee) {
+      ecartes.push({
+        entrepriseId: pro.entrepriseId,
+        raison: 'non-verifiee',
+        explication: 'Fiche non vérifiée : visible dans l’annuaire, mais hors distribution.',
       });
       continue;
     }

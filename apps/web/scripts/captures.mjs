@@ -531,6 +531,24 @@ const PAGES = [
     },
   },
   {
+    nom: 'administration-professionnels',
+    chemin: '/administration/professionnels',
+    titre: 'Back-office — professionnels à vérifier',
+    connexionAdmin: true,
+  },
+  {
+    nom: 'administration-professionnels-suspension',
+    chemin: '/administration/professionnels?file=actives',
+    titre: 'Back-office — suspendre un professionnel',
+    connexionAdmin: true,
+    // Le motif de suspension ouvert : c'est le seul endroit de l'écran où un geste est
+    // volontairement freiné, et un formulaire fermé ne le montre pas.
+    scenario: async (onglet) => {
+      await onglet.getByRole('button', { name: 'Suspendre' }).first().click();
+      await onglet.waitForTimeout(250);
+    },
+  },
+  {
     nom: 'administration-catalogue',
     chemin: '/administration/catalogue',
     titre: 'Back-office — catalogue',

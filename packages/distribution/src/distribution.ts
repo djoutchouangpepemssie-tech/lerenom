@@ -107,6 +107,7 @@ async function candidats(
       titulaireExclusivite: entreprise.exclusivites.length > 0,
       metierCorrespond: true,
       disponible: entreprise.disponible,
+      verifiee: entreprise.verifiee,
       // Un compte est à jour tant qu'il n'est ni suspendu ni impayé.
       compteAJour: abonnement === undefined || abonnement.statut === 'actif',
       agences: entreprise.agences.map((agence) => ({

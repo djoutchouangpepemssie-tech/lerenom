@@ -33,6 +33,10 @@ function pro(partiel: Partial<ProCandidat> & { entrepriseId: string }): ProCandi
     note: 4.5,
     metierCorrespond: true,
     disponible: true,
+    // Vérifiée par défaut : la plupart des tests portent sur un autre critère, et les en
+    // surcharger tous masquerait celui qu'ils examinent. Les tests de la vérification, eux,
+    // le disent explicitement.
+    verifiee: true,
     compteAJour: true,
     demandesAccepteesCeMois: 0,
     agences: [{ agenceId: `${partiel.entrepriseId}-a1`, position: POSITION_PARIS_11, rayonKm: 10 }],
@@ -88,6 +92,33 @@ describe('rapproche : éligibilité d’un pro à une demande', () => {
   it('écarte un pro indisponible comme indisponible, pas comme hors zone', () => {
     const { ecartes } = rapproche([pro({ entrepriseId: 'absent', disponible: false })], ADRESSE, P);
     expect(ecartes[0]?.raison).toBe('indisponible');
+  });
+
+  it('écarte une fiche non vérifiée, et la nomme comme telle', () => {
+    // La règle était écrite à l'inscription et dans QUESTIONS.md §Q23 — « la fiche existe
+    // dans l'annuaire, elle ne reçoit aucune demande » — et rien ne l'appliquait. Une fiche
+    // non vérifiée n'est pas un mauvais candidat : c'est un candidat dont on ne sait rien.
+    const resultat = rapproche([pro({ entrepriseId: 'e1', verifiee: false })], ADRESSE, P);
+
+    expect(resultat.retenus).toHaveLength(0);
+    expect(resultat.ecartes[0]?.raison).toBe('non-verifiee');
+    expect(resultat.ecartes[0]?.explication).toContain('annuaire');
+  });
+
+  it('écarte la non vérifiée avant de regarder sa note ou sa zone', () => {
+    // L'ordre des raisons compte : le back-office affiche la première, et « note
+    // insuffisante » sur une fiche jamais vérifiée enverrait chercher au mauvais endroit.
+    const resultat = rapproche(
+      [pro({ entrepriseId: 'e1', verifiee: false, note: 1, agences: [] })],
+      ADRESSE,
+      P,
+    );
+    expect(resultat.ecartes[0]?.raison).toBe('non-verifiee');
+  });
+
+  it('retient une fiche vérifiée, toutes choses égales', () => {
+    const resultat = rapproche([pro({ entrepriseId: 'e1', verifiee: true })], ADRESSE, P);
+    expect(resultat.retenus.map((r) => r.entrepriseId)).toEqual(['e1']);
   });
 
   it('écarte un pro sous la note minimale de 3,5', () => {

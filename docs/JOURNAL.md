@@ -2246,6 +2246,82 @@ avant et après. La démonstration a ensuite été remise en état.
 
 ---
 
+## Back-office · les professionnels
+
+### La règle était écrite partout, et appliquée nulle part
+
+Avant d'écrire l'écran, j'ai regardé ce que `verifiee` commandait réellement. Rien.
+
+La règle existait en trois endroits : `inscription.ts` crée toute entreprise avec
+`verifiee: false`, `QUESTIONS.md` §Q23 pose que la revendication est libre **parce que** la
+vérification la rattrape, et l'inscription le dit au professionnel. Mais la cascade ne filtrait
+que sur `suspendue`, `retireeLe`, le métier et la zone. Autrement dit : **n'importe qui pouvait
+réclamer une fiche et recevoir, dans la minute, les coordonnées d'un vrai client.** La seule
+chose qui empêchait l'incident, c'est que personne ne s'était inscrit.
+
+Le trou est bouché avant l'écran, parce qu'il est plus grave que l'écran qui va le piloter.
+`ProCandidat` porte maintenant `verifiee`, `RaisonExclusion` a gagné `non-verifiee`, et le
+contrôle est placé **avant la note et avant la zone** — une fiche non vérifiée n'est pas un
+mauvais candidat, c'est un candidat dont on ne sait rien, et l'écarter pour « note
+insuffisante » dirait une chose fausse à qui lit le journal de la cascade.
+
+> **Règle retenue** — _une règle écrite dans trois commentaires et zéro condition n'est pas une
+> règle, c'est une intention._ Celle-ci a survécu à une revue, à des tests et à une page
+> d'inscription qui la promettait au professionnel.
+
+### L'écran
+
+Trois files, une seule visible : à vérifier (la file de travail, les plus anciennes d'abord),
+actives, écartées. La file d'attente ne couvre que les fiches **revendiquées** : l'annuaire
+compte des milliers d'entreprises importées de SIRENE que personne n'a réclamées, et les y
+mêler rendrait la file inutilisable. Une fiche non revendiquée n'attend rien de nous.
+
+Quatre refus, tous pour la même raison — ce sont des gestes qui engagent quelqu'un d'autre :
+
+- **Aucune suppression.** Une entreprise porte des demandes, des avis et des factures émises.
+- **Aucune vérification en masse.** Vérifier, c'est regarder ; un bouton qui valide trente
+  fiches ne vérifie rien. C'est la même règle que pour le catalogue, et elle coûte autant.
+- **La suspension exige un motif d'au moins une phrase**, et le bouton reste inerte sans lui.
+  Elle coupe les revenus de quelqu'un ; le motif part au journal d'audit, et c'est la seule
+  chose qui expliquera la décision dans six mois — y compris à celui qui l'a prise.
+- **La vérification est réservée au rôle `administrateur`.** Le support classe des demandes,
+  c'est du tri ; il ne décide pas qui reçoit les coordonnées des clients.
+
+« Retirer la vérification » existe à côté de « suspendre », et ce n'est pas un doublon : un
+SIRET qu'on découvre radié doit pouvoir redescendre hors distribution sans qu'on ferme le
+compte. Les deux gestes ne disent pas la même chose.
+
+L'écran dit aussi ce que la vérification **ne** fera pas : une fiche sans métier déclaré porte
+« même vérifiée, elle ne recevra rien », parce que la cascade ne peut la rapprocher d'aucune
+demande. Le dire avant le clic évite de chercher ensuite pourquoi rien ne part.
+
+### Ce que la capture a montré, et ce que j'ai laissé
+
+Mes propres fiches de démonstration étaient revendiquées **sans aucun compte rattaché** — un
+état que le produit ne peut pas produire, puisque c'est la revendication qui crée le compte.
+L'étiquette « aucun compte » s'allumait donc sur une invention. Corrigé dans le script.
+
+Elle s'allume encore sur six des sept entreprises du semis de base, et là je n'ai rien touché.
+Le semis les crée `revendiquee: true` sans utilisateur ; leur en donner un ferait partir plus
+de messages à chaque distribution et déplacerait les attentes de plusieurs tests. Le gain
+serait cosmétique, le risque réel. L'étiquette ne ment pas : elle décrit exactement ce que
+contient la base. C'est le semis qui est incohérent, et il le restera jusqu'à ce qu'on le
+reprenne pour lui-même.
+
+> **Règle retenue** — _corriger une donnée de démonstration pour faire taire un contrôle juste
+> est le bon geste ; corriger le contrôle l'est rarement._
+
+### Les captures
+
+Trois captures ont échoué à la première série — confirmation d'intervention, dépôt d'avis,
+annulation de suivi. Aucune ne tenait à l'écran du jour : ce sont des parcours à jeton à usage
+unique, consommés par la série précédente. Resemés, les 114 clichés passent sans une erreur de
+console ni un débordement. Le piège méritait d'être noté : **une capture qui échoue ne pointe
+pas forcément l'écran qu'on vient d'écrire**, et conclure trop vite aurait fait chercher un
+défaut là où il n'y en avait pas.
+
+---
+
 ## Phases 5 à 11 · à venir
 
 Agenda et documents du pro, monétisation Stripe, back-office, personnalisation, avis et
