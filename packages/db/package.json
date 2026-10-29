@@ -18,7 +18,8 @@
     "demo:pro": "node --experimental-strip-types prisma/demo-pro.ts",
     "studio": "prisma studio",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint src"
+    "lint": "eslint src",
+    "demo:administration": "node --experimental-strip-types prisma/demo-administration.ts"
   },
   "dependencies": {
     "@lerenom/core": "workspace:*",
@@ -30,6 +31,7 @@
     "@types/node": "^22.19.1",
     "@types/pg": "^8.11.11",
     "pg": "^8.14.1",
-    "prisma": "^7.10.1"
+    "prisma": "^7.10.1",
+    "@lerenom/securite": "workspace:*"
   }
 }

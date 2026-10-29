@@ -2050,6 +2050,83 @@ la question qu'il ouvre — peut-on ouvrir en courriel seul ?
 
 ---
 
+## Le back-office s'ouvre, et il dit la vérité
+
+Dix-sept modules en neuf univers sont prévus. Le premier existe : l'accueil, avec sa coquille,
+sa connexion et son journal d'audit. C'est la phase 7, et elle ne dépend d'aucun service
+extérieur — c'est précisément pourquoi elle passe devant le reste : toutes les décisions qui
+s'accumulent dans `QUESTIONS.md` attendent quelqu'un qui puisse les prendre sans ouvrir `psql`.
+
+**Les quatre indicateurs disent ce qui ne va pas.** La règle de mise en page du cahier des
+charges en autorise quatre au maximum, et la contrainte a été utile : elle a forcé à choisir.
+Le nombre d'entreprises inscrites est flatteur et n'appelle aucune décision ; les messages
+bloqués, les demandes sans preneur, les contestations ouvertes et le catalogue non validé en
+appellent une. C'est le seul critère qui a servi.
+
+L'écran annonce donc, en rouge, que **trois cent onze messages attendent et que la plateforme
+est muette**. Un back-office qui cacherait cela mentirait à celui qui le consulte chaque matin.
+
+### La double authentification, et ce qu'elle coûte vraiment
+
+Le cahier des charges l'impose sur le back-office, et il a raison : un compte y voit les
+coordonnées de tous les clients. TOTP est implémenté ici plutôt qu'emprunté — non par goût de
+réécrire, mais parce que ce n'est pas de la cryptographie : un compteur de trente secondes, un
+HMAC-SHA1 que Node fournit, et une troncature décrite en six lignes dans la RFC 4226. Aucune
+primitive n'est inventée.
+
+La preuve que l'implémentation est juste ne vient pas de tests écrits contre elle — ils
+passeraient aussi bien si elle parlait une langue à elle. Elle vient des **six vecteurs
+officiels de la RFC 6238**, qui sont la seule façon de vérifier qu'on s'entendra avec le
+téléphone de celui qui s'en servira.
+
+**Le coût réel s'est manifesté tout de suite.** Le script de captures photographie chaque
+écran à deux largeurs, donc se connecte deux fois, à quelques secondes d'intervalle — avec le
+même code. Le second a été refusé. C'était la règle anti-rejeu, qui faisait exactement son
+travail : un code ne sert qu'une fois, et tout pas antérieur est refusé ensuite. Le script
+attend désormais la tranche suivante, comme le ferait quelqu'un devant son téléphone.
+
+### Une copie d'une fonction de sécurité, et sa divergence immédiate
+
+Le script de démonstration du back-office recopiait le hachage du mot de passe « pour ne pas
+dépendre du paquet de sécurité ». Quatre segments au lieu de six, du base64 au lieu de
+base64url, soixante-quatre octets au lieu de trente-deux : aucun mot de passe ne passait.
+
+La copie n'a pas eu le temps de diverger — elle est née divergente. Elle a été remplacée par
+un import, et celle que portait déjà le script de démonstration professionnel aussi : elle
+était juste, et elle attendait son tour.
+
+### Deux choses qui n'ont pas été attrapées par la porte de validation
+
+**Un mauvais nom de colonne a passé le typecheck.** La page comptait les demandes sur `creeLe`,
+qui n'existe pas sur ce modèle — c'est `deposeeLe`. TypeScript n'a rien dit ; la page a rendu
+500 à la première ouverture. Compter depuis le dépôt est d'ailleurs le bon choix : un brouillon
+jamais déposé n'a laissé personne en plan.
+
+**Un test dépendait encore de son voisinage.** Celui de l'expéditeur créait un message et
+attendait qu'il parte. Les trois cents messages de démonstration, plus anciens, remplissaient
+le lot de deux cents avant lui : il n'y entrait jamais. Et le fournisseur d'essai, lui, les
+envoyait tous.
+
+Les tests mettent maintenant la file ambiante de côté et la remettent — en notant les
+identifiants avant, pour restaurer ceux-là et pas d'autres. Une restauration qui dirait « tout
+remettre en attente » écraserait l'état de lignes qu'on n'a pas touchées, et c'est le piège qui
+avait déjà coûté les coordonnées de quatre arrondissements. Vérifié : trois cent cinq avant,
+trois cent cinq après.
+
+D'où une règle de plus : **tester un traitement global demande de lui donner un monde à lui.**
+Un videur de file ne se teste pas dans la file des autres.
+
+### Les huit autres univers
+
+Leurs onglets sont **grisés, pas cliquables**. Les laisser actifs vers des pages absentes
+donnerait huit impasses sur neuf, et une erreur 404 en anglais pour tout message. Un onglet
+visiblement à venir se comprend ; un lien qui tombe fait douter du reste.
+
+Le prochain est le Catalogue : c'est lui qui lève les cinq cent soixante-six validations en
+attente.
+
+---
+
 ## Phases 5 à 11 · à venir
 
 Agenda et documents du pro, monétisation Stripe, back-office, personnalisation, avis et

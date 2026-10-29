@@ -94,3 +94,4 @@ export function empreinteJeton(jeton: string, secret: string): string {
 
 export * from './configuration.ts';
 export * from './mot-de-passe.ts';
+export * from './totp.ts';

@@ -1018,5 +1018,45 @@
     "largeurFenetre": 1440,
     "debordements": [],
     "erreursConsole": []
+  },
+  {
+    "page": "Back-office — connexion",
+    "largeur": 390,
+    "fichier": "administration-connexion-390.png",
+    "defilementHorizontal": false,
+    "largeurDocument": 390,
+    "largeurFenetre": 390,
+    "debordements": [],
+    "erreursConsole": []
+  },
+  {
+    "page": "Back-office — accueil",
+    "largeur": 390,
+    "fichier": "administration-accueil-390.png",
+    "defilementHorizontal": false,
+    "largeurDocument": 390,
+    "largeurFenetre": 390,
+    "debordements": [],
+    "erreursConsole": []
+  },
+  {
+    "page": "Back-office — connexion",
+    "largeur": 1440,
+    "fichier": "administration-connexion-1440.png",
+    "defilementHorizontal": false,
+    "largeurDocument": 1440,
+    "largeurFenetre": 1440,
+    "debordements": [],
+    "erreursConsole": []
+  },
+  {
+    "page": "Back-office — accueil",
+    "largeur": 1440,
+    "fichier": "administration-accueil-1440.png",
+    "defilementHorizontal": false,
+    "largeurDocument": 1440,
+    "largeurFenetre": 1440,
+    "debordements": [],
+    "erreursConsole": []
   }
 ]

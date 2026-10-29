@@ -1721,16 +1721,49 @@ model Admin {
   /// La double authentification est obligatoire sur le back-office.
   totpSecret String? @map("totp_secret")
   totpActiveLe DateTime? @map("totp_active_le")
+  /// Dernier pas TOTP accepté. Un code ne sert qu'une fois : sans cette mémoire, un code lu
+  /// par-dessus l'épaule reste utilisable une minute et demie.
+  dernierPasTotp Int? @map("dernier_pas_totp")
 
   derniereConnexion DateTime? @map("derniere_connexion")
   actif             Boolean   @default(true)
 
+  /// Même limitation des essais que pour les professionnels : c'est la vraie défense contre
+  /// la devinette, et elle manque d'autant moins ici que le compte voit tout.
+  tentativesConnexion Int @default(0) @map("tentatives_connexion")
+  derniereTentativeLe DateTime? @map("derniere_tentative_le")
+
   journaux JournalAudit[]
+  sessions SessionAdmin[]
 
   creeLe DateTime @default(now()) @map("cree_le")
   modifieLe DateTime @updatedAt @map("modifie_le")
 
   @@map("admins")
+}
+
+/// La session d'un membre du back-office. Même forme que `SessionPro` — la base ne garde que
+/// l'empreinte du jeton — mais plus courte : un compte du back-office voit les coordonnées de
+/// tous les clients et peut ouvrir la session d'un professionnel. Une session oubliée sur un
+/// poste partagé n'y a pas le même coût qu'ailleurs.
+model SessionAdmin {
+  id      String @id @default(cuid())
+  adminId String @map("admin_id")
+  admin   Admin  @relation(fields: [adminId], references: [id], onDelete: Cascade)
+
+  jeton      String    @unique
+  expireLe   DateTime  @map("expire_le")
+  revoqueeLe DateTime? @map("revoquee_le")
+
+  adresseIp String? @map("adresse_ip")
+  appareil  String?
+
+  derniereActiviteLe DateTime @default(now()) @map("derniere_activite_le")
+  creeLe             DateTime @default(now()) @map("cree_le")
+
+  @@index([adminId])
+  @@index([expireLe])
+  @@map("sessions_admin")
 }
 
 enum RoleAdmin {

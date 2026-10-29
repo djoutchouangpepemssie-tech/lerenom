@@ -11,8 +11,9 @@
 import process from 'node:process';
 import path from 'node:path';
 import { writeFile } from 'node:fs/promises';
-import { createHmac, randomBytes, scrypt } from 'node:crypto';
+import { createHmac, randomBytes } from 'node:crypto';
 import { PrismaPg } from '@prisma/adapter-pg';
+import { hacheMotDePasse } from '@lerenom/securite';
 import {
   calculeTotaux,
   distanceKm,
@@ -47,35 +48,6 @@ function secretVerification(): string {
 const EMAIL = 'demo@lerenom.exemple';
 const MOT_DE_PASSE = 'le chat dort sur le toit';
 
-/** Le même format que `@lerenom/securite` : `scrypt$N$r$p$sel$empreinte`. */
-function hache(motDePasse: string): Promise<string> {
-  const sel = randomBytes(16);
-  const cout = 2 ** 16;
-  return new Promise((resoud, rejette) => {
-    scrypt(
-      motDePasse.normalize('NFKC'),
-      sel,
-      32,
-      { N: cout, r: 8, p: 1, maxmem: 192 * 1024 * 1024 },
-      (erreur, empreinte) => {
-        if (erreur !== null) rejette(erreur);
-        else {
-          resoud(
-            [
-              'scrypt',
-              String(cout),
-              '8',
-              '1',
-              sel.toString('base64url'),
-              empreinte.toString('base64url'),
-            ].join('$'),
-          );
-        }
-      },
-    );
-  });
-}
-
 async function main(): Promise<void> {
   const entreprise = await prisma.entreprise.findUnique({
     where: { slug: SLUG_PRO },
@@ -104,7 +76,7 @@ async function main(): Promise<void> {
   await prisma.utilisateurPro.upsert({
     where: { email: EMAIL },
     update: {
-      motDePasseHash: await hache(MOT_DE_PASSE),
+      motDePasseHash: await hacheMotDePasse(MOT_DE_PASSE),
       tentativesConnexion: 0,
       derniereTentativeLe: null,
       telephone: '+33199000092',
@@ -117,7 +89,7 @@ async function main(): Promise<void> {
       // Un numéro de la plage réservée à la fiction : c'est à lui que partirait le code de
       // confirmation d'un changement de compte bancaire.
       telephone: '+33199000092',
-      motDePasseHash: await hache(MOT_DE_PASSE),
+      motDePasseHash: await hacheMotDePasse(MOT_DE_PASSE),
       emailVerifieLe: new Date(),
     },
   });

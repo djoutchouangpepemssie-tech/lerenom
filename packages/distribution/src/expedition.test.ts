@@ -10,15 +10,24 @@
  * **Un message périmé est abandonné, pas envoyé.** La file dort depuis des semaines ; le jour
  * du raccordement, sans cette règle, tout partirait d'un coup.
  *
- * Les assertions portent sur **les lignes de ce test**, jamais sur les compteurs du bilan.
- * L'expéditeur est global par nature : il vide la file entière, y compris les deux cent
- * quatre-vingt-six messages de démonstration qui y dorment. La première version de ces tests
- * attendait `envoyes === 1` et en a trouvé cent quatre-vingt-dix — le code avait raison, le
- * test mesurait ses voisins.
+ * **Ces tests mettent la file ambiante de côté, et la remettent.** L'expéditeur est global
+ * par nature : il vide la file entière, dans l'ordre d'ancienneté et par lots bornés. Les
+ * messages de démonstration qui y dorment faisaient échouer les tests de deux façons — le
+ * fournisseur d'essai les envoyait tous, et, devenus plus nombreux que la taille d'un lot, ils
+ * repoussaient les messages du test hors de la fenêtre. Un test de videur de file a besoin
+ * d'une file à lui.
+ *
+ * La mise de côté est **exacte** : on note les identifiants avant, on restaure ceux-là et pas
+ * d'autres. Une restauration qui redeviendrait « tout remettre en attente » écraserait l'état
+ * réel de lignes qu'on n'a pas touchées — c'est le piège qui avait déjà coûté les coordonnées
+ * de quatre arrondissements.
+ *
+ * Les assertions portent par ailleurs sur **les lignes de ce test**, jamais sur les compteurs
+ * du bilan : la première version attendait `envoyes === 1` et en a trouvé cent quatre-vingt-dix.
  */
 
 import process from 'node:process';
-import { afterAll, beforeEach, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { prisma } from '@lerenom/db';
 import type { ResultatEnvoi } from '@lerenom/core';
 import {
@@ -96,6 +105,22 @@ function fournisseurDEssai(
   };
 }
 
+/** Les messages qui attendaient avant nous, et qu'il faudra remettre exactement comme ils étaient. */
+let misDeCote: string[] = [];
+
+beforeAll(async () => {
+  if (!aUneBase) return;
+  const ambiants = await prisma.messageSortant.findMany({
+    where: { statut: 'en_attente', modele: { not: MARQUE } },
+    select: { id: true },
+  });
+  misDeCote = ambiants.map((message) => message.id);
+  await prisma.messageSortant.updateMany({
+    where: { id: { in: misDeCote } },
+    data: { statut: 'echec', erreur: 'mis de côté par les tests' },
+  });
+});
+
 beforeEach(async () => {
   if (!aUneBase) return;
   oublieLesFournisseurs();
@@ -106,6 +131,10 @@ afterAll(async () => {
   if (!aUneBase) return;
   oublieLesFournisseurs();
   await prisma.messageSortant.deleteMany({ where: { modele: MARQUE } });
+  await prisma.messageSortant.updateMany({
+    where: { id: { in: misDeCote } },
+    data: { statut: 'en_attente', erreur: null },
+  });
   await prisma.$disconnect();
 });
 

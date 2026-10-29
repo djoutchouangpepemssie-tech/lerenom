@@ -17,6 +17,7 @@ coverage/
 .jeton-devis-client
 .jeton-rendez-vous
 .jeton-avoir
+.jeton-administration
 .env.local
 .env.*.local
 !.env.exemple

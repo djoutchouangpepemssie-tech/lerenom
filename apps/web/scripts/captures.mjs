@@ -12,6 +12,8 @@ import { existsSync, readFileSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
+import { Buffer } from 'node:buffer';
+import { createHmac } from 'node:crypto';
 import { chromium } from 'playwright';
 
 const BASE = process.argv[2] ?? 'http://127.0.0.1:3100';
@@ -115,6 +117,88 @@ const COMPTE_PRO = {
   email: process.env.PRO_EMAIL ?? 'demo@lerenom.exemple',
   motDePasse: process.env.PRO_MOT_DE_PASSE ?? 'le chat dort sur le toit',
 };
+
+/**
+ * Le compte de démonstration du back-office, et son code à six chiffres.
+ *
+ * Le back-office exige une double authentification — un compte y voit les coordonnées de tous
+ * les clients. Le script fabrique donc le code lui-même, à partir du secret écrit par
+ * `pnpm --filter @lerenom/db demo:administration`. Sans lui, aucune page du back-office ne
+ * peut être photographiée.
+ */
+const COMPTE_ADMIN = {
+  email: process.env.ADMIN_EMAIL ?? 'arcel@lerenom.exemple',
+  motDePasse: process.env.ADMIN_MOT_DE_PASSE ?? 'le renom se construit lentement',
+};
+
+function codeTotp(secretBase32) {
+  const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+  const propre = secretBase32.toUpperCase().replace(/[\s=]/g, '');
+  let bits = 0;
+  let valeur = 0;
+  const octets = [];
+  for (const caractere of propre) {
+    valeur = (valeur << 5) | alphabet.indexOf(caractere);
+    bits += 5;
+    if (bits >= 8) {
+      octets.push((valeur >>> (bits - 8)) & 255);
+      bits -= 8;
+    }
+  }
+
+  const compteur = Buffer.alloc(8);
+  compteur.writeBigUInt64BE(BigInt(Math.floor(Date.now() / 1000 / 30)));
+  const empreinte = createHmac('sha1', Buffer.from(octets)).update(compteur).digest();
+  const decalage = empreinte[empreinte.length - 1] & 0x0f;
+  const tronque =
+    ((empreinte[decalage] & 0x7f) << 24) |
+    (empreinte[decalage + 1] << 16) |
+    (empreinte[decalage + 2] << 8) |
+    empreinte[decalage + 3];
+  return String(tronque % 1_000_000).padStart(6, '0');
+}
+
+/**
+ * Se connecte au back-office. Rend `false` quand le secret n'a pas été posé.
+ *
+ * Deux pièges, et les deux viennent de ce que le back-office est bien protégé.
+ *
+ * **Un code ne sert qu'une fois.** Les deux largeurs se connectent à quelques secondes
+ * d'intervalle, donc avec le même code si la tranche de trente secondes n'a pas tourné — et le
+ * second est refusé, exactement comme il doit l'être. On attend alors la tranche suivante et
+ * on réessaie, comme le ferait quelqu'un devant son téléphone.
+ *
+ * **La redirection est faite côté client** : il n'y a pas d'événement « load » à attendre, et
+ * `waitForURL` avec son état par défaut expirerait sur une connexion pourtant réussie. On
+ * attend donc ce que la page affiche une fois connecté.
+ */
+async function connecteLeBackOffice(onglet) {
+  const secret = jeton('administration');
+  if (secret === null) return false;
+
+  for (const essai of [0, 1]) {
+    if (essai > 0) {
+      // Jusqu'à la tranche suivante, plus une seconde de marge.
+      await onglet.waitForTimeout((30 - (Math.floor(Date.now() / 1000) % 30)) * 1000 + 1000);
+    }
+
+    await onglet.goto(`${BASE}/administration/connexion`, { waitUntil: 'load' });
+    await onglet.getByLabel('Adresse électronique').fill(COMPTE_ADMIN.email);
+    await onglet.getByLabel('Mot de passe').fill(COMPTE_ADMIN.motDePasse);
+    await onglet.getByLabel('Code de votre application').fill(codeTotp(secret));
+    await onglet.getByRole('button', { name: 'Se connecter' }).click();
+
+    try {
+      await onglet
+        .getByRole('navigation', { name: 'Univers du back-office' })
+        .waitFor({ timeout: 10_000 });
+      return true;
+    } catch (erreur) {
+      if (essai === 1) throw erreur;
+    }
+  }
+  return false;
+}
 
 /** Se connecte à l'espace professionnel, une fois par contexte de navigation. */
 async function connecteLEspacePro(onglet) {
@@ -421,6 +505,17 @@ const PAGES = [
     connexionPro: true,
   },
   {
+    nom: 'administration-connexion',
+    chemin: '/administration/connexion',
+    titre: 'Back-office — connexion',
+  },
+  {
+    nom: 'administration-accueil',
+    chemin: '/administration',
+    titre: 'Back-office — accueil',
+    connexionAdmin: true,
+  },
+  {
     nom: 'pro-documents-reglages',
     chemin: '/pro/espace/documents',
     titre: 'Espace pro — réglages des documents',
@@ -607,6 +702,19 @@ async function main() {
           contexte.__proConnecte = true;
         } catch (erreur) {
           console.error(`    connexion professionnelle impossible : ${erreur.message}`);
+        }
+      }
+      if (page.connexionAdmin === true && !contexte.__adminConnecte) {
+        try {
+          if (await connecteLeBackOffice(onglet)) contexte.__adminConnecte = true;
+          else {
+            console.error(
+              '    secret de back-office absent : pnpm --filter @lerenom/db demo:administration',
+            );
+            manquantes.add(page.nom);
+          }
+        } catch (erreur) {
+          console.error(`    connexion au back-office impossible : ${erreur.message}`);
         }
       }
       const erreurs = [];
