@@ -147,6 +147,42 @@ CREATE TRIGGER factures_immuables
   BEFORE UPDATE OR DELETE ON factures
   FOR EACH ROW EXECUTE FUNCTION interdit_modification_facture_emise();
 
+-- Deux rendez-vous ne se chevauchent pas, et c'est la base qui le tient.
+--
+-- Un artisan ne peut pas être à deux endroits. Le contrôle applicatif existe, mais deux
+-- requêtes simultanées peuvent le franchir toutes les deux : chacune lit un agenda libre,
+-- puis chacune écrit. La contrainte d'exclusion est le seul endroit où la règle devient vraie.
+--
+-- `btree_gist` permet de mêler une égalité (l'entreprise) et un recouvrement d'intervalle
+-- dans le même index.
+--
+-- `tsrange` et non `tstzrange` : les colonnes sont des horodatages **sans** fuseau, et les
+-- convertir en demanderait un — celui de la session, qui peut changer d'une connexion à
+-- l'autre. PostgreSQL refuse à juste titre une expression d'index qui n'est pas immuable.
+--
+-- Les créneaux **proposés** en sont exclus, et ce n'est pas un oubli : une proposition cesse
+-- d'occuper son horaire dès qu'elle expire, or `now()` n'est pas immuable et ne peut pas
+-- entrer dans un prédicat d'index. Cette règle-là vit donc dans `packages/core`, où le temps
+-- se passe en paramètre. La base garantit ce qui est ferme ; le code arbitre ce qui dépend
+-- de l'heure qu'il est.
+CREATE EXTENSION IF NOT EXISTS btree_gist;
+
+DO $$
+BEGIN
+  IF to_regclass('public.creneaux') IS NOT NULL
+     AND NOT EXISTS (
+       SELECT 1 FROM pg_constraint WHERE conname = 'creneaux_sans_chevauchement'
+     ) THEN
+    ALTER TABLE creneaux ADD CONSTRAINT creneaux_sans_chevauchement
+      EXCLUDE USING gist (
+        entreprise_id WITH =,
+        tsrange(debut_le, fin_le, '[)') WITH &&
+      )
+      WHERE (type <> 'propose');
+  END IF;
+END
+$$;
+
 -- Un avoir ne se modifie ni ne se supprime.
 --
 -- Il n'a pas de brouillon : il est définitif dès sa création. Un document de correction

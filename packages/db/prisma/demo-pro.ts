@@ -236,6 +236,7 @@ async function main(): Promise<void> {
   const devisId = await semeDevisDeDemonstration(entreprise.id);
   await semeFacturesDeDemonstration(entreprise.id);
   await semeDevisEnvoyeAuClient(entreprise.id);
+  await semeAgendaDeDemonstration(entreprise.id);
 
   process.stdout.write(
     `Compte de démonstration prêt.\n  adresse     : ${EMAIL}\n  mot de passe : ${MOT_DE_PASSE}\n  devis       : ${devisId}\n`,
@@ -655,4 +656,57 @@ async function semeDevisEnvoyeAuClient(entrepriseId: string): Promise<void> {
 
   const racine = path.resolve(import.meta.dirname, '../../..');
   await writeFile(path.join(racine, '.jeton-devis-client'), `${jeton}\n`, 'utf8');
+}
+
+/**
+ * Une semaine d'agenda plausible : des interventions, une visite, une indisponibilité et un
+ * créneau proposé qui attend sa réponse.
+ *
+ * Les dates sont **relatives à aujourd'hui** : un jeu d'essai daté en dur montrerait une
+ * semaine vide dès le lendemain, et les captures d'écran mentiraient.
+ */
+async function semeAgendaDeDemonstration(entrepriseId: string): Promise<void> {
+  await prisma.creneau.deleteMany({ where: { entrepriseId } });
+
+  // Lundi de la semaine en cours, à minuit : tout se place par rapport à lui.
+  const lundi = new Date();
+  lundi.setHours(0, 0, 0, 0);
+  lundi.setDate(lundi.getDate() - ((lundi.getDay() === 0 ? 7 : lundi.getDay()) - 1));
+
+  /** Une plage posée en heures locales, `jour` comptés depuis lundi. */
+  function plage(jour: number, heure: number, minute: number, dureeMinutes: number) {
+    const debut = new Date(lundi);
+    debut.setDate(debut.getDate() + jour);
+    debut.setHours(heure, minute, 0, 0);
+    const fin = new Date(debut.getTime() + dureeMinutes * 60_000);
+    return { debut, fin };
+  }
+
+  const aPoser = [
+    { ...plage(0, 8, 30, 90), type: 'intervention' as const },
+    { ...plage(0, 14, 0, 120), type: 'intervention' as const },
+    { ...plage(1, 9, 0, 60), type: 'visite' as const },
+    { ...plage(2, 8, 0, 240), type: 'blocage' as const },
+    { ...plage(3, 10, 0, 90), type: 'intervention' as const },
+    { ...plage(4, 16, 0, 60), type: 'intervention' as const },
+  ];
+
+  for (const { debut, fin, type } of aPoser) {
+    await prisma.creneau.create({
+      data: { entrepriseId, type, debutLe: debut, finLe: fin },
+    });
+  }
+
+  // Le créneau proposé : il attend encore une réponse, donc il réserve son horaire.
+  const propose = plage(4, 9, 0, 90);
+  await prisma.creneau.create({
+    data: {
+      entrepriseId,
+      type: 'propose',
+      debutLe: propose.debut,
+      finLe: propose.fin,
+      propose: true,
+      expireLe: new Date(Date.now() + 36 * 3_600_000),
+    },
+  });
 }

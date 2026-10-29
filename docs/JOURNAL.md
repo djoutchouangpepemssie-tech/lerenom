@@ -1537,6 +1537,77 @@ désormais **reproductible** : `node scripts/lighthouse.mjs`, avec les deux piè
 
 ---
 
+## Phase 5 ter · L'agenda
+
+Le schéma portait `Creneau` et `RendezVous` depuis le premier jour, avec leurs statuts, leurs
+champs de relance et de rappel. Rien ne les écrivait, et aucun écran ne les montrait.
+
+### Le piège du vocabulaire
+
+`horaires.ts` appelait déjà « créneau » une tranche hebdomadaire — « le mardi de 9 h à 12 h »,
+sans date. L'agenda manipule des **plages datées**. Deux notions voisines qui ne se mélangent
+pas : le module s'appelle `agenda.ts` et son type `Plage`, pour qu'aucun import n'ait à
+choisir entre deux `Creneau`.
+
+### La règle qui compte
+
+Quand un professionnel propose un créneau à un client, ce créneau est réservé — sinon il le
+vendrait deux fois. Mais si le client ne répond jamais, **le blocage ne doit pas durer**. Au
+bout de quarante-huit heures la plage redevient libre, sans que personne ait à faire le
+ménage : `occupeEncore` prend l'heure en paramètre et répond non.
+
+Sans cette règle, un agenda se minéralise au fil des clients qui ne répondent pas, et le
+professionnel cesse de s'en servir. C'est le genre de défaut qui ne casse aucun test — la
+donnée est juste, l'écran est juste — et qui tue l'usage.
+
+### Ce que la base garantit, et ce qu'elle ne peut pas garantir
+
+Vérifier qu'une plage est libre puis l'écrire ne garantit rien : deux requêtes simultanées
+lisent chacune un agenda libre, puis écrivent chacune la leur. La base porte donc une
+contrainte d'exclusion sur `(entreprise, intervalle)` — c'est elle qui rend la règle vraie,
+le contrôle applicatif servant à **dire lequel** des rendez-vous gêne, ce qu'une violation de
+contrainte ne dira jamais.
+
+Les créneaux proposés en sont exclus, et c'est délibéré : leur validité dépend de l'heure
+qu'il est, or `now()` n'est pas immuable et ne peut pas entrer dans un index. **La base
+garantit ce qui est ferme ; le code arbitre ce qui dépend du temps.** Un test garde chacun des
+deux côtés.
+
+Première tentative refusée par PostgreSQL, d'ailleurs : `tstzrange` sur des colonnes sans
+fuseau demande une conversion qui dépend du réglage de session. `tsrange` est le bon type, et
+le refus était juste.
+
+### Une liste par jour, pas une grille horaire
+
+La grille aux lignes de demi-heures est la représentation attendue d'un agenda. C'est un piège
+sur un téléphone de 390 px : sept colonnes y deviennent illisibles et un rendez-vous d'un
+quart d'heure se réduit à quelques pixels.
+
+Un artisan consulte son agenda debout, entre deux chantiers. Il veut savoir ce qu'il a
+aujourd'hui, dans l'ordre. Les jours s'empilent donc sur téléphone et passent en sept colonnes
+sur grand écran — la même liste relue autrement, sans second composant à maintenir.
+
+La semaine affichée vit dans l'adresse, pas dans l'état du composant : un agenda se partage,
+se met en favori et se recharge.
+
+### Ce que la capture a attrapé
+
+« Du 26 octobre au 1 novembre ». En français, le premier du mois s'écrit « 1er » — et une
+semaine sur quatre tombe dessus. C'est le détail qui distingue une date écrite d'une date
+recrachée par une machine.
+
+### La vérification
+
+903 tests verts. Les 19 tests de l'agenda portent surtout sur ce qui doit être refusé, et sur
+une chose qui doit être **acceptée** : deux rendez-vous qui s'enchaînent bord à bord, 10 h – 11 h
+puis 11 h – 12 h. Une règle de non-chevauchement trop zélée refuserait une journée normale.
+
+Le trou le plus visible de cette phase est consigné en Q34 : un rendez-vous confirmé ne se
+déplace pas, et l'annulation qui préviendrait le client n'existe pas encore. Rien ne part
+encore au client — ni proposition, ni relance, ni rappel.
+
+---
+
 ## Phases 5 à 11 · à venir
 
 Agenda et documents du pro, monétisation Stripe, back-office, personnalisation, avis et

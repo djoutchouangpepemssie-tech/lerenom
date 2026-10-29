@@ -850,3 +850,34 @@ peuplées et les villes ouvertes et en laissant la recherche faire le reste ; ou
 telle quelle, puisque les huit pages de département offrent déjà une entrée par territoire.
 Nous n'avons rien changé : réduire ce que la page montre est un choix éditorial, et la phrase
 « sans exception » est écrite dans le titre.
+
+---
+
+## Q34 🟡 — L'agenda : ce qui est posé, ce qui manque encore
+
+_(métier — défauts prudents appliqués, trois points à trancher)_
+
+L'agenda du professionnel existe : poser une intervention, une visite, une indisponibilité ou
+un créneau proposé, les voir par semaine, les déplacer, les retirer. Quatre décisions ont été
+prises sans certitude.
+
+**Une proposition vaut quarante-huit heures, avec une relance à vingt-quatre.** Ces durées
+viennent du cahier des charges pour la relance ; la validité de quarante-huit heures est notre
+défaut. Trop court, le client de bonne foi perd son créneau ; trop long, l'agenda se
+minéralise. **À trancher** : la durée doit-elle dépendre du délai avant le rendez-vous — un
+créneau pour demain ne peut pas attendre deux jours de réflexion ?
+
+**Une plage dure entre un quart d'heure et douze heures.** Le plafond n'est pas une règle du
+droit du travail — ce n'est pas à une plateforme de l'imposer — mais un garde-fou contre la
+date de fin mal saisie. **À vérifier** avec des artisans : certains chantiers se bloquent sur
+plusieurs jours, et il faudra alors une plage « multi-jours » plutôt qu'un plafond relevé.
+
+**Un rendez-vous confirmé ne se déplace ni ne s'efface** depuis l'agenda : l'écran renvoie
+vers une annulation, qui préviendra le client. **Ce qui manque** : cette annulation n'existe
+pas encore. En attendant, un professionnel qui doit déplacer un rendez-vous confirmé n'a
+aucune issue dans le produit — c'est le trou le plus visible de cette phase.
+
+**Rien n'est encore envoyé au client.** Proposer un créneau ne lui écrit pas, la relance à
+vingt-quatre heures n'est pas branchée, les rappels de la veille et des deux heures non plus.
+Les colonnes existent (`relanceeLe`, `rappelVeilleLe`, `rappel2hLe`) et le travail de nuit
+saura les remplir : c'est la suite immédiate, pas une question ouverte.

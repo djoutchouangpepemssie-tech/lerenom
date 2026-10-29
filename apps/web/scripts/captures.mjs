@@ -326,6 +326,24 @@ const PAGES = [
     connexionPro: true,
   },
   {
+    nom: 'pro-agenda',
+    chemin: '/pro/espace/agenda',
+    titre: 'Espace pro — mon agenda',
+    connexionPro: true,
+  },
+  {
+    nom: 'pro-agenda-saisie',
+    chemin: '/pro/espace/agenda',
+    titre: 'Espace pro — poser une plage',
+    connexionPro: true,
+    // Le formulaire s'ouvre sans être validé : la démonstration reste rejouable.
+    scenario: async (onglet) => {
+      await onglet.getByRole('button', { name: '+ Ajouter' }).first().click();
+      await onglet.getByLabel('Début').first().waitFor();
+      await onglet.waitForTimeout(200);
+    },
+  },
+  {
     nom: 'pro-fiche',
     chemin: '/pro/espace/fiche',
     titre: 'Espace pro — ma fiche',
