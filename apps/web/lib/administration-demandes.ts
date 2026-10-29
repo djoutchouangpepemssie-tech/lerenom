@@ -54,6 +54,8 @@ export interface DemandeAdministration {
   readonly confiance: number | null;
   readonly classeeParAdmin: boolean;
   readonly objectifPros: number;
+  /** Un professionnel a refusé en disant que ce n'est pas son métier. */
+  readonly signaleeHorsMetier: boolean;
   readonly pros: readonly ProSollicite[];
   /** Combien ont accepté. C'est le seul chiffre qui dise si la demande a abouti. */
   readonly acceptees: number;
@@ -133,7 +135,23 @@ type DemandeBrute = {
   }[];
 };
 
-function presente(demande: DemandeBrute): DemandeAdministration {
+/**
+ * Les demandes qu'un professionnel a signalées comme « pas mon métier ».
+ *
+ * Le refus avec ce motif crée une tâche `classement-demande` — et **rien ne la lisait**.
+ * C'est pourtant le meilleur signal de mauvais classement qui existe : il ne vient pas d'une
+ * machine qui doute, mais d'un plombier qui dit qu'il ne fait pas de serrurerie. Pendant ce
+ * temps la demande restait mal classée et repartait à d'autres mauvais professionnels.
+ */
+async function demandesSignaleesHorsMetier(): Promise<ReadonlySet<string>> {
+  const taches = await prisma.tacheAValider.findMany({
+    where: { type: 'classement-demande', valideeLe: null, refuseeLe: null },
+    select: { objetId: true },
+  });
+  return new Set(taches.map((tache) => tache.objetId));
+}
+
+function presente(demande: DemandeBrute, horsMetier: ReadonlySet<string>): DemandeAdministration {
   return {
     id: demande.id,
     reference: demande.reference,
@@ -151,6 +169,7 @@ function presente(demande: DemandeBrute): DemandeAdministration {
     confiance: demande.confianceClassement,
     classeeParAdmin: demande.classeeParAdmin,
     objectifPros: demande.objectifPros,
+    signaleeHorsMetier: horsMetier.has(demande.id),
     pros: demande.distributions.map((distribution) => ({
       entreprise: distribution.entreprise.nom,
       rang: distribution.rang,
@@ -168,6 +187,8 @@ function presente(demande: DemandeBrute): DemandeAdministration {
 }
 
 export async function etatDemandes(): Promise<EtatDemandes> {
+  const horsMetier = await demandesSignaleesHorsMetier();
+
   const [enCours, sansPreneur, aClasser, nonVerifiees] = await Promise.all([
     prisma.demande.findMany({
       where: { statut: { in: ['en_distribution', 'en_attente_de_relance'] } },
@@ -188,7 +209,15 @@ export async function etatDemandes(): Promise<EtatDemandes> {
       where: {
         statut: { notIn: ['brouillon', 'annulee'] },
         classeeParAdmin: false,
-        OR: [{ metierId: null }, { confianceClassement: { lt: CONFIANCE_MINIMALE } }],
+        OR: [
+          { metierId: null },
+          { confianceClassement: { lt: CONFIANCE_MINIMALE } },
+          // Le signalement d'un professionnel vaut mieux qu'un score de confiance : la
+          // machine doute, lui sait. Une demande qu'il a refusée pour « pas mon métier »
+          // entre dans la file même si le classement automatique était sûr de lui — c'est
+          // justement le cas où il s'est trompé avec assurance.
+          { id: { in: [...horsMetier] } },
+        ],
       },
       orderBy: { deposeeLe: 'asc' },
       take: 200,
@@ -198,9 +227,9 @@ export async function etatDemandes(): Promise<EtatDemandes> {
   ]);
 
   return {
-    enCours: enCours.map(presente),
-    sansPreneur: sansPreneur.map(presente),
-    aClasser: aClasser.map(presente),
+    enCours: enCours.map((d) => presente(d, horsMetier)),
+    sansPreneur: sansPreneur.map((d) => presente(d, horsMetier)),
+    aClasser: aClasser.map((d) => presente(d, horsMetier)),
     indicateurs: {
       enDistribution: enCours.length,
       sansPreneur: sansPreneur.length,
@@ -251,6 +280,13 @@ export async function classeLaDemande(
 
   if (demande === null) return { ok: false, message: 'Cette demande n’existe pas.' };
   if (metier === null) return { ok: false, message: 'Ce métier n’existe pas.' };
+
+  // La tâche se referme avec le classement. Sans cela, la demande resterait dans la file
+  // après avoir été traitée, et la file deviendrait une liste qu'on n'ouvre plus.
+  await prisma.tacheAValider.updateMany({
+    where: { type: 'classement-demande', objetId: demandeId, valideeLe: null, refuseeLe: null },
+    data: { valideeLe: new Date() },
+  });
 
   await prisma.demande.update({
     where: { id: demandeId },

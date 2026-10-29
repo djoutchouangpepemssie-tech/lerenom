@@ -53,3 +53,7 @@ docs/lighthouse/*.json
 
 # Généré par `next build` à chaque construction : ce n’est pas une source.
 apps/web/AGENTS.md
+
+# Instantané Redis, réécrit sans cesse par le serveur local. Il s'est retrouvé dans un commit
+# par mégarde : un binaire qui change à chaque sauvegarde pollue tous les diffs suivants.
+dump.rdb

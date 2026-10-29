@@ -2914,6 +2914,73 @@ que la cause est ailleurs — plutôt que ce qu'on avait supposé.
 
 ---
 
+## Relecture · outiller la question qui a tout trouvé
+
+### Sept défauts, une seule question
+
+Le chantier du back-office a révélé sept règles écrites et jamais appliquées. À chaque fois,
+le même motif : le modèle prévoyait la règle, un commentaire la décrivait, **et rien ne
+l'exécutait**. Et à chaque fois, c'est la même question qui l'a trouvée, posée à la main :
+_qui lit cette donnée ?_
+
+Posée à la main, elle ne tient pas sur la durée — on cherche là où l'on travaille, pas là où
+l'on a oublié. Elle est maintenant outillée : `node outils/tables-orphelines.mjs` parcourt le
+schéma et dit, pour chaque table, qui la lit et qui l'écrit.
+
+### Un outil qui s'est trompé trois fois avant de servir
+
+Sa première version était inutilisable, et chaque correction mérite d'être notée parce qu'elle
+dit comment on lit réellement une base avec Prisma.
+
+**Les lectures par relation.** `include: { commune: true }` est une lecture, et l'outil ne
+voyait que `prisma.commune.findMany`. Il déclarait donc `Commune` et `Departement` jamais
+lues, alors que chaque page de résultats les lit.
+
+**Les écritures en SQL brut.** `Affichage` est écrite par un `INSERT … ON CONFLICT` groupé, et
+passait pour une table que rien n'alimente.
+
+**Les écritures imbriquées.** `lignes: { create: … }` à l'intérieur d'un `facture.create` est
+la façon idiomatique d'écrire des lignes filles. L'outil déclarait `FactureLigne` jamais
+écrite — sur un produit de facturation. Le genre de conclusion qui fait perdre une heure,
+puis la confiance qu'on accorde à l'outil.
+
+Il a fallu y ajouter une quatrième distinction : le **référentiel** — communes, catalogue,
+prix — est écrit par le semis et par lui seul, à dessein. Le confondre avec une table que le
+produit devrait écrire noyait les vrais défauts sous une douzaine de faux.
+
+> **Règle retenue** — _un outil d'audit se juge à son bruit autant qu'à ses trouvailles._
+> Vingt-deux alertes dont dix-neuf fausses ne se lisent pas ; on les ignore, puis on ignore
+> l'outil.
+
+### Le refus que personne n'écoutait
+
+La trouvaille, après ce dégrossissage : quand un professionnel refuse une demande en indiquant
+**« ce n'est pas mon métier »**, la distribution crée une tâche de reclassement. Rien ne la
+lisait.
+
+C'est pourtant le meilleur signal de mauvais classement qui existe. La file « à classer » du
+back-office montrait les demandes dont la machine doute — confiance sous 0,70, ou aucun métier
+— mais pas celles qu'un artisan avait explicitement récusées. Or c'est exactement le cas où la
+machine s'est trompée **avec assurance** : classement sûr de lui, et faux. La demande restait
+mal classée et repartait à d'autres mauvais professionnels, qui la refusaient à leur tour.
+
+Elle entre désormais dans la file, le signalement s'affiche avant le score de confiance — elle
+doute, lui sait — et la tâche se referme au reclassement, sans quoi la demande resterait dans
+la file après avoir été traitée.
+
+### Deux scories
+
+`dump.rdb`, un instantané Redis que le serveur local réécrit sans cesse, s'était glissé dans
+un commit. Un binaire qui change à chaque sauvegarde pollue tous les diffs suivants. Retiré du
+suivi et ignoré.
+
+Et six tables ne sont ni lues ni écrites par quoi que ce soit — `Verification`, `Garantie`,
+`Publication`, `Paiement`, `AlerteOuverture`, `Quartier`. Elles ne gênent personne, mais elles
+donnent à lire un produit plus complet qu'il n'est. La question est posée en Q46 plutôt que
+tranchée : les garder documente l'intention, les retirer dit la vérité.
+
+---
+
 ## Phases 5 à 11 · à venir
 
 Agenda et documents du pro, monétisation Stripe, back-office, personnalisation, avis et

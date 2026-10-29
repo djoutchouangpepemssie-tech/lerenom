@@ -193,9 +193,19 @@ function Carte({
             <div className="mb-4 rounded-[8px] border border-[#e8dcc4] bg-[#fdfaf3] p-3">
               <p className="text-sm font-bold">Classer cette demande</p>
               <p className="mt-1 text-[0.8rem] leading-relaxed text-[#5c5444]">
-                {demande.confiance === null
-                  ? 'Le classement automatique n’a trouvé aucun métier.'
-                  : `Le classement automatique hésite : ${Math.round(demande.confiance * 100)} % de confiance.`}{' '}
+                {/* Le signalement d'un professionnel passe avant le score de la machine :
+                    elle doute, lui sait. C'est le meilleur signal de mauvais classement qui
+                    existe, et il n'était lu par personne. */}
+                {demande.signaleeHorsMetier ? (
+                  <strong>
+                    Un professionnel a refusé cette demande en indiquant que ce n’est pas son
+                    métier.
+                  </strong>
+                ) : demande.confiance === null ? (
+                  'Le classement automatique n’a trouvé aucun métier.'
+                ) : (
+                  `Le classement automatique hésite : ${Math.round(demande.confiance * 100)} % de confiance.`
+                )}{' '}
                 Une demande mal classée part aux mauvais professionnels, qui la refusent.
               </p>
               <div className="mt-3 flex flex-wrap items-center gap-2">

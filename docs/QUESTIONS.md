@@ -1319,3 +1319,37 @@ balisée du tout.
 - **aucune mesure de performance.** Les Core Web Vitals pèsent sur le classement et rien ne
   les relève. La mesure d'audience vient d'être posée (§Q43) ; celle-ci est du même ordre et
   demanderait un budget — faut-il un outil tiers, ou se contenter de relevés ponctuels ?
+
+---
+
+## Q46 🟠 · Les tables que personne ne lit, et celles que personne n'écrit
+
+Un contrôle outillé — `node outils/tables-orphelines.mjs` — parcourt le schéma et dit, pour
+chaque table, qui la lit et qui l'écrit. Il existe parce que la même question posée à la main
+a trouvé **sept** défauts de suite, tous du même genre : le modèle prévoyait la règle, un
+commentaire la décrivait, et rien ne l'exécutait.
+
+**Un défaut trouvé et corrigé du même coup.** Quand un professionnel refuse une demande en
+indiquant « ce n'est pas mon métier », la distribution crée une tâche de reclassement.
+**Rien ne la lisait.** C'est pourtant le meilleur signal de mauvais classement qui existe : il
+ne vient pas d'une machine qui doute, mais d'un artisan qui sait. La demande restait mal
+classée et repartait à d'autres mauvais professionnels. Elle entre désormais dans la file
+« à classer », et la tâche se referme au reclassement.
+
+**Ce qui reste orphelin, et qui demande une décision :**
+
+- **`Verification`, `Garantie`, `Publication`, `Paiement`, `AlerteOuverture`, `Quartier`** ne
+  sont ni lues ni écrites par rien. Chacune correspond à une fonctionnalité annoncée mais non
+  construite. Faut-il les garder — une table vide ne coûte rien et documente l'intention — ou
+  les retirer du schéma jusqu'à ce qu'on les construise ? Les garder a un coût réel : elles
+  donnent à lire un produit plus complet qu'il n'est ;
+- **`ReponseAvis`** est lue mais jamais écrite : le professionnel ne peut pas répondre à un
+  avis. C'est la fonctionnalité la plus attendue de celles qui manquent, et elle dépend de
+  §Q38 ;
+- **`ClientPro`** n'est jamais créée par le produit. Un professionnel ne peut pas ajouter un
+  client à son carnet ; les devis s'y rattachent pourtant. À vérifier de près — c'est peut-être
+  un trou du parcours devis.
+
+Le contrôle porte un fichier d'attendus : chaque absence connue y figure avec sa raison et le
+numéro de la question qui en dépend. Une entrée sans raison serait pire que pas d'entrée — elle
+ferait taire le contrôle sans que personne sache pourquoi.
