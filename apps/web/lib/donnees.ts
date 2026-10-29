@@ -203,7 +203,16 @@ export const resultats = cache(
       include: {
         fiche: true,
         agences: { include: { commune: true }, take: 1 },
-        emplacements: { where: { metierId: metier.id, communeId: commune.code } },
+        // Seuls les emplacements qui courent encore : un emplacement résilié garde sa ligne
+        // pour l'historique, il ne doit plus placer personne.
+        emplacements: {
+          where: {
+            metierId: metier.id,
+            communeId: commune.code,
+            OR: [{ finitLe: null }, { finitLe: { gt: new Date() } }],
+          },
+          take: 1,
+        },
         abonnements: { where: { statut: 'actif' }, take: 1 },
         scores: { where: { jour }, take: 1 },
         exclusivites: {
@@ -215,7 +224,18 @@ export const resultats = cache(
 
     const candidats: CandidatClassement[] = entreprises.map((entreprise) => ({
       entrepriseId: entreprise.id,
-      formule: entreprise.abonnements[0]?.formule ?? 'gratuit',
+      // **L'emplacement, pas l'abonnement.** Un emplacement Premium se vend par métier et par
+      // ville, et le nombre en est limité — c'est ce qui en fait la valeur. Classer d'après
+      // l'abonnement donnait une place sponsorisée dans *toutes* les villes et *tous* les
+      // métiers de l'entreprise : on distribuait gratuitement ce qu'on vend à l'unité, et le
+      // plafond par métier × ville ne tenait plus.
+      //
+      // L'abonnement reste la condition : un emplacement dont l'abonnement est résilié ne
+      // place plus personne. Les deux doivent être vrais, et chacun pour sa raison.
+      formule:
+        entreprise.abonnements.length > 0
+          ? (entreprise.emplacements[0]?.formule ?? 'gratuit')
+          : 'gratuit',
       // Sans score du soir, l'entreprise part de zéro : elle apparaît, en fin de classement.
       score: entreprise.scores[0]?.score ?? 0,
       note: entreprise.noteMoyenne,

@@ -1161,3 +1161,39 @@ route le dit alors en français et renvoie un 503 : le professionnel imprime dep
 navigateur et télécharge le XML à part, comme avant. **La décision revient à Arcel** —
 installer Chromium triple le poids de l'image de production d'un site déjà en ligne, et ce
 n'est pas un changement à faire sans qu'il le sache.
+
+---
+
+## Q41 🔴 · Vendre une place : il manque l'encaissement, et trois décisions
+
+L'écran « Premium et Exclusif » montre l'état du stock — ce qui est vendu, ce qui est libre,
+ce que cela rapporte. **Il ne vend rien**, et c'est délibéré : attribuer une place engage une
+facture, un prélèvement, et douze mois d'engagement pour l'Exclusif. Tant que rien n'encaisse,
+attribuer ici donnerait une place sans contrepartie et un abonné qui se croit facturé.
+
+**Un défaut corrigé au passage, qui coûtait de l'argent.** La page de résultats classait
+d'après l'**abonnement** et non d'après l'emplacement détenu sur cette page. Un Premium
+occupait donc une place sponsorisée dans _toutes_ les villes et _tous_ les métiers où il était
+référencé : on distribuait gratuitement ce qu'on vend à l'unité, et le plafond de six Premium
+par métier × ville ne tenait plus. Vérifié avant et après sur deux pages réelles.
+
+**Ce qu'il faut pour vendre pour de bon :**
+
+- **les clés Stripe**, comme pour les opérateurs de messages — à brancher à la fin, selon ce
+  qui a été convenu. Le modèle les attend déjà (`stripeAbonnementId`, `stripeClientId`) ;
+- **`FactureLeRenom` n'est écrite par rien.** Le Renom ne facture personne aujourd'hui, pas
+  même en brouillon. C'est le pendant comptable de l'encaissement, et il reste entier ;
+- **`ListeAttente` n'est lue ni écrite par rien.** Quand une zone est complète — un Exclusif
+  pris, six Premium vendus — rien ne recueille la demande qui se présente. C'est pourtant à ce
+  moment précis que la rareté a de la valeur commerciale, et le modèle l'avait prévu.
+
+**Trois décisions avant d'écrire la vente :**
+
+- **que se passe-t-il quand l'Exclusif d'une zone résilie ?** Les six Premium de la zone
+  remontent-ils d'un rang, la place est-elle proposée en priorité à l'un d'eux, ou repart-elle
+  à la vente sans préférence ? L'engagement de douze mois rend le cas rare, pas inexistant ;
+- **que paie un abonné dont la note tombe sous le minimum ?** Aujourd'hui sa place ne
+  s'affiche plus — l'écran le signale, « place en sursis » — mais il continue de payer le prix
+  plein. C'est défendable un mois, difficilement trois ;
+- **un abonné Premium sans aucune place attribuée paie-t-il quand même ?** Le cas existe dans
+  les données : l'écran l'affiche en toutes lettres plutôt que de le masquer.

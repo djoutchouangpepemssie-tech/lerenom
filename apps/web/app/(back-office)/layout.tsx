@@ -34,7 +34,7 @@ export const metadata: Metadata = {
 const UNIVERS = [
   { href: '/administration', libelle: 'Accueil', prete: true },
   { href: '/administration/demandes', libelle: 'Demandes', prete: true },
-  { href: '/administration/premium', libelle: 'Premium et Exclusif', prete: false },
+  { href: '/administration/premium', libelle: 'Premium et Exclusif', prete: true },
   { href: '/administration/professionnels', libelle: 'Professionnels', prete: true },
   { href: '/administration/catalogue', libelle: 'Catalogue', prete: true },
   { href: '/administration/finances', libelle: 'Finances', prete: false },

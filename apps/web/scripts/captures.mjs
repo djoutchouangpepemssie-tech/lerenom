@@ -591,6 +591,22 @@ const PAGES = [
     },
   },
   {
+    nom: 'administration-premium',
+    chemin: '/administration/premium',
+    titre: 'Back-office — Premium et Exclusif',
+    connexionAdmin: true,
+  },
+  {
+    nom: 'administration-premium-abonnes',
+    chemin: '/administration/premium',
+    titre: 'Back-office — les abonnés',
+    connexionAdmin: true,
+    scenario: async (onglet) => {
+      await onglet.getByRole('tab', { name: /Abonnés/ }).click();
+      await onglet.waitForTimeout(200);
+    },
+  },
+  {
     nom: 'administration-catalogue',
     chemin: '/administration/catalogue',
     titre: 'Back-office — catalogue',

@@ -2530,6 +2530,71 @@ le destinataire ne pourra pas comptabiliser.
 
 ---
 
+## Back-office · Premium et Exclusif
+
+### On distribuait gratuitement ce qu'on vend à l'unité
+
+Avant l'écran, la même question qu'aux modules précédents : qu'est-ce qui commande réellement
+quoi ? Et la même réponse gênante.
+
+Ce que Le Renom vend n'est pas un abonnement, c'est **une place, sur un métier, dans une
+ville** : un Exclusif et six Premium par zone. La table `Emplacement` existe pour cela, elle
+est semée, et la requête de la page de résultats la **charge déjà**. Elle ne s'en sert pas.
+Le classement lisait la formule de l'**abonnement** — c'est-à-dire que tout Premium occupait
+une place sponsorisée dans toutes les villes et tous les métiers où il était référencé.
+
+La rareté est le produit. Sans elle l'abonnement ne vaut rien, et le plafond de six par
+métier × ville ne tenait plus — il n'était contrôlé nulle part puisque rien ne lisait la
+table. Un seul abonnement achetait la visibilité partout.
+
+Corrigé dans `donnees.ts` : la formule de classement vient de l'emplacement détenu **sur cette
+page**, et l'abonnement reste la condition — un emplacement dont l'abonnement est résilié ne
+place plus personne. Les deux doivent être vrais, et chacun pour sa raison.
+
+Vérifié sur deux pages réelles, avant d'écrire l'écran. Plombier × Paris 11, où les trois
+payants ont acheté : ordre inchangé, trois sponsorisés. Plombier × Montreuil, où deux d'entre
+eux sont référencés sans avoir rien acheté : plus aucun sponsorisé, classement naturel pour
+tous. C'est exactement la différence que la correction devait produire, et elle ne se voyait
+sur aucune page tant qu'on regardait la seule zone cohérente du semis.
+
+> **Règle retenue** — _une donnée chargée par une requête et jamais lue dans le résultat est
+> le signe d'une règle qu'on a eu l'intention d'appliquer._ Le `include` était là ; c'est le
+> `map` qui l'oubliait.
+
+### Vendre et afficher ne sont pas le même nombre
+
+Le schéma dit « jamais plus de 3 par page : 1 Exclusif et 2 Premium » ; les règles validées
+disent six Premium par métier × ville. Les deux sont vrais et ne parlent pas de la même chose :
+**six se vendent, deux s'affichent**, et les six tournent sur les deux places. Chacun obtient
+alors un tiers des affichages, ce qui est exactement ce qui lui est annoncé.
+
+L'écran sépare les deux chiffres, parce qu'on les confond et que la confusion a un coût
+commercial : vendre une septième place ne diluerait pas « un peu » la valeur des six autres,
+elle la réduirait d'un septième pour chacun, sans que personne l'ait accepté.
+
+Un détail de rédaction corrigé sur la capture : la phrase sur la rotation s'affichait même
+quand il n'y en avait pas — « deux s'affichent à la fois, soit 100 % des affichages » se lit
+comme une contradiction et fait douter du chiffre au lieu de l'expliquer. Elle n'apparaît plus
+qu'au-delà de deux vendus.
+
+Et j'ai recopié `2` en dur dans le composant avant de me reprendre : c'est le paramètre
+`emplacementsPremium`, il descend maintenant du serveur. Écrire la veille qu'une valeur
+recopiée est une divergence à retardement n'empêche pas de la recopier le lendemain.
+
+### Ce que l'écran refuse de faire
+
+Il ne vend pas. Attribuer une place engage une facture, un prélèvement et douze mois
+d'engagement pour l'Exclusif ; tant que rien n'encaisse, le bouton donnerait une place sans
+contrepartie et un abonné qui se croit facturé. Même règle qu'aux contestations, et pour la
+même raison.
+
+Deux tables restent entièrement mortes, consignées en Q41 : `FactureLeRenom` — Le Renom ne
+facture personne, pas même en brouillon — et `ListeAttente`, que rien ne lit ni n'écrit. Cette
+seconde absence est la plus coûteuse : quand une zone est complète, rien ne recueille la
+demande qui se présente, et c'est précisément le moment où la rareté vaut quelque chose.
+
+---
+
 ## Phases 5 à 11 · à venir
 
 Agenda et documents du pro, monétisation Stripe, back-office, personnalisation, avis et

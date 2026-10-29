@@ -470,6 +470,26 @@
     "erreursConsole": []
   },
   {
+    "page": "Back-office — Premium et Exclusif",
+    "largeur": 390,
+    "fichier": "administration-premium-390.png",
+    "defilementHorizontal": false,
+    "largeurDocument": 390,
+    "largeurFenetre": 390,
+    "debordements": [],
+    "erreursConsole": []
+  },
+  {
+    "page": "Back-office — les abonnés",
+    "largeur": 390,
+    "fichier": "administration-premium-abonnes-390.png",
+    "defilementHorizontal": false,
+    "largeurDocument": 390,
+    "largeurFenetre": 390,
+    "debordements": [],
+    "erreursConsole": []
+  },
+  {
     "page": "Back-office — catalogue",
     "largeur": 390,
     "fichier": "administration-catalogue-390.png",
@@ -1073,6 +1093,26 @@
     "page": "Back-office — journal d’audit",
     "largeur": 1440,
     "fichier": "administration-journal-1440.png",
+    "defilementHorizontal": false,
+    "largeurDocument": 1440,
+    "largeurFenetre": 1440,
+    "debordements": [],
+    "erreursConsole": []
+  },
+  {
+    "page": "Back-office — Premium et Exclusif",
+    "largeur": 1440,
+    "fichier": "administration-premium-1440.png",
+    "defilementHorizontal": false,
+    "largeurDocument": 1440,
+    "largeurFenetre": 1440,
+    "debordements": [],
+    "erreursConsole": []
+  },
+  {
+    "page": "Back-office — les abonnés",
+    "largeur": 1440,
+    "fichier": "administration-premium-abonnes-1440.png",
     "defilementHorizontal": false,
     "largeurDocument": 1440,
     "largeurFenetre": 1440,
