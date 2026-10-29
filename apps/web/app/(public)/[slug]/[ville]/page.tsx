@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { after } from 'next/server';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Accent, Carte, Conteneur, Section, TitreSection } from '@lerenom/ui';
@@ -9,6 +10,7 @@ import { StatutVille } from '@/composants/StatutVille';
 import { communeParSlug, filtresActifs, metierParSlug, resultats } from '@/lib/donnees';
 import type { FiltresResultats as Filtres } from '@/lib/donnees';
 import { aLaVille, nomVille } from '@/lib/affichage';
+import { enregistreLesAffichages } from '@/lib/mesure';
 
 interface Parametres {
   readonly params: Promise<{ readonly slug: string; readonly ville: string }>;
@@ -69,6 +71,28 @@ export default async function PageResultats({ params, searchParams }: Parametres
   const { metier, commune, pros, dernierRangSponsorise } = donnees;
   // La règle d'indexation porte sur la page non filtrée : c'est elle qui est publiée.
   const indexable = complet.pros.length >= 3 && !filtresActifs(filtres);
+
+  // La mesure part **après** la réponse : un professionnel paie pour une place en haut de
+  // page, et rien ne comptait combien de fois elle lui a été montrée. Mais compter ne doit
+  // pas ralentir la page de celui qui cherche un plombier — `after` s'exécute une fois la
+  // réponse envoyée, et un échec de comptage ne casse pas l'affichage.
+  //
+  // Seule la page non filtrée est comptée. Un filtre est une vue personnelle du visiteur ;
+  // additionner ses affichages à ceux de la page publiée gonflerait les chiffres qu'on
+  // présente à l'abonné d'un trafic qu'il n'a pas eu.
+  if (!filtresActifs(filtres)) {
+    after(async () => {
+      try {
+        await enregistreLesAffichages(
+          metier.id,
+          commune.code,
+          pros.map((pro) => ({ entrepriseId: pro.id, rang: pro.rang, sponsorise: pro.sponsorise })),
+        );
+      } catch {
+        // Un compteur perdu n'est pas une page cassée. On ne relaie rien au visiteur.
+      }
+    });
+  }
 
   const comptes = {
     urgence: complet.pros.filter((p) => p.interventionUrgente).length,
@@ -156,6 +180,8 @@ export default async function PageResultats({ params, searchParams }: Parametres
                 dernierRangSponsorise={dernierRangSponsorise}
                 metierSlug={metier.slug}
                 communeSlug={commune.slug}
+                metierId={metier.id}
+                communeId={commune.code}
               />
             </div>
           )}

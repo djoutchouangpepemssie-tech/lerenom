@@ -15,16 +15,36 @@ import { CarteResultat } from './CarteResultat';
  * avant l'algorithme de distribution : c'est écrit noir sur blanc sous la barre, parce qu'un
  * visiteur qui sélectionne lui-même doit savoir que sa sélection est respectée.
  */
+/**
+ * Compte l'ouverture d'une fiche depuis les résultats.
+ *
+ * Muet par construction : le visiteur part sur une autre page, lui signaler l'échec d'un
+ * compteur n'aurait aucun sens. `sendBeacon` est fait pour cela — la requête part même si la
+ * page se ferme dans la foulée.
+ */
+function compteOuverture(entrepriseId: string, metierId: string, communeId: string): void {
+  try {
+    const corps = JSON.stringify({ entrepriseId, type: 'fiche', metierId, communeId });
+    navigator.sendBeacon('/api/mesure/clic', new Blob([corps], { type: 'application/json' }));
+  } catch {
+    // Un compteur perdu n'est pas une page cassée.
+  }
+}
+
 export function ListeResultats({
   pros,
   dernierRangSponsorise,
   metierSlug,
   communeSlug,
+  metierId,
+  communeId,
 }: {
   readonly pros: readonly ProAffiche[];
   readonly dernierRangSponsorise: number;
   readonly metierSlug: string;
   readonly communeSlug: string;
+  readonly metierId: string;
+  readonly communeId: string;
 }) {
   const [selection, setSelection] = useState<readonly string[]>([]);
   const maximum = REGLES_VALIDEES.prosMaxParDemande;
@@ -102,7 +122,14 @@ export function ListeResultats({
                     </span>
                   </button>
 
-                  <div className="min-w-0 flex-1">
+                  {/* `onClickCapture` plutôt qu'un gestionnaire sur le lien : la carte en
+                      contient plusieurs, et compter une ouverture de fiche ne dépend pas de
+                      celui qu'on a touché. `sendBeacon` survit à la navigation — un `fetch`
+                      ordinaire serait annulé au moment même où le clic compte. */}
+                  <div
+                    className="min-w-0 flex-1"
+                    onClickCapture={() => compteOuverture(pro.id, metierId, communeId)}
+                  >
                     <CarteResultat pro={pro} index={index} />
                   </div>
                 </div>

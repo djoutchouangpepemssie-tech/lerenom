@@ -2671,6 +2671,68 @@ répertoire, et tout était intact.
 
 ---
 
+## Croissance · mesurer avant d'afficher
+
+### Trois tables vides, et pourquoi l'écran venait en second
+
+`Affichage`, `Clic`, `Appel` : trois tables posées au premier jour, **écrites par rien**.
+Poser l'écran « Croissance » dessus aurait donné trois zéros — pire que pas d'écran, parce
+qu'on en déduit que personne ne vient alors que personne ne compte.
+
+Et l'enjeu n'est pas la curiosité statistique. Un Premium paie 79 € par mois une place en
+haut de page ; si rien ne compte combien de fois elle lui a été montrée, on ne peut ni lui
+en rendre compte, ni justifier le prix, ni voir qu'une zone ne rapporte rien à celui qui
+l'achète. La mesure a donc été écrite avant l'écran.
+
+### Compter sans suivre les gens
+
+Le modèle agrège sur `entreprise × métier × commune × jour`. Pas d'identifiant de visiteur,
+pas d'adresse, pas d'horodatage à la seconde : on ne peut pas reconstituer un parcours à
+partir de ces lignes, et c'est délibéré. Mesurer l'audience d'une fiche ne demande pas de
+suivre quelqu'un.
+
+Deux décisions de comptage valent d'être dites. **Les pages filtrées ne comptent pas** : un
+filtre est une vue personnelle du visiteur, et additionner ses affichages à ceux de la page
+publiée gonflerait les chiffres qu'on présente à l'abonné d'un trafic qu'il n'a pas eu. Et
+**la mesure part après la réponse**, par `after()` : compter ne doit pas ralentir la page de
+celui qui cherche un plombier, et un comptage qui échoue ne casse pas l'affichage.
+
+Une seule requête pour toute la page, en `INSERT ... ON CONFLICT DO UPDATE`. Dix professionnels
+affichés feraient dix allers-retours sur le chemin le plus fréquenté du site ; et l'incrément
+SQL est atomique, là où un lire-puis-écrire perd un affichage sur deux visiteurs simultanés.
+Les identifiants interpolés sont **refusés** s'ils ne ressemblent pas à des identifiants,
+plutôt qu'échappés : un échappement qu'on croit correct est une supposition, un refus n'en
+est pas une.
+
+### Un contrôle qui ne pouvait rien signaler
+
+Depuis plusieurs modules, je vérifiais les captures avec un petit script lisant
+`rapport.json`. Il cherchait les clés `debordement` et `nom`. Elles s'appellent
+`debordements`, `defilementHorizontal` et `page`. **Le contrôle ne lisait rien et annonçait
+zéro défaut**, exactement comme le contrôle Factur-X qui trouvait un nom de fichier dans les
+métadonnées au lieu de la pièce jointe.
+
+Il n'a rien laissé passer — le script de captures imprime ses propres `✗`, et c'est lui qui a
+signalé le défaut réel. Mais pendant plusieurs modules, j'ai lu « en défaut 0 » d'une source
+qui n'aurait pas su dire autre chose.
+
+> **Règle retenue** — _deux contrôles qui disent la même chose ne se valident pas l'un
+> l'autre : il faut vérifier que chacun sait échouer._ Le script corrigé a immédiatement
+> trouvé le débordement de quatre pixels du graphique jour par jour.
+
+### Deux chiffres du même écran qui se contredisaient
+
+La capture a montré la carte « Fiches ouvertes : 1 » au-dessus d'une ligne « 2 ouvertures ».
+La carte filtrait les clics de type `fiche` ; la ligne du jour additionnait tous les types,
+ouverture et téléphone confondus. Deux comptes portant le même nom, différents, sur le même
+écran.
+
+Corrigé en alignant la ligne du jour sur le même filtre. Ce n'est pas un détail d'affichage :
+sur un tableau de bord, deux nombres qui devraient coïncider et ne coïncident pas ne font pas
+douter de l'un des deux, ils font douter de tous les autres.
+
+---
+
 ## Phases 5 à 11 · à venir
 
 Agenda et documents du pro, monétisation Stripe, back-office, personnalisation, avis et

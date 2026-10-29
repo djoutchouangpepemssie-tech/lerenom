@@ -490,6 +490,16 @@
     "erreursConsole": []
   },
   {
+    "page": "Back-office — croissance",
+    "largeur": 390,
+    "fichier": "administration-croissance-390.png",
+    "defilementHorizontal": false,
+    "largeurDocument": 390,
+    "largeurFenetre": 390,
+    "debordements": [],
+    "erreursConsole": []
+  },
+  {
     "page": "Back-office — catalogue",
     "largeur": 390,
     "fichier": "administration-catalogue-390.png",
@@ -1123,6 +1133,16 @@
     "page": "Back-office — les abonnés",
     "largeur": 1440,
     "fichier": "administration-premium-abonnes-1440.png",
+    "defilementHorizontal": false,
+    "largeurDocument": 1440,
+    "largeurFenetre": 1440,
+    "debordements": [],
+    "erreursConsole": []
+  },
+  {
+    "page": "Back-office — croissance",
+    "largeur": 1440,
+    "fichier": "administration-croissance-1440.png",
     "defilementHorizontal": false,
     "largeurDocument": 1440,
     "largeurFenetre": 1440,

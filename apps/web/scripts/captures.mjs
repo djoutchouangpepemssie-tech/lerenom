@@ -607,6 +607,12 @@ const PAGES = [
     },
   },
   {
+    nom: 'administration-croissance',
+    chemin: '/administration/croissance',
+    titre: 'Back-office — croissance',
+    connexionAdmin: true,
+  },
+  {
     nom: 'administration-catalogue',
     chemin: '/administration/catalogue',
     titre: 'Back-office — catalogue',

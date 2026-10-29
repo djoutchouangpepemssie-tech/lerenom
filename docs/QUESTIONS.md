@@ -1228,3 +1228,36 @@ n'a confirmé — pour l'Exclusif, douze mois d'engagement signés par un silenc
 - **un professionnel peut-il s'inscrire sur dix zones à la fois ?** Rien ne le limite. C'est
   sans doute sans gravité — s'inscrire ne coûte rien — mais cela gonfle le signal commercial
   que ces listes servent à mesurer.
+
+---
+
+## Q43 🟠 · La mesure d'audience : ce qui est compté, et ce qui ne l'est pas encore
+
+`Affichage`, `Clic` et `Appel` existaient depuis le premier jour et **aucune n'était écrite**.
+Les deux premières le sont maintenant. La conséquence était commerciale : un Premium paie
+79 € par mois une place en haut de page, et rien ne comptait combien de fois elle lui avait
+été montrée — donc rien ne permettait de lui en rendre compte, ni de justifier le prix.
+
+**Défauts appliqués :**
+
+- **des compteurs par jour, jamais des visiteurs.** Le modèle agrège sur
+  `entreprise × métier × commune × jour` : ni identifiant de visiteur, ni adresse, ni heure.
+  On ne peut pas reconstituer un parcours à partir de ces lignes ;
+- **les pages filtrées ne sont pas comptées.** Un filtre est une vue personnelle ; additionner
+  ses affichages à ceux de la page publiée gonflerait les chiffres qu'on présente à l'abonné
+  d'un trafic qu'il n'a pas eu ;
+- **la mesure ne bloque jamais l'affichage.** Elle part après la réponse, et un compteur perdu
+  n'est pas signalé au visiteur.
+
+**Ce qui manque, et ce que cela demande :**
+
+- **les appels ne sont pas mesurés.** Ils supposent des numéros de suivi, donc un opérateur
+  téléphonique — même famille que les SMS (§Q36). L'écran le dit plutôt que d'afficher un
+  zéro, qui se lirait « personne n'appelle » ;
+- **seules les ouvertures de fiche sont relevées côté visiteur.** Les types `site_web`,
+  `whatsapp` et `devis` existent dans le modèle et sont acceptés par la route, mais aucune
+  interface ne les envoie encore ;
+- **rien ne purge ces tables.** Une ligne par entreprise × zone × jour est peu, mais c'est
+  sans fin. Faut-il agréger au mois au-delà d'un an, et au bout de combien de temps effacer ?
+  La conservation touche au RGPD même sur des compteurs anonymes, et ce n'est pas à moi de
+  fixer la durée.
