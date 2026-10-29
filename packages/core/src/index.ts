@@ -19,6 +19,7 @@ export * from './devis.ts';
 export * from './avoir.ts';
 export * from './document.ts';
 export * from './facturx.ts';
+export * from './expedition.ts';
 export * from './rib.ts';
 export * from './validateurs.ts';
 export * from './verification.ts';

@@ -1643,6 +1643,12 @@ model MessageSortant {
   erreur      String?
   fournisseurId String? @map("fournisseur_id")
 
+  /// Tentatives d'envoi déjà faites, et date de la dernière. Un fournisseur qui répond mal se
+  /// rétablit souvent en quelques minutes ; un numéro invalide, jamais. Ces deux colonnes
+  /// permettent d'espacer les tentatives au lieu de marteler, et de cesser d'insister.
+  tentatives Int @default(0)
+  derniereTentativeLe DateTime? @map("derniere_tentative_le")
+
   creeLe DateTime @default(now()) @map("cree_le")
 
   @@index([demandeId])

@@ -979,3 +979,55 @@ le montant réclamé ?
 
 **L'acceptation d'un devis n'est toujours pas matérialisée par un écrit** (voir Q31). La
 question se posera avec le PDF, comme annoncé.
+
+---
+
+## Q36 🔴 — Aucun message ne part, et le jour où ils partiront
+
+_(métier et exploitation — garde-fou posé, deux décisions à prendre)_
+
+Le produit repose entièrement sur des messages. Une demande distribuée prévient trois
+professionnels ; un devis s'ouvre par un lien reçu ; un rendez-vous se propose, se relance et
+se rappelle par SMS. **Rien de cela n'a jamais quitté la base** : aucun opérateur SMS ni
+service de courriel n'est raccordé, et jusqu'ici rien ne drainait la file. Deux cent
+quatre-vingt-six messages y dormaient.
+
+**Ce qui est fait.** Un expéditeur tourne désormais toutes les minutes. Il prend les messages
+du plus ancien au plus récent, par lots bornés, et les remet à un `Fournisseur` — une interface
+de trois champs. Le jour où un opérateur est choisi, on écrit son adaptateur et on l'enregistre ;
+rien d'autre ne bouge. Sans fournisseur, l'expéditeur **ne marque rien comme envoyé** : un
+message passé à `envoye` alors que personne ne l'a reçu ferait disparaître la preuve que rien
+ne fonctionne.
+
+**Le garde-fou qui comptait le plus.** Un message périmé ne part pas. Sans cette règle, le
+raccordement d'un opérateur aurait réveillé la file dormante d'un coup : des rappels pour des
+rendez-vous de la semaine passée, des créneaux rendus depuis longtemps. Un client ne lit pas
+dix SMS périmés, il bloque l'expéditeur — et le canal est perdu pour de bon. Les messages
+périmés sont **abandonnés avec leur raison écrite**, jamais effacés.
+
+**Première décision à prendre : la durée de péremption.** Vingt-quatre heures, et c'est un
+défaut prudent, pas une règle du métier. Presque tous nos messages parlent d'un événement daté
+— une demande à saisir vite, un rendez-vous demain, un créneau qui expire — et passé un jour
+ils déroutent plus qu'ils n'informent. Mais un devis reçu avec deux jours de retard serait
+encore utile : c'est le cas que cette durée unique traite mal. **À trancher** : faut-il une
+durée par modèle de message plutôt qu'une seule ?
+
+**Seconde décision : quel fournisseur, et à quel coût.** Les deux canaux ne se ressemblent pas.
+
+Pour le **courriel**, il existe de vraies offres gratuites, suffisantes pour démarrer et même
+pour les premiers mois : de l'ordre de trois cents courriels par jour chez Brevo, six mille par
+mois chez Mailjet avec un plafond quotidien, quelques milliers par mois chez Resend. Ce sont
+des paliers gratuits permanents, pas des essais.
+
+Pour le **SMS**, il n'existe rien de gratuit et durable : seulement des crédits d'essai, puis un
+paiement au message — de l'ordre de quelques centimes par SMS vers la France. C'est une charge
+variable proportionnelle au nombre de demandes, et elle doit entrer dans le modèle économique
+avant l'ouverture, pas après. **À chiffrer avec Arcel** : combien de SMS par demande distribuée,
+et à partir de quel volume la marge le supporte.
+
+**Conséquence sur le produit, à trancher** : peut-on ouvrir en **courriel seul**, le SMS venant
+ensuite ? Le cahier des charges fait du SMS le canal principal, et le code de vérification du
+mobile en dépend. Ouvrir sans SMS changerait le parcours d'inscription et la vérification.
+
+_(Les chiffres ci-dessus viennent de comparatifs, pas des pages tarifaires officielles : ils
+donnent l'ordre de grandeur, ils ne font pas foi.)_

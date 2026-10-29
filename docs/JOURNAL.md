@@ -1975,6 +1975,81 @@ elle cachait un vrai défaut du dépôt.
 
 ---
 
+## Rien ne partait
+
+En préparant la génération du PDF côté serveur, une vérification de routine a donné ceci :
+
+```
+SELECT statut, count(*) FROM messages_sortants GROUP BY statut;
+ en_attente | 286
+```
+
+Deux cent quatre-vingt-six messages, aucun envoyé, jamais. Le produit repose entièrement sur
+eux — une demande distribuée prévient trois professionnels, un devis s'ouvre par un lien reçu,
+un rendez-vous se propose et se rappelle par SMS — et tout cela s'écrivait en base sans jamais
+en sortir. Le manque était consigné en trois endroits de `QUESTIONS.md`, chaque fois en passant,
+jamais comme le trou qu'il est.
+
+Le PDF a attendu. Une facture bien faite qu'aucun client ne reçoit vaut moins qu'un message qui
+part.
+
+### Ce qu'on ne peut pas faire, et ce qu'on peut
+
+Raccorder un opérateur demande un compte et des clés : cela ne se fait pas depuis ce dépôt. Ce
+qui manquait vraiment, en revanche, c'est la **pièce qui draine la file** — et elle, rien
+n'empêchait de l'écrire.
+
+Un expéditeur tourne maintenant toutes les minutes. C'est le seul travail dont le rythme se
+mesure en minutes, et pour cause : une demande distribuée à 9 h 02 qui prévient les
+professionnels la nuit suivante n'a prévenu personne.
+
+Il remet chaque message à un `Fournisseur` — un nom, des canaux, une fonction qui envoie. Toute
+la particularité d'un opérateur, ses clés, ses quotas, ses formats d'erreur, tient dans son
+adaptateur. Le jour du choix, on écrit l'adaptateur et rien d'autre ne bouge.
+
+**Sans fournisseur, l'expéditeur ne marque rien comme envoyé.** C'était la tentation : poser un
+adaptateur « journal » qui écrit une ligne et passe le message à `envoye`. Cela aurait donné une
+file vide, des compteurs verts, et aucun client prévenu. Un message marqué parti alors que
+personne ne l'a reçu fait disparaître la seule preuve que rien ne fonctionne.
+
+### Le garde-fou qui comptait plus que le reste
+
+La file dort depuis des semaines. Le jour où un opérateur est raccordé, sans précaution, les
+deux cent quatre-vingt-six partent **d'un coup** : des rappels pour des rendez-vous de la
+semaine dernière, des créneaux rendus depuis longtemps, des propositions caduques. Un client ne
+lit pas dix SMS périmés — il bloque l'expéditeur, et le canal est perdu.
+
+Un message plus vieux que son délai est donc **abandonné, avec sa raison écrite**, et jamais
+effacé. On peut lire en base exactement ce qui n'est pas parti et pourquoi.
+
+D'où une règle : **une file qui attend n'est pas une file en retard.** Reprendre le travail là
+où il s'est arrêté n'a de sens que si ce qu'on reprend a encore un objet ; sinon ce n'est pas
+du rattrapage, c'est une avalanche.
+
+### Le compteur global, une seconde fois
+
+Les premiers tests attendaient `envoyes === 1` et en ont trouvé **cent quatre-vingt-dix** : le
+fournisseur d'essai avait drainé toute la file de démonstration. Le code avait raison, le test
+mesurait ses voisins — exactement l'erreur dont une règle avait déjà été tirée pour les rappels
+de rendez-vous.
+
+Qu'elle se reproduise dit quelque chose : une règle écrite dans le journal ne se transporte pas
+toute seule au fichier suivant. Les assertions portent désormais sur les lignes du test, filtrées
+par leur modèle. Et les deux cent quatre-vingt-six messages de démonstration, que le test avait
+marqués envoyés, ont été remis en attente : une donnée de démonstration n'est pas un bac à sable.
+
+### Ce que cela coûtera
+
+Les deux canaux ne se ressemblent pas, et c'est une information économique, pas technique. Le
+courriel a de vraies offres gratuites et permanentes, suffisantes pour démarrer. Le SMS n'a que
+des crédits d'essai, puis un paiement au message — une charge variable proportionnelle au nombre
+de demandes distribuées. Le cahier des charges fait pourtant du SMS le canal principal.
+
+Consigné en `QUESTIONS.md` §Q36, en rouge : la durée de péremption, le choix du fournisseur, et
+la question qu'il ouvre — peut-on ouvrir en courriel seul ?
+
+---
+
 ## Phases 5 à 11 · à venir
 
 Agenda et documents du pro, monétisation Stripe, back-office, personnalisation, avis et

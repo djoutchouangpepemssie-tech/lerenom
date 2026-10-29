@@ -8,6 +8,7 @@ describe('travaux de nuit', () => {
     // ne se verrait pas. L'énumération oblige à passer par les deux.
     expect(Object.keys(TRAVAUX_DE_NUIT).sort()).toEqual([
       'confirmations-intervention',
+      'expedition',
       'invitations-avis',
       'peremption',
       'rappels-rendez-vous',

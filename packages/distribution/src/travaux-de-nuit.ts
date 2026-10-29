@@ -8,6 +8,7 @@
  */
 
 import { demandeConfirmationIntervention, inviteAuxAvis } from './avis.ts';
+import { expedieLesMessages } from './expedition.ts';
 import { relanceLesPropositions, rappelleLesRendezVous } from './rendez-vous.ts';
 import { perimeLesDemandes, recalculeScores } from './scores.ts';
 
@@ -19,6 +20,11 @@ export const TRAVAUX_DE_NUIT = {
   'confirmations-intervention': async () => await demandeConfirmationIntervention(),
   'relances-rendez-vous': async () => await relanceLesPropositions(),
   'rappels-rendez-vous': async () => await rappelleLesRendezVous(),
+  // Celui-ci n'est pas un travail « de nuit » : il tourne toutes les minutes. Une demande
+  // distribuée à 9 h 02 qui prévient les professionnels à 3 h du matin n'a pas prévenu
+  // grand-monde. Le registre le porte quand même — c'est le même routage, les mêmes
+  // garanties de nom, et un second mécanisme n'apporterait rien.
+  expedition: async () => await expedieLesMessages(),
 } as const;
 
 export type NomTravailDeNuit = keyof typeof TRAVAUX_DE_NUIT;

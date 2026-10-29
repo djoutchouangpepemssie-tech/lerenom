@@ -114,6 +114,16 @@ await fileNuit().upsertJobScheduler(
   { name: 'nuit', data: { travail: 'rappels-rendez-vous' } },
 );
 
+// L'expédition des messages tourne **toutes les minutes**. C'est le seul travail dont le
+// rythme se mesure en minutes, et pour cause : une demande distribuée à 9 h 02 qui prévient
+// les professionnels la nuit suivante n'a prévenu personne. La minute est le plus long délai
+// qu'un client accepte entre « j'ai envoyé » et « j'ai reçu la confirmation ».
+await fileNuit().upsertJobScheduler(
+  'expedition',
+  { pattern: '* * * * *', tz: 'Europe/Paris' },
+  { name: 'nuit', data: { travail: 'expedition' } },
+);
+
 console.warn('[worker] Le Renom · cascade, échéances et travaux de nuit en écoute.');
 
 async function arrete(signal: string): Promise<void> {
