@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react';
 import { cn } from '../utilitaires';
 
 /**
@@ -63,6 +64,19 @@ interface Fenetre {
   readonly h: number;
   readonly retard: number;
   readonly allumee: boolean;
+  /**
+   * Cette fenêtre s'allume et s'éteint, ou reste fixe.
+   *
+   * Les deux tiers des fenêtres étaient allumées **et** animées : près de 235 animations
+   * infinies sur une illustration décorative, chacune avec son style en ligne recopié dans
+   * le balisage puis dans la charge d'hydratation. L'accueil envoyait 351 Kio de données
+   * d'hydratation pour 83 liens, et passait 1,3 s à composer.
+   *
+   * L'effet recherché est que *quelques* fenêtres s'allument — une façade dont toutes les
+   * fenêtres clignotent de concert ne ressemble d'ailleurs à rien. Une sur sept suffit, et
+   * c'est même plus juste.
+   */
+  readonly scintille: boolean;
 }
 
 /**
@@ -95,6 +109,7 @@ function fenetresDe(immeuble: Immeuble, premierPlan: boolean): readonly Fenetre[
         h: hauteurFenetre,
         retard: (graine % 11) * 0.9,
         allumee: graine % 3 !== 0,
+        scintille: graine % 3 !== 0 && graine % 7 === 0,
       });
     }
   }
@@ -113,6 +128,9 @@ function lucarnesDe(immeuble: Immeuble): readonly Fenetre[] {
     h,
     retard: ((immeuble.x + index * 13) % 17) * 0.6,
     allumee: true,
+    // Les lucarnes sont peu nombreuses et au premier plan : ce sont elles qu'on regarde,
+    // donc ce sont elles qui méritent de scintiller.
+    scintille: true,
   }));
 }
 
@@ -241,12 +259,13 @@ function RangImmeubles({
                   height={fenetre.h}
                   fill={fenetre.allumee ? '#E2C27A' : '#272C35'}
                   rx="1"
+                  className={fenetre.scintille ? 'fenetre-scintillante' : undefined}
                   style={
-                    fenetre.allumee
-                      ? {
-                          animation: 'lr-fenetre 12s ease-in-out infinite',
-                          animationDelay: `${fenetre.retard}s`,
-                        }
+                    // Seul le retard varie d'une fenêtre à l'autre : la déclaration
+                    // d'animation vit dans la feuille de style, pas recopiée deux cent fois
+                    // dans le document.
+                    fenetre.scintille
+                      ? ({ '--retard': `${fenetre.retard}s` } as CSSProperties)
                       : undefined
                   }
                 />
@@ -356,9 +375,11 @@ export function Epingle({
         )}
       </svg>
       {variante !== 'standard' && (
+        /* Le halo est un disque translucide qu'on agrandit, non une ombre portée qu'on
+           redessine : voir `lr-pulsation` dans la feuille de style. */
         <span
           aria-hidden="true"
-          className="animation-pulsation absolute bottom-1 left-1/2 size-3 -translate-x-1/2 rounded-full"
+          className="animation-pulsation bg-or/45 absolute bottom-1 left-1/2 size-3 -translate-x-1/2 rounded-full"
         />
       )}
     </span>

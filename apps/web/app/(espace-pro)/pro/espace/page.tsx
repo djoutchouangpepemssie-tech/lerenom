@@ -82,10 +82,12 @@ export default async function PageTableauDeBord() {
       {/* ── Les quatre chiffres ────────────────────────────────────────── */}
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Carte className="p-5">
-          <Chiffre
-            valeur={String(chiffres.demandesAcceptees)}
-            libelle="Demandes acceptées ce mois"
-          />
+          <dl>
+            <Chiffre
+              valeur={String(chiffres.demandesAcceptees)}
+              libelle="Demandes acceptées ce mois"
+            />
+          </dl>
           {chiffres.demandesIncluses > 0 && (
             <Jauge
               className="mt-4"
@@ -98,21 +100,25 @@ export default async function PageTableauDeBord() {
         </Carte>
 
         <Carte className="p-5">
-          <Chiffre
-            valeur={`${chiffres.depenseHT.toFixed(2).replace('.', ',')} €`}
-            libelle="Dépensé hors forfait ce mois (HT)"
-          />
+          <dl>
+            <Chiffre
+              valeur={`${chiffres.depenseHT.toFixed(2).replace('.', ',')} €`}
+              libelle="Dépensé hors forfait ce mois (HT)"
+            />
+          </dl>
         </Carte>
 
         <Carte className="p-5">
-          <Chiffre
-            valeur={
-              chiffres.tauxReponse === null
-                ? '—'
-                : `${String(Math.round(chiffres.tauxReponse * 100))} %`
-            }
-            libelle="Taux de réponse"
-          />
+          <dl>
+            <Chiffre
+              valeur={
+                chiffres.tauxReponse === null
+                  ? '—'
+                  : `${String(Math.round(chiffres.tauxReponse * 100))} %`
+              }
+              libelle="Taux de réponse"
+            />
+          </dl>
           <p className="text-encre-55 mt-3 text-xs leading-relaxed">
             Part des demandes reçues auxquelles vous avez répondu, acceptation ou refus.
           </p>

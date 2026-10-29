@@ -43,3 +43,7 @@ next-env.d.ts
 
 # Variables locales de développement
 .env.local
+
+# Rapports Lighthouse, régénérés par scripts/lighthouse.mjs
+docs/lighthouse/*.json
+.lighthouse-sortie.txt

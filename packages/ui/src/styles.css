@@ -14,7 +14,10 @@
   --color-nuit: #0f1115;
   --color-or: #c9a24d;
   --color-or-clair: #e2c27a;
-  --color-or-fonce: #8a6a1f;
+  /* Assombri de trois points : à #8a6a1f il rendait 4,45:1 sur le crème des puces — juste
+   * sous la barre. Le contraste se juge contre le fond le plus **foncé** où la couleur se
+   * pose, pas contre le blanc : c'est l'erreur que j'ai faite une première fois. */
+  --color-or-fonce: #87671c;
   --color-creme: #f6f4ee;
   --color-carte: #ffffff;
   --color-bordure: #e7e3d8;
@@ -27,10 +30,25 @@
   --color-erreur: #a3321f;
   --color-erreur-fond: #fbedea;
 
-  /* Nuances d'encre, pour les textes secondaires. */
+  /* Nuances d'encre, pour les textes secondaires.
+   *
+   * Les trois passent le contraste AA (4,5:1) sur le crème comme sur le blanc. C'est une
+   * contrainte, pas une préférence : `encre-40` valait #8e9199, soit 2,97:1 sur le crème, et
+   * Lighthouse l'a relevé sur l'accueil. Les 55 endroits qui l'emploient sont tous du petit
+   * texte — 11 ou 12 pixels —, c'est-à-dire exactement le cas où le seuil de 4,5:1 s'applique
+   * sans indulgence.
+   *
+   * Le jeton a donc été assombri jusqu'au premier gris qui passe **sur tous les fonds du
+   * site**, et non sur le blanc seulement : le crème des puces (#f8f0de) est le plus foncé
+   * des quatre, et c'est lui qui fixe la contrainte. Viser le blanc laissait passer 4,24:1.
+   *
+   * Conséquence assumée : `encre-40` se distingue à peine d'`encre-55`, et la hiérarchie à
+   * trois crans n'en a plus vraiment trois. Rééchelonner les trois nuances est une décision
+   * de conception, pas une correction de défaut : elle est posée en `docs/QUESTIONS.md` Q32
+   * plutôt que tranchée ici. */
   --color-encre-70: #4a4d55;
   --color-encre-55: #6b6e77;
-  --color-encre-40: #8e9199;
+  --color-encre-40: #696c74;
 
   /* --- Typographie -------------------------------------------------------- */
   --font-titre: var(--police-titre), 'Iowan Old Style', Georgia, serif;
@@ -149,16 +167,6 @@
   }
 }
 
-@keyframes lr-flottement {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-6px);
-  }
-}
-
 @keyframes lr-chute-epingle {
   0% {
     opacity: 0;
@@ -174,15 +182,31 @@
   }
 }
 
+/*
+ * Pulsation : `scale` et `opacity`, jamais `box-shadow`.
+ *
+ * Cette animation tourne **indéfiniment** sur l'accueil, derrière les toits de Paris. Elle
+ * animait `box-shadow` — une propriété de peinture : le navigateur redessinait la zone à
+ * chaque image, pour toujours. Lighthouse mesurait 1,8 s de composition et 1,4 s de calcul
+ * de style sur une page qui ne fait pourtant rien, et la performance tombait à 85.
+ *
+ * `scale` et `opacity` sont les deux seules propriétés que le compositeur sait animer sans
+ * repeindre quoi que ce soit. `scale` est utilisée comme propriété indépendante, et non dans
+ * `transform`, pour ne pas écraser le `translateX(-50%)` qui centre l'élément.
+ *
+ * Règle générale pour toute animation **infinie** de ce projet : `transform`, `scale`,
+ * `translate`, `rotate` ou `opacity`, et rien d'autre. Une animation qui s'arrête peut se
+ * permettre davantage ; une animation qui ne s'arrête jamais, non.
+ */
 @keyframes lr-pulsation {
   0% {
-    box-shadow: 0 0 0 0 rgb(201 162 77 / 0.45);
+    scale: 1;
+    opacity: 0.45;
   }
-  70% {
-    box-shadow: 0 0 0 14px rgb(201 162 77 / 0);
-  }
+  70%,
   100% {
-    box-shadow: 0 0 0 0 rgb(201 162 77 / 0);
+    scale: 3.3;
+    opacity: 0;
   }
 }
 
@@ -204,6 +228,18 @@
   to {
     transform: translateX(-50%);
   }
+}
+
+/*
+ * Une fenêtre qui s'allume, dans les toits de Paris.
+ *
+ * La déclaration vit ici plutôt que dans un style en ligne : répétée sur chaque fenêtre, elle
+ * était recopiée dans le balisage **et** dans la charge d'hydratation de React. Seul le
+ * retard, qui diffère d'une fenêtre à l'autre, reste en ligne — sous forme de variable.
+ */
+@utility fenetre-scintillante {
+  animation: lr-fenetre 12s ease-in-out infinite;
+  animation-delay: var(--retard, 0s);
 }
 
 /* Fenêtres qui s'allument dans les toits de Paris. */
@@ -245,12 +281,29 @@
   }
 }
 
-@utility animation-apparition {
-  animation: lr-apparition var(--duree-longue) var(--courbe) both;
+/*
+ * Une ligne de liste que le navigateur peut ignorer tant qu'elle est hors écran.
+ *
+ * `/ile-de-france` liste les 1 285 communes — « sans exception », et c'est une promesse de
+ * la page, pas un accident. Le navigateur calculait donc la mise en page et peignait 1 285
+ * lignes dont une quinzaine sont visibles : 875 Kio de balisage à traiter, et une
+ * performance Lighthouse à 82 là où les autres gabarits sont à 99.
+ *
+ * Le transfert, lui, n'était pas en cause : 80 Kio une fois compressé. Le coût était
+ * entièrement dans le rendu — c'est pourquoi alléger la page aurait été la mauvaise réponse.
+ *
+ * `content-visibility: auto` laisse tout dans le document — le contenu reste présent pour
+ * les moteurs, la recherche du navigateur et les lecteurs d'écran — mais autorise à sauter
+ * la mise en page de ce qui n'est pas à l'écran. `contain-intrinsic-size` donne une hauteur
+ * présumée, sans laquelle la barre de défilement sauterait au fil du défilement.
+ */
+@utility ligne-differee {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 3rem;
 }
 
-@utility animation-flottement {
-  animation: lr-flottement 5s ease-in-out infinite;
+@utility animation-apparition {
+  animation: lr-apparition var(--duree-longue) var(--courbe) both;
 }
 
 @utility animation-epingle {

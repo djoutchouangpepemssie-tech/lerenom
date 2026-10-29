@@ -807,3 +807,46 @@ statut en base et de la date. Pas d'horodatage opposable, pas d'adresse IP conse
 d'exemplaire figé du document accepté. Pour un devis de quelques centaines d'euros, c'est
 probablement suffisant ; pour un chantier, probablement pas. La question se posera en même
 temps que le PDF.
+
+---
+
+## Q32 🟡 — La hiérarchie des gris n'a plus vraiment trois crans
+
+_(conception — correction appliquée, rééchelonnement à décider)_
+
+Trois nuances d'encre servent aux textes secondaires. `encre-40` rendait **2,97:1** sur le
+crème, là où la norme AA en demande 4,5 pour du petit texte — et ses 55 emplois sont tous du
+petit texte, 11 ou 12 pixels. Lighthouse l'a relevé.
+
+**Appliqué** : le jeton est assombri jusqu'au premier gris qui passe sur **tous** les fonds du
+site, le crème des puces compris — viser le blanc seul laissait passer 4,24:1. `or-fonce` a
+été corrigé de la même façon, pour la même raison.
+
+**La conséquence, qui est une vraie question** : `encre-40` (#696c74) et `encre-55` (#6b6e77)
+sont désormais presque identiques. Il reste deux nuances utiles là où la conception en prévoit
+trois. Rééchelonner — assombrir `encre-55` et `encre-70` pour redonner de l'air en bas de la
+gamme — toucherait tous les écrans : c'est une décision de conception, pas une correction de
+défaut, et elle demande un œil sur les maquettes plutôt qu'un calcul de contraste.
+
+**Ce qui n'est pas négociable en revanche** : aucune couleur de texte ne redescend sous 4,5:1.
+Si la gamme est rééchelonnée, c'est en gardant ce plancher.
+
+---
+
+## Q33 🟡 — La page Île-de-France fait 380 écrans de haut
+
+_(produit — constat, pas de correction appliquée)_
+
+La page liste les 1 285 communes, « sans exception », et c'est une promesse assumée. Mesure
+faite : **151 558 pixels de haut sur téléphone**, soit environ 380 hauteurs d'écran.
+
+Le coût technique est réglé — le navigateur ne met plus en page ce qui est hors écran — et la
+page passe Lighthouse. Reste la question d'usage : personne ne fait défiler 380 écrans. La
+recherche et les filtres existent, ce sont eux qui rendent la page utilisable ; la liste
+entière sert surtout à prouver l'exhaustivité.
+
+**Deux voies, à trancher avec Arcel** : garder la liste entière, en affichant d'abord les plus
+peuplées et les villes ouvertes et en laissant la recherche faire le reste ; ou l'assumer
+telle quelle, puisque les huit pages de département offrent déjà une entrée par territoire.
+Nous n'avons rien changé : réduire ce que la page montre est un choix éditorial, et la phrase
+« sans exception » est écrite dans le titre.

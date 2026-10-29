@@ -1467,6 +1467,76 @@ artisan à trente kilomètres, pas deux artisans de votre quartier.
 
 ---
 
+## Hors phase · Lighthouse, mesuré pour la première fois
+
+La phase 2 exigeait « Lighthouse mobile ≥ 90 ». Personne ne l'avait mesuré. Une exigence
+qu'on ne mesure pas est un souhait, et celle-ci l'était depuis le début du projet.
+
+Première mesure sur l'accueil : performance 86, accessibilité 92, référencement **63**.
+
+### Mesurer juste avant de corriger quoi que ce soit
+
+Les 63 du référencement n'étaient pas un défaut du site : mon serveur tournait en
+développement, et `robots.ts` y interdit l'indexation de tout le site — à juste titre, une
+préproduction n'a rien à faire dans un moteur de recherche. Je mesurais un réglage, pas une
+page. En production, le même écran rend **100**.
+
+Le second piège est plus retors : enchaîner dix mesures dans une même instance de navigateur
+fait dériver les scores. L'accueil rendait 94 mesuré seul et 87 en huitième position, sur la
+même construction. Le guide des prix est passé de 84 à 95 rien qu'en lui donnant un
+navigateur neuf. **Un chiffre qui dépend de l'ordre de passage ne mesure rien** — j'ai failli
+optimiser une page qui n'avait rien.
+
+### Ce qui coûtait vraiment
+
+**Deux animations infinies peignaient en permanence.** La première animait `box-shadow`, une
+propriété de peinture : le navigateur redessinait la zone à chaque image, indéfiniment. La
+seconde était pire — deux fenêtres sur trois des toits de Paris, soit près de 235 éléments,
+chacun avec sa propre animation infinie **déclarée en style en ligne**, donc recopiée dans le
+balisage puis dans la charge d'hydratation de React. L'accueil envoyait 351 Kio de données
+d'hydratation pour 83 liens.
+
+Les deux sont corrigées, et la règle est écrite dans la feuille de style : une animation
+infinie n'anime que `transform`, `scale`, `translate`, `rotate` ou `opacity`. Une animation
+qui s'arrête peut se permettre davantage ; une animation qui ne s'arrête jamais, non.
+
+Pour les fenêtres, j'ai aussi réduit la proportion qui scintille d'une sur deux à une sur
+sept. Ce n'est pas une concession : une façade dont toutes les fenêtres clignotent de concert
+ne ressemble à rien, et quelques-unes suffisent à donner l'effet.
+
+**La page Île-de-France rendait 1 285 lignes dont quinze sont visibles.** La tentation était
+d'alléger la page. C'eût été la mauvaise réponse : le transfert ne pesait que 80 Kio une fois
+compressé — le coût était entièrement dans la mise en page et la peinture de 875 Kio de
+balisage. Et « les 1 285 villes, sans exception » est une promesse écrite dans le titre.
+
+`content-visibility: auto` règle exactement ce problème : tout reste dans le document, pour
+les moteurs comme pour les lecteurs d'écran, mais le navigateur saute ce qui est hors écran.
+Vérifié en faisant défiler jusqu'à la quarante-millième ligne : les communes s'y affichent
+normalement.
+
+### Deux couleurs sous la norme
+
+`encre-40` rendait 2,97:1 sur le crème, là où AA demande 4,5 pour du petit texte — et ses 55
+emplois sont tous du petit texte. Corrigé au niveau du jeton, donc partout d'un coup.
+
+J'ai calculé le premier gris qui passe… sur fond blanc. Mauvais fond : le site pose ses textes
+sur quatre nuances de crème, et la plus foncée laissait encore passer 4,24:1. **Le contraste
+se juge contre le fond le plus foncé où la couleur se pose**, pas contre le blanc.
+
+La correction a une conséquence que je n'ai pas voulu masquer : `encre-40` et `encre-55` sont
+désormais presque identiques, et la hiérarchie à trois crans n'en a plus vraiment trois.
+Rééchelonner la gamme est une décision de conception, pas une correction de défaut : elle est
+posée en Q32.
+
+### Le résultat
+
+Les dix gabarits publics sont au-dessus de 90, de 91 à 100, avec 100 partout en référencement
+et en bonnes pratiques. La porte de validation de la phase 2 est franchie — et elle est
+désormais **reproductible** : `node scripts/lighthouse.mjs`, avec les deux pièges de mesure
+écrits en tête du fichier pour que personne n'y retombe.
+
+---
+
 ## Phases 5 à 11 · à venir
 
 Agenda et documents du pro, monétisation Stripe, back-office, personnalisation, avis et

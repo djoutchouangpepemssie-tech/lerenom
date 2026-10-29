@@ -111,7 +111,7 @@ export function ListeCommunes({
       ) : (
         <ul className="mt-5 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
           {filtrees.map((commune) => (
-            <li key={commune.code}>
+            <li key={commune.code} className="ligne-differee">
               <Link
                 href={`/${commune.slug}`}
                 className="border-bordure bg-carte hover:border-or flex min-h-12 items-center gap-3 rounded-[var(--radius-douce)] border px-4 transition-colors"

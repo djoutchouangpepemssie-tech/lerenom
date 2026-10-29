@@ -20,8 +20,10 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "chrome-launcher": "^1.2.2",
     "eslint": "^10.13.0",
     "eslint-config-prettier": "^10.1.8",
+    "lighthouse": "13.6.0",
     "prettier": "^3.9.10",
     "prettier-plugin-tailwindcss": "^0.8.1",
     "turbo": "^2.11.10",

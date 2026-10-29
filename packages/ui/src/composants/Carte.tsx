@@ -36,7 +36,22 @@ export function Carte({
   );
 }
 
-/** Une statistique mise en avant : un nombre, son libellé, et rien d'autre. */
+/**
+ * Une statistique mise en avant : un nombre, son libellé, et rien d'autre.
+ *
+ * **À placer dans un `<dl>`.** Une statistique est une définition — « villes ouvertes : 5 » —
+ * et c'est ainsi qu'un lecteur d'écran doit l'entendre. Le composant rend donc un `<dt>` et
+ * un `<dd>` groupés dans un `div`, ce qu'un `<dl>` autorise explicitement.
+ *
+ * Le libellé vient **avant** le nombre dans le document, parce que `dt` précède `dd` ; c'est
+ * aussi l'ordre dans lequel la phrase se dit. L'affichage les inverse, le nombre d'abord :
+ * `flex-col-reverse` sépare ce que la page montre de ce qu'elle déclare, sans mentir sur
+ * l'un ni sur l'autre.
+ *
+ * Le composant rendait deux `<p>` dans un `div`. Dans un `<dl>`, c'est du balisage invalide,
+ * et Lighthouse l'a relevé : un `div` enfant d'une liste de définitions ne peut contenir que
+ * des `dt` et des `dd`.
+ */
 export function Chiffre({
   valeur,
   libelle,
@@ -47,16 +62,16 @@ export function Chiffre({
   readonly clair?: boolean;
 }) {
   return (
-    <div>
-      <p
+    <div className="flex flex-col-reverse">
+      <dt className={cn('mt-2 text-sm', clair ? 'text-creme/70' : 'text-encre-55')}>{libelle}</dt>
+      <dd
         className={cn(
           'font-[family-name:var(--font-titre)] text-[clamp(1.9rem,4.5vw,2.9rem)] leading-none',
           clair ? 'text-or-clair' : 'text-or-fonce',
         )}
       >
         {valeur}
-      </p>
-      <p className={cn('mt-2 text-sm', clair ? 'text-creme/70' : 'text-encre-55')}>{libelle}</p>
+      </dd>
     </div>
   );
 }
