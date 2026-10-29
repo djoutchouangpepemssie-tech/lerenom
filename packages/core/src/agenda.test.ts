@@ -46,6 +46,7 @@ function existante(
     debut: a(debut),
     fin: a(fin),
     expireLe: null,
+    annuleLe: null,
     ...reste,
   };
 }
@@ -113,11 +114,32 @@ describe('occupeEncore', () => {
     const plage = existante('14:00', '15:00', { type: 'propose', expireLe: null });
     expect(occupeEncore(plage, MAINTENANT)).toBe(true);
   });
+
+  it('une plage annulée n’occupe plus, quel que soit son type', () => {
+    // Elle reste en base : l'effacer emporterait le rendez-vous en cascade.
+    for (const type of ['intervention', 'visite', 'blocage'] as const) {
+      const plage = existante('09:00', '10:00', { type, annuleLe: MAINTENANT });
+      expect(occupeEncore(plage, MAINTENANT)).toBe(false);
+    }
+  });
 });
 
 describe('expiration et relance', () => {
   it('une proposition vaut quarante-huit heures', () => {
     const echeance = expirationProposition(MAINTENANT);
+    expect(echeance.getTime() - MAINTENANT.getTime()).toBe(VALIDITE_PROPOSITION_HEURES * 3_600_000);
+  });
+
+  it('mais jamais au-delà du créneau proposé', () => {
+    // Promettre « vous avez jusqu'à samedi » pour un rendez-vous de vendredi n'a pas de sens,
+    // et c'est ce que la page annonçait au client.
+    const demain = new Date(MAINTENANT.getTime() + 20 * 3_600_000);
+    expect(expirationProposition(MAINTENANT, demain).getTime()).toBe(demain.getTime());
+  });
+
+  it('garde les quarante-huit heures quand le créneau est plus lointain', () => {
+    const dansUneSemaine = new Date(MAINTENANT.getTime() + 168 * 3_600_000);
+    const echeance = expirationProposition(MAINTENANT, dansUneSemaine);
     expect(echeance.getTime() - MAINTENANT.getTime()).toBe(VALIDITE_PROPOSITION_HEURES * 3_600_000);
   });
 

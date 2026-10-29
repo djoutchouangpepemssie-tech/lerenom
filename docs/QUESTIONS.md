@@ -873,11 +873,19 @@ date de fin mal saisie. **À vérifier** avec des artisans : certains chantiers 
 plusieurs jours, et il faudra alors une plage « multi-jours » plutôt qu'un plafond relevé.
 
 **Un rendez-vous confirmé ne se déplace ni ne s'efface** depuis l'agenda : l'écran renvoie
-vers une annulation, qui préviendra le client. **Ce qui manque** : cette annulation n'existe
-pas encore. En attendant, un professionnel qui doit déplacer un rendez-vous confirmé n'a
-aucune issue dans le produit — c'est le trou le plus visible de cette phase.
+vers une annulation, qui prévient le client. _Comblé_ : « Annuler et prévenir » existe, avec
+son motif, et libère la plage.
 
-**Rien n'est encore envoyé au client.** Proposer un créneau ne lui écrit pas, la relance à
-vingt-quatre heures n'est pas branchée, les rappels de la veille et des deux heures non plus.
-Les colonnes existent (`relanceeLe`, `rappelVeilleLe`, `rappel2hLe`) et le travail de nuit
-saura les remplir : c'est la suite immédiate, pas une question ouverte.
+**Proposer un créneau écrit au client.** _Comblé_ : courriel et SMS, avec un lien à usage
+unique par lequel il accepte ou décline. Accepter rend la plage ferme, décliner la libère, et
+le professionnel est prévenu dans les deux cas.
+
+**Ce qui manque encore** : la relance à vingt-quatre heures et les rappels de la veille et
+des deux heures. Les règles sont écrites et testées (`rappelAEnvoyer`), les colonnes existent
+(`relanceeLe`, `rappelVeilleLe`, `rappel2hLe`) ; il reste à les brancher sur le travail de
+nuit. C'est du câblage, pas une question ouverte.
+
+**Et une décision à confirmer** : décliner une proposition la transforme en annulation sèche,
+sans permettre au client de dire _quand_ il serait disponible. L'écran l'invite à appeler. Un
+formulaire de contre-proposition serait plus commode, mais ferait de l'agenda une messagerie
+— à trancher avec Arcel.

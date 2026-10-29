@@ -64,6 +64,11 @@ function cheminDuDevisClient() {
   return valeur === null ? null : `/devis/${valeur}`;
 }
 
+function cheminDuRendezVous() {
+  const valeur = jeton('rendez-vous');
+  return valeur === null ? null : `/rendez-vous/${valeur}`;
+}
+
 function cheminDeSuivi() {
   const valeur = jeton('suivi');
   return valeur === null ? null : `/suivi/${valeur}`;
@@ -258,6 +263,11 @@ const PAGES = [
       await onglet.getByText('Annuler définitivement cette demande ?').waitFor();
       await onglet.waitForTimeout(200);
     },
+  },
+  {
+    nom: 'rendez-vous-client',
+    chemin: cheminDuRendezVous,
+    titre: 'Le rendez-vous proposé au client',
   },
   {
     nom: 'devis-client',

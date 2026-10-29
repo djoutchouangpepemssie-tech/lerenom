@@ -29,3 +29,4 @@ export * from './inscription.ts';
 export * from './fiche.ts';
 export * from './horaires.ts';
 export * from './agenda.ts';
+export * from './rendez-vous.ts';

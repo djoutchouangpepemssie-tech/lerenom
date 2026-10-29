@@ -878,5 +878,25 @@
     "largeurFenetre": 1440,
     "debordements": [],
     "erreursConsole": []
+  },
+  {
+    "page": "Le rendez-vous proposé au client",
+    "largeur": 390,
+    "fichier": "rendez-vous-client-390.png",
+    "defilementHorizontal": false,
+    "largeurDocument": 390,
+    "largeurFenetre": 390,
+    "debordements": [],
+    "erreursConsole": []
+  },
+  {
+    "page": "Le rendez-vous proposé au client",
+    "largeur": 1440,
+    "fichier": "rendez-vous-client-1440.png",
+    "defilementHorizontal": false,
+    "largeurDocument": 1440,
+    "largeurFenetre": 1440,
+    "debordements": [],
+    "erreursConsole": []
   }
 ]

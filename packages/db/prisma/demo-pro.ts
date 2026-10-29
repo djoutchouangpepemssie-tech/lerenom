@@ -16,6 +16,7 @@ import { PrismaPg } from '@prisma/adapter-pg';
 import {
   calculeTotaux,
   distanceKm,
+  expirationProposition,
   prepareFactureAcompte,
   prepareFactureSolde,
   prochainNumero,
@@ -697,6 +698,8 @@ async function semeAgendaDeDemonstration(entrepriseId: string): Promise<void> {
     });
   }
 
+  const client = await prisma.clientPro.findFirst({ where: { entrepriseId } });
+
   // Le créneau proposé : il attend encore une réponse, donc il réserve son horaire.
   const propose = plage(4, 9, 0, 90);
   await prisma.creneau.create({
@@ -706,7 +709,55 @@ async function semeAgendaDeDemonstration(entrepriseId: string): Promise<void> {
       debutLe: propose.debut,
       finLe: propose.fin,
       propose: true,
-      expireLe: new Date(Date.now() + 36 * 3_600_000),
+      // Même règle que le produit : jamais au-delà du début du créneau.
+      expireLe: expirationProposition(new Date(), propose.debut),
+      ...(client !== null
+        ? { rendezVous: { create: { statut: 'propose', clientId: client.id } } }
+        : {}),
+    },
+  });
+
+  // Le jeton du lien envoyé au client : la page de réponse n'est accessible que par lui, et
+  // il n'existe en clair qu'au moment où on le fabrique.
+  const rdvPropose = await prisma.rendezVous.findFirstOrThrow({
+    where: { creneau: { entrepriseId }, statut: 'propose' },
+    select: { id: true },
+  });
+  const jetonRdv = randomBytes(32).toString('base64url');
+  await prisma.lienAction.create({
+    data: {
+      jeton: createHmac('sha256', secretVerification()).update(`lien:${jetonRdv}`).digest('hex'),
+      action: 'choisir_creneau',
+      cibleId: rdvPropose.id,
+      expireLe: new Date(Date.now() + 14 * 86_400_000),
+    },
+  });
+  await writeFile(
+    path.join(path.resolve(import.meta.dirname, '../../..'), '.jeton-rendez-vous'),
+    `${jetonRdv}\n`,
+    'utf8',
+  );
+
+  // Et un rendez-vous confirmé : c'est le seul cas où l'écran propose « Annuler et prévenir »,
+  // donc le seul où la capture montre cette issue.
+  const confirme = plage(3, 14, 0, 120);
+  await prisma.creneau.create({
+    data: {
+      entrepriseId,
+      type: 'intervention',
+      debutLe: confirme.debut,
+      finLe: confirme.fin,
+      ...(client !== null
+        ? {
+            rendezVous: {
+              create: {
+                statut: 'confirme',
+                clientId: client.id,
+                confirmeLe: new Date(Date.now() - 2 * 86_400_000),
+              },
+            },
+          }
+        : {}),
     },
   });
 }

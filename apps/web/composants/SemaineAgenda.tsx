@@ -27,6 +27,7 @@ import {
 
 interface PlageAffichee {
   readonly id: string;
+  readonly rendezVousId: string | null;
   readonly type: TypePlage;
   readonly debut: Date;
   readonly fin: Date;
@@ -90,6 +91,7 @@ export function SemaineAgenda({
   semainePrecedente,
   semaineSuivante,
   libelleSemaine,
+  clients,
 }: {
   readonly jours: readonly string[];
   readonly plages: readonly (Omit<PlageAffichee, 'debut' | 'fin' | 'expireLe'> & {
@@ -100,12 +102,14 @@ export function SemaineAgenda({
   readonly semainePrecedente: string;
   readonly semaineSuivante: string;
   readonly libelleSemaine: string;
+  readonly clients: readonly { readonly id: string; readonly nom: string }[];
 }) {
   const router = useRouter();
   const [ouvert, setOuvert] = useState<string | null>(null);
   const [type, setType] = useState<TypePlage>('intervention');
   const [debut, setDebut] = useState('');
   const [fin, setFin] = useState('');
+  const [clientId, setClientId] = useState('');
   const [enCours, setEnCours] = useState(false);
   const [problemes, setProblemes] = useState<readonly { champ: string; message: string }[]>([]);
 
@@ -136,7 +140,7 @@ export function SemaineAgenda({
       const reponse = await fetch('/api/pro/agenda', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ type, debut, fin }),
+        body: JSON.stringify({ type, debut, fin, clientId }),
       });
       if (reponse.ok) {
         setOuvert(null);
@@ -155,6 +159,25 @@ export function SemaineAgenda({
     } finally {
       setEnCours(false);
     }
+  }
+
+  async function annule(rendezVousId: string): Promise<void> {
+    const motif = window.prompt('Pourquoi annulez-vous ? Votre client lira ce motif.', '');
+    // `null` veut dire « j'ai renoncé » ; une chaîne vide veut dire « sans motif », ce qui
+    // est permis. Les confondre annulerait un rendez-vous que personne n'a voulu annuler.
+    if (motif === null) return;
+
+    const reponse = await fetch(`/api/pro/rendez-vous/${rendezVousId}/annulation`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ motif }),
+    });
+    if (reponse.ok) {
+      router.refresh();
+      return;
+    }
+    const corps = (await reponse.json()) as { erreur?: string };
+    setProblemes([{ champ: 'debut', message: corps.erreur ?? 'Annulation refusée.' }]);
   }
 
   async function retire(id: string): Promise<void> {
@@ -226,7 +249,18 @@ export function SemaineAgenda({
                         {` · ${String(dureeMinutes(plage))} min`}
                       </p>
                       {plage.statutRendezVous === 'confirme' ? (
-                        <p className="text-encre-55 mt-1 text-xs">Confirmé par le client.</p>
+                        <>
+                          <p className="text-encre-55 mt-1 text-xs">Confirmé par le client.</p>
+                          {plage.rendezVousId !== null && (
+                            <button
+                              type="button"
+                              onClick={() => void annule(plage.rendezVousId ?? '')}
+                              className="text-encre-55 hover:text-alerte mt-1 text-xs font-semibold transition-colors"
+                            >
+                              Annuler et prévenir
+                            </button>
+                          )}
+                        </>
                       ) : (
                         <button
                           type="button"
@@ -257,6 +291,30 @@ export function SemaineAgenda({
                       ))}
                     </div>
                   </div>
+
+                  {type === 'propose' && (
+                    <div>
+                      <label
+                        htmlFor={`client-${cle}`}
+                        className="text-encre block text-sm font-semibold"
+                      >
+                        À qui ?
+                      </label>
+                      <select
+                        id={`client-${cle}`}
+                        value={clientId}
+                        onChange={(evenement) => setClientId(evenement.target.value)}
+                        className={champ}
+                      >
+                        <option value="">Choisissez un client</option>
+                        {clients.map((client) => (
+                          <option key={client.id} value={client.id}>
+                            {client.nom}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
 
                   <div>
                     <label

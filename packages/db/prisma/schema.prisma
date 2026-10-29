@@ -1121,6 +1121,13 @@ model Creneau {
   debutLe DateTime @map("debut_le")
   finLe DateTime @map("fin_le")
 
+  /// Une plage annulée cesse d'occuper son horaire, mais ne disparaît pas.
+  ///
+  /// L'effacer emporterait le rendez-vous en cascade, or un rendez-vous annulé est une trace :
+  /// le client s'était engagé, on lui a fait faux bond, et cela compte — pour un litige comme
+  /// pour les statistiques du professionnel. La contrainte d'exclusion ignore ces plages.
+  annuleLe DateTime? @map("annule_le")
+
   /// Un créneau proposé au client reste bloqué jusqu'à sa réponse, avec une relance à 24 h.
   propose     Boolean   @default(false)
   relanceeLe DateTime? @map("relancee_le")
@@ -1149,6 +1156,12 @@ model RendezVous {
   demandeId String? @map("demande_id")
   demande   Demande? @relation(fields: [demandeId], references: [id], onDelete: SetNull)
 
+  /// Le client du professionnel, quand le rendez-vous ne découle pas d'une demande de la
+  /// plateforme. Un artisan fixe aussi des rendez-vous avec ses propres clients, et il faut
+  /// bien savoir à qui envoyer la proposition — la demande ne couvrait que la moitié des cas.
+  clientId String? @map("client_id")
+  client   ClientPro? @relation(fields: [clientId], references: [id], onDelete: SetNull)
+
   statut          StatutRendezVous @default(propose)
   confirmeLe DateTime? @map("confirme_le")
   annuleLe DateTime? @map("annule_le")
@@ -1160,6 +1173,7 @@ model RendezVous {
   modifieLe DateTime @updatedAt @map("modifie_le")
 
   @@index([demandeId])
+  @@index([clientId])
   @@map("rendez_vous")
 }
 
@@ -1187,8 +1201,9 @@ model ClientPro {
   codePostal String? @map("code_postal")
   ville      String?
 
-  devis    Devis[]
-  factures Facture[]
+  devis      Devis[]
+  factures   Facture[]
+  rendezVous RendezVous[]
 
   creeLe DateTime @default(now()) @map("cree_le")
   modifieLe DateTime @updatedAt @map("modifie_le")

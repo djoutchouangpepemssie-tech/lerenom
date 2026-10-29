@@ -165,6 +165,10 @@ CREATE TRIGGER factures_immuables
 -- entrer dans un prédicat d'index. Cette règle-là vit donc dans `packages/core`, où le temps
 -- se passe en paramètre. La base garantit ce qui est ferme ; le code arbitre ce qui dépend
 -- de l'heure qu'il est.
+--
+-- Les plages **annulées** en sont exclues aussi, pour une raison différente : elles ne
+-- disparaissent pas. Les effacer emporterait le rendez-vous en cascade, et un rendez-vous
+-- annulé est une trace qui compte. Elles restent donc en base sans occuper leur horaire.
 CREATE EXTENSION IF NOT EXISTS btree_gist;
 
 DO $$
@@ -178,7 +182,7 @@ BEGIN
         entreprise_id WITH =,
         tsrange(debut_le, fin_le, '[)') WITH &&
       )
-      WHERE (type <> 'propose');
+      WHERE (type <> 'propose' AND annule_le IS NULL);
   END IF;
 END
 $$;

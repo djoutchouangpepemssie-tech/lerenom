@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { SemaineAgenda } from '@/composants/SemaineAgenda';
-import { semaineDuPro } from '@/lib/agenda-pro';
+import { clientsDuPro, semaineDuPro } from '@/lib/agenda-pro';
 import { proConnecte } from '@/lib/session-pro';
 
 /**
@@ -71,7 +71,10 @@ export default async function PageAgenda({
   const demande = semaine === undefined ? new Date() : new Date(`${semaine}T12:00:00`);
   const jour = Number.isFinite(demande.getTime()) ? demande : new Date();
 
-  const { jours, plages } = await semaineDuPro(pro.entrepriseId, jour);
+  const [{ jours, plages }, clients] = await Promise.all([
+    semaineDuPro(pro.entrepriseId, jour),
+    clientsDuPro(pro.entrepriseId),
+  ]);
   const premier = jours[0];
   const dernier = jours[6];
   if (premier === undefined || dernier === undefined) return null;
@@ -94,6 +97,7 @@ export default async function PageAgenda({
           jours={jours.map((date) => date.toISOString())}
           plages={plages.map((plage) => ({
             id: plage.id,
+            rendezVousId: plage.rendezVousId,
             type: plage.type,
             debut: plage.debut.toISOString(),
             fin: plage.fin.toISOString(),
@@ -105,6 +109,7 @@ export default async function PageAgenda({
           semainePrecedente={`/pro/espace/agenda?semaine=${jourISO(precedente)}`}
           semaineSuivante={`/pro/espace/agenda?semaine=${jourISO(suivante)}`}
           libelleSemaine={libelleDe(premier, dernier)}
+          clients={clients}
         />
       </div>
     </>

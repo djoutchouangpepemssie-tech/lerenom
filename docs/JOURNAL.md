@@ -1608,6 +1608,66 @@ encore au client — ni proposition, ni relance, ni rappel.
 
 ---
 
+## Phase 5 quater · Le rendez-vous, des deux côtés
+
+La phase précédente laissait un trou que j'avais consigné : un rendez-vous confirmé ne se
+déplaçait pas, l'écran renvoyait vers une annulation — et cette annulation n'existait pas.
+Le professionnel se retrouvait sans issue. C'est ce trou qui est comblé, avec tout le
+parcours client qui allait avec.
+
+### Proposer, répondre, annuler
+
+Le professionnel propose un créneau à l'un de ses clients ; le client reçoit un courriel et un
+SMS portant un lien à usage unique ; il accepte ou décline. Accepter rend la plage **ferme** —
+elle passe sous la contrainte d'exclusion de la base — et décliner la libère. Dans les deux
+cas, le professionnel est prévenu : une réponse qui dormirait en base reviendrait à ne pas
+l'avoir demandée.
+
+L'asymétrie de l'écran client est voulue : **accepter demande une confirmation, décliner non**.
+Accepter engage le client à être chez lui ; décliner ne l'engage à rien et libère le créneau
+pour quelqu'un d'autre. Mettre un garde-fou devant le geste sans conséquence ferait hésiter là
+où il ne faut pas — et un client qui hésite à décliner ne répond pas du tout.
+
+### Un conflit que mon propre commentaire a révélé
+
+J'avais écrit, dans le code de l'annulation : « la plage est libérée ». Et un test affirmait
+« annulé n'est pas effacé ». Les deux ne pouvaient pas être vrais : supprimer le créneau
+emportait le rendez-vous en cascade.
+
+C'est le commentaire qui avait raison. Un rendez-vous annulé est une trace — le client s'était
+engagé, on lui a fait faux bond, et cela compte pour un litige comme pour les statistiques du
+professionnel. La plage porte donc désormais sa propre annulation : elle cesse d'occuper son
+horaire, la contrainte d'exclusion l'ignore, l'agenda ne la montre plus, et rien ne disparaît.
+
+Le test qui a échoué ne disait pas « ce code est faux ». Il disait « ces deux affirmations se
+contredisent, choisissez ».
+
+### Ce que la capture a attrapé
+
+« Sans réponse, ce créneau sera remis à disposition **le vendredi 30 octobre** » — pour un
+rendez-vous du vendredi 30 octobre. Derrière la coïncidence, une vraie règle manquait : une
+proposition ne peut pas survivre au créneau qu'elle propose. Promettre à un client qu'il a
+jusqu'à samedi pour accepter un rendez-vous de vendredi n'a aucun sens.
+
+L'échéance est maintenant bornée au début du créneau, et quand les deux coïncident la page
+écrit « Répondez avant le début du rendez-vous » plutôt que de répéter une date.
+
+### Un piège d'outillage
+
+Le test d'intégration datait ses rendez-vous en mars 2026, en dur. Il passe par la route, qui
+lit l'horloge réelle : toutes les propositions étaient expirées de plusieurs mois. **Un test
+qui traverse une route ne peut pas figer le temps** — ses dates sont désormais relatives à
+maintenant.
+
+### La vérification
+
+941 tests verts. Les 16 tests du parcours portent sur ce qui doit échouer : le lien qui ne
+sert qu'une fois, celui qui porte une autre action, la proposition expirée, et le créneau pris
+entretemps — où la contrainte d'exclusion fait son travail et où l'on préfère dire au client
+que l'horaire n'est plus libre plutôt que de l'inscrire deux fois.
+
+---
+
 ## Phases 5 à 11 · à venir
 
 Agenda et documents du pro, monétisation Stripe, back-office, personnalisation, avis et

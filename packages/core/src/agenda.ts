@@ -86,6 +86,8 @@ export interface PlageExistante extends Plage {
   readonly type: TypePlage;
   /** `null` pour tout ce qui n'est pas une proposition. */
   readonly expireLe: Date | null;
+  /** Renseignée quand la plage a été annulée : elle reste en base sans occuper son horaire. */
+  readonly annuleLe: Date | null;
 }
 
 /**
@@ -96,14 +98,29 @@ export interface PlageExistante extends Plage {
  * le professionnel finit par ne plus pouvoir rien y poser.
  */
 export function occupeEncore(plage: PlageExistante, maintenant: Date = new Date()): boolean {
+  // Une plage annulée ne disparaît pas — l'effacer emporterait le rendez-vous en cascade, et
+  // un rendez-vous annulé est une trace. Elle cesse simplement d'occuper son horaire.
+  if (plage.annuleLe !== null) return false;
   if (plage.type !== 'propose') return true;
   if (plage.expireLe === null) return true;
   return plage.expireLe.getTime() > maintenant.getTime();
 }
 
-/** L'instant d'expiration d'une proposition faite maintenant. */
-export function expirationProposition(maintenant: Date = new Date()): Date {
-  return new Date(maintenant.getTime() + VALIDITE_PROPOSITION_HEURES * HEURE);
+/**
+ * L'instant d'expiration d'une proposition.
+ *
+ * Quarante-huit heures — **ou le début du créneau, si c'est plus tôt**. Une proposition ne
+ * peut pas survivre à l'horaire qu'elle propose : promettre à un client qu'il a jusqu'à
+ * samedi pour accepter un rendez-vous de vendredi n'a aucun sens, et c'est pourtant ce que
+ * la page lui annonçait.
+ *
+ * Sans `debut`, on s'en tient aux quarante-huit heures : l'appelant qui ne donne pas la date
+ * du créneau n'en a pas une à protéger.
+ */
+export function expirationProposition(maintenant: Date = new Date(), debut?: Date): Date {
+  const plafond = maintenant.getTime() + VALIDITE_PROPOSITION_HEURES * HEURE;
+  if (debut === undefined) return new Date(plafond);
+  return new Date(Math.min(plafond, debut.getTime()));
 }
 
 /** Faut-il relancer le client sur cette proposition ? */

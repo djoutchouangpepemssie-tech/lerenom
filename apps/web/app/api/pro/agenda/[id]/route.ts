@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { deplaceLaPlage, retireLaPlage } from '@/lib/agenda-pro';
 import { proConnecte } from '@/lib/session-pro';
-import { litSaisiePlage } from '../saisie';
+import { litLeCorps, litSaisiePlage } from '@/lib/saisie-plage';
 
 /** Déplacer ou retirer une plage de l'agenda. */
 
@@ -16,7 +16,8 @@ export async function PUT(
     return NextResponse.json({ erreur: 'Votre session a expiré.' }, { status: 401 });
   }
 
-  const saisie = await litSaisiePlage(requete);
+  const corps = await litLeCorps(requete);
+  const saisie = corps === null ? null : litSaisiePlage(corps);
   if (saisie === null) {
     return NextResponse.json({ erreur: 'Requête illisible.' }, { status: 400 });
   }
