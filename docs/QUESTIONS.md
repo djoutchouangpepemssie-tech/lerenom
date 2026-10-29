@@ -880,10 +880,17 @@ son motif, et libère la plage.
 unique par lequel il accepte ou décline. Accepter rend la plage ferme, décliner la libère, et
 le professionnel est prévenu dans les deux cas.
 
-**Ce qui manque encore** : la relance à vingt-quatre heures et les rappels de la veille et
-des deux heures. Les règles sont écrites et testées (`rappelAEnvoyer`), les colonnes existent
-(`relanceeLe`, `rappelVeilleLe`, `rappel2hLe`) ; il reste à les brancher sur le travail de
-nuit. C'est du câblage, pas une question ouverte.
+**Relancer et rappeler.** _Comblé_ : deux travaux périodiques. La relance part une fois,
+vingt-quatre heures après la proposition, et jamais deux — harceler quelqu'un qui ne répond
+pas ne le fait pas répondre. Elle ne part pas sur une proposition expirée : son créneau est
+déjà rendu, et réveiller le client pour un horaire perdu serait pire que le silence. Les
+rappels partent la veille puis deux heures avant, sur les seuls rendez-vous confirmés, et le
+rappel proche prime sur celui de la veille.
+
+Le lien de la relance est **neuf**. Le jeton d'origine n'a jamais été conservé en clair — c'est
+tout l'intérêt de le hacher — donc on en crée un second, également valide ; le premier expirera
+de lui-même. **À trancher** : faut-il invalider le premier au moment de la relance ? Deux liens
+vivants pour un même rendez-vous n'ouvrent rien de plus, mais c'est une surface de plus.
 
 **Et une décision à confirmer** : décliner une proposition la transforme en annulation sèche,
 sans permettre au client de dire _quand_ il serait disponible. L'écran l'invite à appeler. Un

@@ -15,3 +15,4 @@ export * from './parametres.ts';
 export * from './avis.ts';
 export * from './scores.ts';
 export * from './travaux-de-nuit.ts';
+export * from './rendez-vous.ts';

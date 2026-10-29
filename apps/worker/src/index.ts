@@ -96,6 +96,24 @@ await fileNuit().upsertJobScheduler(
   { name: 'nuit', data: { travail: 'confirmations-intervention' } },
 );
 
+// La relance des propositions de rendez-vous : trois fois par jour, aux heures où un SMS se
+// lit. Elle ne part qu'une fois par proposition — c'est la règle qui le garantit, pas le
+// rythme du planificateur.
+await fileNuit().upsertJobScheduler(
+  'relances-rendez-vous',
+  { pattern: '15 9,13,18 * * *', tz: 'Europe/Paris' },
+  { name: 'nuit', data: { travail: 'relances-rendez-vous' } },
+);
+
+// Les rappels, eux, tournent **toutes les heures** : la fenêtre de deux heures avant le
+// rendez-vous ne se rattrape pas d'une nuit sur l'autre. Le travail ne regarde que les
+// trente heures à venir, il ne coûte donc presque rien.
+await fileNuit().upsertJobScheduler(
+  'rappels-rendez-vous',
+  { pattern: '5 * * * *', tz: 'Europe/Paris' },
+  { name: 'nuit', data: { travail: 'rappels-rendez-vous' } },
+);
+
 console.warn('[worker] Le Renom · cascade, échéances et travaux de nuit en écoute.');
 
 async function arrete(signal: string): Promise<void> {

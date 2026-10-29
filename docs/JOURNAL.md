@@ -1668,6 +1668,64 @@ que l'horaire n'est plus libre plutôt que de l'inscrire deux fois.
 
 ---
 
+## Relancer une fois, rappeler deux
+
+Le parcours du rendez-vous tenait debout mais restait muet dans le temps : une proposition
+envoyée vivait quarante-huit heures sans que personne ne la rappelle, et un rendez-vous
+confirmé arrivait sans prévenir. Deux travaux périodiques comblent les deux manques.
+
+**La relance** part une fois, vingt-quatre heures après la proposition. Une fois, pas deux :
+harceler quelqu'un qui ne répond pas ne le fait pas répondre, cela le fait bloquer
+l'expéditeur. Elle ne part pas non plus sur une proposition déjà expirée — son créneau est
+rendu, et réveiller le client pour un horaire perdu serait pire que le silence. La plage est
+marquée relancée dès qu'**un seul** canal a servi : réessayer demain parce qu'un courriel
+manquait reviendrait à relancer deux fois.
+
+**Les rappels** partent la veille, puis deux heures avant. Leur objet n'est pas de convaincre
+mais d'éviter le déplacement pour rien : un artisan qui sonne dans le vide a perdu sa matinée.
+Ce travail tourne toutes les heures, et non la nuit comme les autres, parce qu'une fenêtre de
+deux heures ne se rattrape pas d'une nuit sur l'autre ; il ne regarde que les trente heures à
+venir, ce qui le rend bon marché.
+
+Le lien de la relance est **neuf**. Le jeton d'origine n'a jamais été conservé en clair — c'est
+tout l'intérêt de le hacher — donc on en crée un second. Les deux ouvrent la même page et le
+premier expirera de lui-même.
+
+### Un test qui dépendait de ses voisins
+
+Les quatorze tests ont d'abord échoué sur un seul : le bilan annonçait deux rappels de veille
+là où le test en attendait un. Le code était juste. La base de démonstration contient un
+rendez-vous confirmé qui tombait dans la fenêtre des trente heures, et mes assertions
+comptaient le bilan **global**.
+
+D'où une règle : **un compteur global ne garde rien.** Un test qui lit un total mesure aussi
+ses voisins — le semis, les autres fichiers, l'état laissé par la veille — et se brise le jour
+où le voisinage change, sans que rien de ce qu'il protège ait bougé. Les assertions portent
+désormais sur les effets observables des lignes du test lui-même : la plage est-elle marquée
+relancée, ce rendez-vous a-t-il reçu son rappel, ces deux destinataires ont-ils leurs deux
+messages. C'est plus étroit, et bien plus solide.
+
+Le test avait laissé sa marque sur la donnée de démonstration — un `rappel_veille_le` posé sur
+le rendez-vous de Plomberie Martin. Remis à zéro : une donnée de démonstration n'est pas un
+bac à sable.
+
+### La planification, vérifiée dans Redis
+
+Le registre des travaux de nuit est énuméré en entier dans son test plutôt que compté : un
+travail ajouté là sans planification dans le worker ne tournerait jamais, et personne ne le
+verrait. Puis on a lu Redis après démarrage, parce que le câblage est exactement l'endroit où
+le silence se cache :
+
+```
+bull:nuit:repeat:relances-rendez-vous:1793261700000   → 09:15 (Paris)
+bull:nuit:repeat:rappels-rendez-vous:1793257500000    → 08:05 (Paris)
+```
+
+955 tests verts, porte de validation franchie. Aucun écran nouveau : ce travail n'a pas de
+surface visible, les captures du parcours tiennent toujours.
+
+---
+
 ## Phases 5 à 11 · à venir
 
 Agenda et documents du pro, monétisation Stripe, back-office, personnalisation, avis et

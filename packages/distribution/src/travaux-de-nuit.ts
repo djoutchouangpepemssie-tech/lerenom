@@ -8,6 +8,7 @@
  */
 
 import { demandeConfirmationIntervention, inviteAuxAvis } from './avis.ts';
+import { relanceLesPropositions, rappelleLesRendezVous } from './rendez-vous.ts';
 import { perimeLesDemandes, recalculeScores } from './scores.ts';
 
 /** Les travaux connus, et ce qu'ils font. */
@@ -16,6 +17,8 @@ export const TRAVAUX_DE_NUIT = {
   peremption: async () => ({ perimees: await perimeLesDemandes() }),
   'invitations-avis': async () => await inviteAuxAvis(),
   'confirmations-intervention': async () => await demandeConfirmationIntervention(),
+  'relances-rendez-vous': async () => await relanceLesPropositions(),
+  'rappels-rendez-vous': async () => await rappelleLesRendezVous(),
 } as const;
 
 export type NomTravailDeNuit = keyof typeof TRAVAUX_DE_NUIT;
