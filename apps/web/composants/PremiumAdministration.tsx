@@ -176,6 +176,12 @@ function CarteZone({
           </>
         )}
         {complet && ' · zone complète'}
+        {zone.enAttente > 0 && (
+          <>
+            {' '}
+            · <strong className="text-[#8a5a16]">{zone.enAttente} en attente d’une place</strong>
+          </>
+        )}
       </p>
     </article>
   );

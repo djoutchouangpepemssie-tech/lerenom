@@ -613,6 +613,12 @@ const PAGES = [
     connexionAdmin: true,
   },
   {
+    nom: 'pro-zones',
+    chemin: '/pro/espace/zones',
+    titre: 'Espace pro — mes places et les listes d’attente',
+    connexionPro: true,
+  },
+  {
     nom: 'pro-documents-reglages',
     chemin: '/pro/espace/documents',
     titre: 'Espace pro — réglages des documents',

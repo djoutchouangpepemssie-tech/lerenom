@@ -13,6 +13,7 @@ export * from './score.ts';
 export * from './classement.ts';
 export * from './zones.ts';
 export * from './quotas.ts';
+export * from './liste-attente.ts';
 export * from './distribution.ts';
 export * from './garantie.ts';
 export * from './devis.ts';

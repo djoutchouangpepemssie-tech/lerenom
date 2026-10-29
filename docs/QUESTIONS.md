@@ -1197,3 +1197,34 @@ par métier × ville ne tenait plus. Vérifié avant et après sur deux pages r�
   plein. C'est défendable un mois, difficilement trois ;
 - **un abonné Premium sans aucune place attribuée paie-t-il quand même ?** Le cas existe dans
   les données : l'écran l'affiche en toutes lettres plutôt que de le masquer.
+
+---
+
+## Q42 🟠 · La liste d'attente : l'ordre, et ce qui se passe quand une place se libère
+
+Un professionnel peut désormais s'inscrire sur la liste d'attente d'une zone complète. Rien
+n'est facturé, rien n'est engagé. Deux choix ont été appliqués par défaut, et ils méritent
+d'être confirmés.
+
+**Défaut appliqué : premier inscrit, premier prévenu.** C'est le seul ordre défendable sans
+décision commerciale. Classer par score favoriserait ceux qui n'ont pas besoin de la place ;
+classer par ancienneté sur Le Renom punirait les nouveaux venus. S'il doit changer, il ne
+change qu'à un endroit — `inscriptionPossible` dans `packages/core`.
+
+**Défaut appliqué : la place qui se libère n'est pas attribuée d'office.** Le premier de la
+liste est prévenu, et il décide. Attribuer automatiquement créerait un abonnement que personne
+n'a confirmé — pour l'Exclusif, douze mois d'engagement signés par un silence.
+
+**Ce qu'il reste à écrire, et qui demande une décision :**
+
+- **combien de temps le premier a-t-il pour répondre ?** Sans délai, une place se bloque
+  indéfiniment sur quelqu'un qui ne répond plus, pendant que cinq autres attendent. Un délai
+  trop court écarte celui qui était en chantier. Quarante-huit heures ouvrées paraissent
+  raisonnables ; ce n'est pas à moi de le décider ;
+- **rien ne prévient encore personne.** La bascule — repérer qu'une place se libère, prévenir
+  le premier — n'est pas écrite : il manque le worker qui la surveille, et l'expéditeur de
+  messages n'a toujours aucun opérateur raccordé (§Q36). Aujourd'hui la liste **enregistre**
+  la demande et l'affiche au back-office ; elle ne sert encore personne ;
+- **un professionnel peut-il s'inscrire sur dix zones à la fois ?** Rien ne le limite. C'est
+  sans doute sans gravité — s'inscrire ne coûte rien — mais cela gonfle le signal commercial
+  que ces listes servent à mesurer.

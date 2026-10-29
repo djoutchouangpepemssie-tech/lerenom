@@ -49,6 +49,16 @@ export default async function PagePremium() {
       alerte: false,
     },
     {
+      cle: 'attente',
+      libelle: 'En attente d’une place',
+      valeur: indicateurs.enAttente.toLocaleString('fr-FR'),
+      explication:
+        indicateurs.enAttente === 0
+          ? 'Aucune demande non servie. Les zones complètes n’ont pas encore de candidats.'
+          : 'Des professionnels veulent payer et ne le peuvent pas : la demande est là, l’offre manque.',
+      alerte: indicateurs.enAttente > 0,
+    },
+    {
       cle: 'sursis',
       libelle: 'Places en sursis',
       valeur: indicateurs.enSursis.toLocaleString('fr-FR'),
@@ -70,7 +80,7 @@ export default async function PagePremium() {
         l’état de ce stock ; il ne vend rien, parce que rien n’encaisse encore.
       </p>
 
-      <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
         {cartes.map((carte) => (
           <div
             key={carte.cle}

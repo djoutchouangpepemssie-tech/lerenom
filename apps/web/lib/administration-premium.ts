@@ -49,6 +49,8 @@ export interface ZoneCommerciale {
   readonly partAffichagePremium: number;
   /** Entreprises référencées sur ce métier × cette commune, abonnées ou non. */
   readonly concurrents: number;
+  /** Combien attendent une place ici. Sur une zone complète, c'est la demande non servie. */
+  readonly enAttente: number;
   /** Recette mensuelle HT que cette zone produit aujourd'hui. */
   readonly recetteMensuelleHT: number;
   /** Recette mensuelle HT si tous les emplacements étaient vendus. */
@@ -82,6 +84,8 @@ export interface EtatPremium {
     readonly premiumVendus: number;
     /** Abonnés payants dont la note est tombée sous le minimum : leur place est en sursis. */
     readonly enSursis: number;
+    /** Demande non servie, toutes zones confondues : des clients qui veulent payer. */
+    readonly enAttente: number;
   };
 }
 
@@ -98,7 +102,7 @@ export function prixMensuel(formule: Formule, periodicite: string): number {
 }
 
 export async function etatPremium(): Promise<EtatPremium> {
-  const [emplacements, abonnements] = await Promise.all([
+  const [emplacements, abonnements, attentes] = await Promise.all([
     prisma.emplacement.findMany({
       where: { OR: [{ finitLe: null }, { finitLe: { gt: new Date() } }] },
       orderBy: { debuteLe: 'asc' },
@@ -127,7 +131,17 @@ export async function etatPremium(): Promise<EtatPremium> {
         },
       },
     }),
+    prisma.listeAttente.findMany({
+      where: { servieLe: null },
+      select: { metierId: true, communeId: true },
+    }),
   ]);
+
+  const attenteParZone = new Map<string, number>();
+  for (const attente of attentes) {
+    const cle = `${attente.metierId}|${attente.communeId}`;
+    attenteParZone.set(cle, (attenteParZone.get(cle) ?? 0) + 1);
+  }
 
   // Les zones sont construites à partir des emplacements vendus, pas du catalogue entier :
   // dix-huit univers par mille deux cents communes feraient des dizaines de milliers de lignes
@@ -147,6 +161,7 @@ export async function etatPremium(): Promise<EtatPremium> {
         premiumMutable: [],
         placesPremiumRestantes: PLACES_PREMIUM,
         partAffichagePremium: 0,
+        enAttente: 0,
         concurrents: 0,
         recetteMensuelleHT: 0,
         potentielMensuelHT: 0,
@@ -187,6 +202,7 @@ export async function etatPremium(): Promise<EtatPremium> {
         partAffichagePremium:
           premium.length === 0 ? 0 : Math.min(1, PLACES_AFFICHEES_PREMIUM / premium.length),
         concurrents,
+        enAttente: attenteParZone.get(`${zone.metierId}|${zone.communeCode}`) ?? 0,
         recetteMensuelleHT: recette,
         potentielMensuelHT:
           REGLES_VALIDEES.prixMensuelHT.exclusif +
@@ -230,6 +246,7 @@ export async function etatPremium(): Promise<EtatPremium> {
       exclusifsVendus: zones.filter((z) => z.exclusif !== null).length,
       premiumVendus: zones.reduce((somme, z) => somme + z.premium.length, 0),
       enSursis: payants.filter((l) => l.souslaNoteMinimale).length,
+      enAttente: attentes.length,
     },
   };
 }

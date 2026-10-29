@@ -2595,6 +2595,82 @@ demande qui se présente, et c'est précisément le moment où la rareté vaut q
 
 ---
 
+## Monétisation · la liste d'attente
+
+### La seule brique de la vente qui ne demande ni clé ni décision
+
+`ListeAttente` était en base depuis le premier jour, lue et écrite par rien. C'est pourtant la
+pièce qui manquait le plus : quand une zone est complète, le professionnel qui veut y entrer
+n'avait aucun moyen de le dire, et Le Renom aucun moyen de le savoir. Or c'est exactement le
+moment où la rareté qu'on vend devient mesurable — quatre plombiers qui attendent une place à
+Montreuil en disent plus long qu'un tableau de recettes.
+
+Et c'est la seule brique de la monétisation qui ne demande ni clé Stripe ni arbitrage : une
+inscription ne facture rien et n'engage personne.
+
+### Quatre refus, et celui qui coûte un client
+
+Les règles vivent dans `packages/core`, testées sans base — seize tests. Quatre refus, et
+chacun protège d'une promesse creuse : place libre, déjà détenteur, déjà inscrit, formule sans
+emplacement.
+
+Le plus important est **place libre**, et un test vérifie qu'il passe _avant_ « déjà
+inscrit ». À quelqu'un qui est sur une liste devenue inutile, on dit que la place est libre —
+c'est l'information qui lui sert — et non qu'il est déjà inscrit. L'ordre des contrôles est
+ici une décision de rédaction autant que de logique : se tromper d'ordre ferait patienter
+quelqu'un qui pouvait entrer tout de suite, et c'est le seul de ces refus qui coûte un client.
+
+Un cas qui ressemble à un refus et n'en est pas : un Premium en place peut s'inscrire pour
+l'Exclusif de la même zone. Ce n'est pas la même place.
+
+### Ce qui n'est pas automatique, et pourquoi
+
+La place qui se libère n'est pas attribuée d'office : le premier de la liste est prévenu, et
+il décide. Attribuer automatiquement créerait un abonnement que personne n'a confirmé — pour
+l'Exclusif, douze mois d'engagement signés par un silence. Et on ne prévient que le premier :
+prévenir tout le monde transformerait la liste en course, où le plus rapide gagne et où
+l'ordre d'arrivée ne vaut plus rien.
+
+Les rangs se resserrent à chaque départ. Sans cela, une liste de six finit par afficher 1, 4,
+5 et 9 : exact dans l'ordre, absurde à lire, et impossible à annoncer à qui demande sa
+position. Vérifié en base : trois inscrits, le premier part, il reste 1 et 2.
+
+### Le périmètre se vérifie, il ne se propose pas
+
+L'écran ne montre que les zones du périmètre du professionnel. La route le **revérifie** :
+une requête forgée inscrirait sinon une entreprise sur une zone où elle n'intervient pas, et
+la liste cesserait de mesurer ce qu'elle prétend mesurer. Éprouvé par HTTP — et la première
+tentative a échoué pour une mauvaise raison, la commune que j'avais choisie comme « extérieure
+au périmètre » en faisait partie. Reprise avec Paris 1er, le refus est bien celui attendu.
+
+### Un semis qui n'ajoutait que
+
+La zone saturée de démonstration a été posée deux fois, et la seconde a laissé sept détenteurs
+sur six places : le script ajoutait sans jamais retirer. Il efface maintenant ce qui ne doit
+plus être là. **Un semis doit converger vers l'état voulu, pas seulement l'approcher** — sinon
+il finit par afficher un état que le produit ne peut pas produire, avec l'autorité d'une
+donnée réelle.
+
+Autre correction venue de la capture : le compte de démonstration détenait une place dans la
+seule zone complète, et son écran n'affichait donc jamais le bouton d'inscription — tout
+l'objet de la page. Il en est maintenant exclu à dessein, et le commentaire le dit pour que
+personne ne « corrige » l'anomalie apparente.
+
+### La base perdue, et retrouvée
+
+Au milieu de ce module, Postgres s'est arrêté. Je l'ai relancé par le service système, et
+l'application est repartie — sur une **autre** base : sept entreprises au lieu de dix, aucun
+avis, aucun journal d'audit. Deux répertoires de données coexistent sur la machine, et le
+service système n'ouvre pas celui du projet.
+
+Le signe qui a mis la puce à l'oreille n'était pas l'absence de données, qu'on peut toujours
+mettre sur le compte d'un semis à refaire : c'est `prisma db push` réclamant une contrainte
+d'unicité déjà posée la veille. **Une base qui a oublié une migration n'a pas perdu des
+données : ce n'est pas la même base.** L'instance du projet a été relancée sur son propre
+répertoire, et tout était intact.
+
+---
+
 ## Phases 5 à 11 · à venir
 
 Agenda et documents du pro, monétisation Stripe, back-office, personnalisation, avis et

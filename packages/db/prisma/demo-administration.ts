@@ -439,6 +439,119 @@ async function semeLaModeration(): Promise<void> {
   }
 }
 
+/**
+ * Pose une zone **complète**, avec sa liste d'attente.
+ *
+ * C'est le seul état où les écrans commerciaux ont quelque chose à montrer. Une zone à moitié
+ * vendue n'appelle aucune décision : la place se prend, point. La valeur de la rareté —
+ * combien de professionnels veulent payer et ne le peuvent pas — n'apparaît qu'une fois les
+ * six places Premium prises.
+ *
+ * La zone choisie n'est pas celle du semis de base (Plombier × Paris 11e) : la remplir
+ * changerait le classement de la page publique que les captures photographient depuis le
+ * premier jour. Paris 12e sert donc de zone saturée, et Paris 11e reste la zone normale.
+ */
+async function semeUneZoneComplete(): Promise<void> {
+  const metier = await prisma.metier.findFirst({
+    where: { slug: 'plombier' },
+    select: { id: true },
+  });
+  const commune = await prisma.commune.findFirst({
+    where: { slug: 'paris-12' },
+    select: { code: true },
+  });
+  if (metier === null || commune === null) return;
+
+  // Le compte de démonstration est exclu des détenteurs **à dessein** : s'il tenait une
+  // place ici, son écran « Mes places » n'afficherait jamais l'inscription en liste
+  // d'attente, qui est pourtant tout l'objet de cette zone saturée.
+  const candidats = await prisma.entreprise.findMany({
+    where: {
+      verifiee: true,
+      suspendue: false,
+      retireeLe: null,
+      utilisateurs: { none: { email: 'demo@lerenom.exemple' } },
+    },
+    orderBy: { nom: 'asc' },
+    take: 8,
+    select: { id: true, nom: true },
+  });
+  if (candidats.length < 6) return;
+
+  const detenteurs = candidats.slice(0, 6).map((e) => e.id);
+
+  // Un semis doit **converger**, pas seulement ajouter. Sans ce nettoyage, une exécution
+  // précédente laissait sa place derrière elle et la zone finissait à sept détenteurs sur
+  // six — un état que le produit ne peut pas produire, affiché comme s'il le pouvait.
+  await prisma.emplacement.deleteMany({
+    where: {
+      metierId: metier.id,
+      communeId: commune.code,
+      formule: 'premium',
+      entrepriseId: { notIn: detenteurs },
+    },
+  });
+
+  // Six détiennent une place Premium ; les suivants attendent.
+  for (const entreprise of candidats.slice(0, 6)) {
+    await prisma.emplacement.upsert({
+      where: {
+        entrepriseId_metierId_communeId: {
+          entrepriseId: entreprise.id,
+          metierId: metier.id,
+          communeId: commune.code,
+        },
+      },
+      update: { formule: 'premium', finitLe: null },
+      create: {
+        entrepriseId: entreprise.id,
+        metierId: metier.id,
+        communeId: commune.code,
+        formule: 'premium',
+      },
+    });
+    // Une place ne se tient pas sans le métier ni la zone : sans cela l'entreprise paierait
+    // pour une page où elle n'apparaît pas, ce qui n'arrive pas dans la vraie vie.
+    const aLeMetier = await prisma.metierPro.count({
+      where: { entrepriseId: entreprise.id, metierId: metier.id },
+    });
+    if (aLeMetier === 0) {
+      await prisma.metierPro.create({
+        data: { entrepriseId: entreprise.id, metierId: metier.id },
+      });
+    }
+    const aLaZone = await prisma.zonePro.count({
+      where: { entrepriseId: entreprise.id, communeId: commune.code },
+    });
+    if (aLaZone === 0) {
+      await prisma.zonePro.create({
+        data: { entrepriseId: entreprise.id, communeId: commune.code },
+      });
+    }
+  }
+
+  for (const [rang, entreprise] of candidats.slice(6).entries()) {
+    await prisma.listeAttente.upsert({
+      where: {
+        entrepriseId_metierId_communeId_formule: {
+          entrepriseId: entreprise.id,
+          metierId: metier.id,
+          communeId: commune.code,
+          formule: 'premium',
+        },
+      },
+      update: { rang: rang + 1, servieLe: null },
+      create: {
+        entrepriseId: entreprise.id,
+        metierId: metier.id,
+        communeId: commune.code,
+        formule: 'premium',
+        rang: rang + 1,
+      },
+    });
+  }
+}
+
 async function main(): Promise<void> {
   const existant = await prisma.admin.findUnique({
     where: { email: EMAIL },
@@ -485,6 +598,7 @@ async function main(): Promise<void> {
   await semeDesDemandes();
   await semeDesProfessionnels();
   await semeLaModeration();
+  await semeUneZoneComplete();
 
   const racine = path.resolve(import.meta.dirname, '../../..');
   await writeFile(path.join(racine, '.jeton-administration'), `${totpSecret}\n`, 'utf8');
