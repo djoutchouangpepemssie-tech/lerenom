@@ -3117,6 +3117,69 @@ la liste — c'est la correction du refus « pas mon métier » qui l'a branché
 
 ---
 
+## Relecture · l'échelle de la colonne, et la facture qu'on ne pouvait pas encaisser
+
+### L'échelle où se cachait le pire défaut du projet
+
+Troisième audit, un cran plus bas : les colonnes. C'est l'échelle qui compte, parce que c'est
+celle où `Entreprise.verifiee` se cachait — écrite à l'inscription, décrite dans trois
+commentaires, lue par aucune requête. Une colonne morte ne se voit pas : elle a l'air d'une
+colonne.
+
+Trente-trois ressortent sur sept cent sept examinées. La plupart appartiennent à des
+fonctionnalités annoncées et non construites, et c'est normal.
+
+L'outil dit d'emblée ce qu'il ne sait pas faire, et c'est la partie la plus utile de son
+en-tête : il repère les colonnes dont le nom n'apparaît **nulle part**, ce qui est un signal
+sûr. Il ne sait pas juger une colonne dont le nom apparaît — Prisma offre trop de formes pour
+qu'une recherche de texte tranche. Prétendre le contraire aurait produit exactement les faux
+positifs qui ont rendu les deux premiers audits inutilisables avant correction.
+
+> **Règle retenue** — _un outil qui annonce sa portée exacte vaut mieux qu'un outil qui
+> promet trop._ Les deux premiers audits ont perdu ma confiance à chaque fausse alerte ;
+> celui-ci dit où s'arrête ce qu'il prouve.
+
+### La facture qu'on ne pouvait pas encaisser
+
+Une colonne sortait du lot : `Facture.payeeLe`. Le statut `payee` existait dans le schéma et
+dans les types. Le déclencheur de la base l'anticipait **en toutes lettres** — « le statut,
+lui, continue de vivre : une facture émise se paie ». Et rien ne l'écrivait.
+
+Un professionnel pouvait donc préparer un devis, le faire signer, émettre la facture, produire
+un Factur-X conforme — et n'avoir aucun moyen de noter qu'il avait été payé. _Qu'est-ce qui me
+reste impayé ?_ est la question la plus courante de ce métier, et elle n'avait pas de réponse.
+
+Ce qui frappe, c'est que toute la chaîne était prête sauf ce maillon : la colonne, le statut,
+l'autorisation de la base. Trois auteurs successifs — dont moi — ont écrit autour sans
+remarquer le trou au milieu.
+
+### Trois refus et une permission
+
+**Une facture non émise ne se paie pas** : sans numéro ni date, elle n'a pas été envoyée.
+Encaisser avant d'émettre, c'est encaisser sans facture.
+
+**Une facture annulée par un avoir non plus** : ce qui reste dû l'est sur une autre pièce.
+
+**Une date future est refusée.** Enregistrer un paiement qui n'a pas eu lieu fausse la
+trésorerie dans le sens qui rassure, ce qui est le pire des deux. La comparaison se fait à la
+journée, sinon un paiement saisi à 18 h serait refusé par une horloge serveur à 17 h.
+
+**Et le paiement se défait** sans avoir. Un clic malheureux ne doit pas coûter une pièce
+comptable ; le statut redevient « émise », la date s'efface, et le déclencheur continue de
+veiller sur les montants, le numéro et le RIB.
+
+L'écran de liste porte désormais le reste à encaisser, et distingue ce qui a dépassé son
+échéance — une somme due n'a pas le même poids selon qu'elle est à l'heure ou non.
+
+### Une donnée de démonstration posée, puis retirée
+
+J'ai marqué payée la seule facture émise de la démonstration pour que l'écran montre le cas.
+Résultat : plus rien à encaisser, et l'indicateur disparaissait — l'inverse de ce que la
+capture devait montrer. Remis en état. **Une donnée de démonstration se choisit pour ce
+qu'elle fait voir, pas pour ce qu'elle illustre.**
+
+---
+
 ## Phases 5 à 11 · à venir
 
 Agenda et documents du pro, monétisation Stripe, back-office, personnalisation, avis et

@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { Carte } from '@lerenom/ui';
 import { LIBELLES_UNITE, formatEuros } from '@lerenom/core';
 import { BoutonEmission } from '@/composants/BoutonEmission';
+import { EncaissementFacture } from '@/composants/EncaissementFacture';
 import { FormulaireAvoir } from '@/composants/FormulaireAvoir';
 import { etatCreditFacture } from '@/lib/avoirs-pro';
 import { factureDuPro } from '@/lib/factures-pro';
@@ -187,6 +188,24 @@ export default async function PageUneFacture({
           </Carte>
 
           {facture.emettable && <BoutonEmission factureId={facture.id} />}
+
+          {/* L'encaissement n'a de sens que sur une facture émise et non annulée : une
+              facture corrigée par un avoir est réglée — ou non — sur une autre pièce. */}
+          {!facture.emettable && facture.statut !== 'annulee_par_avoir' && (
+            <Carte>
+              <h2 className="text-lg">Paiement</h2>
+              <p className="text-encre-70 mt-1 text-sm">
+                {facture.payeeLe === null
+                  ? facture.echeanceLe === null
+                    ? 'En attente de règlement.'
+                    : `À régler avant le ${facture.echeanceLe.toLocaleDateString('fr-FR')}.`
+                  : 'Cette facture est réglée.'}
+              </p>
+              <div className="mt-3">
+                <EncaissementFacture factureId={facture.id} payeeLe={facture.payeeLe} />
+              </div>
+            </Carte>
+          )}
 
           {credit !== null && (
             <FormulaireAvoir

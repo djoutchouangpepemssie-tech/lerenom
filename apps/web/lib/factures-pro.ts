@@ -40,6 +40,8 @@ export interface FactureEnListe {
   readonly clientNom: string | null;
   readonly montantAPayerTTC: number;
   readonly emiseLe: Date | null;
+  readonly payeeLe: Date | null;
+  readonly echeanceLe: Date | null;
   readonly creeLe: Date;
 }
 
@@ -74,6 +76,8 @@ export async function listeFactures(entrepriseId: string): Promise<readonly Fact
       statut: true,
       montantAPayerTTC: true,
       emiseLe: true,
+      payeeLe: true,
+      echeanceLe: true,
       creeLe: true,
       client: { select: { nom: true } },
     },
@@ -87,6 +91,8 @@ export async function listeFactures(entrepriseId: string): Promise<readonly Fact
     clientNom: facture.client?.nom ?? null,
     montantAPayerTTC: nombre(facture.montantAPayerTTC),
     emiseLe: facture.emiseLe,
+    payeeLe: facture.payeeLe,
+    echeanceLe: facture.echeanceLe,
     creeLe: facture.creeLe,
   }));
 }
@@ -122,6 +128,8 @@ export async function factureDuPro(
     numero: facture.numero,
     type: facture.type,
     statut: facture.statut,
+    payeeLe: facture.payeeLe,
+    echeanceLe: facture.echeanceLe,
     clientNom: facture.client?.nom ?? null,
     montantAPayerTTC: nombre(facture.montantAPayerTTC),
     emiseLe: facture.emiseLe,
@@ -351,4 +359,102 @@ export function totauxDepuisLignes(
   remisePourcent: number,
 ): ReturnType<typeof calculeTotaux> {
   return calculeTotaux({ lignes, remisePourcent });
+}
+
+/* ------------------------------------------------------------------------- */
+/* L'encaissement                                                            */
+/* ------------------------------------------------------------------------- */
+
+/**
+ * Marque une facture payée.
+ *
+ * La colonne `payeeLe` existait, le statut `payee` aussi, et le déclencheur de la base
+ * l'anticipait en toutes lettres — « une facture émise se paie ». **Rien ne l'écrivait.** Un
+ * professionnel ne pouvait donc pas répondre à la question la plus courante de son métier :
+ * qu'est-ce qui me reste impayé ?
+ *
+ * Trois refus, et une permission.
+ *
+ * **Une facture non émise ne se paie pas** : elle n'a ni numéro ni date, elle n'a pas été
+ * envoyée. Encaisser avant d'émettre, c'est encaisser sans facture.
+ *
+ * **Une facture annulée par un avoir non plus.** Elle a été corrigée ; ce qui est dû l'est
+ * sur une autre pièce.
+ *
+ * **Une date future est refusée.** Enregistrer un paiement qui n'a pas eu lieu fausse le
+ * suivi de trésorerie dans le sens qui rassure, ce qui est le pire des deux.
+ *
+ * **Et le paiement se défait.** Un clic malheureux ne doit pas obliger à émettre un avoir :
+ * le statut revient à `emise`, la date s'efface, et rien d'autre n'a bougé — le déclencheur
+ * de la base veille sur les montants, le numéro et le RIB.
+ */
+export async function marqueFacturePayee(
+  entrepriseId: string,
+  factureId: string,
+  payeeLe: Date,
+  maintenant = new Date(),
+): Promise<{ ok: boolean; message?: string }> {
+  const facture = await prisma.facture.findFirst({
+    where: { id: factureId, entrepriseId },
+    select: { statut: true, emiseLe: true },
+  });
+  if (facture === null) return { ok: false, message: 'Cette facture n’existe pas.' };
+
+  if (facture.statut === 'prete') {
+    return {
+      ok: false,
+      message:
+        'Cette facture n’est pas encore émise : elle n’a pas de numéro et n’a pas été envoyée.',
+    };
+  }
+  if (facture.statut === 'annulee_par_avoir') {
+    return {
+      ok: false,
+      message:
+        'Cette facture a été annulée par un avoir : ce qui reste dû l’est sur une autre pièce.',
+    };
+  }
+
+  // La comparaison se fait à la journée : un paiement enregistré aujourd'hui à 18 h ne doit
+  // pas être refusé parce que l'horloge du serveur est à 17 h.
+  const jour = (date: Date) => date.toISOString().slice(0, 10);
+  if (jour(payeeLe) > jour(maintenant)) {
+    return { ok: false, message: 'Un paiement ne s’enregistre pas à une date future.' };
+  }
+  if (facture.emiseLe !== null && jour(payeeLe) < jour(facture.emiseLe)) {
+    return {
+      ok: false,
+      message: 'Un paiement ne peut pas précéder l’émission de la facture qu’il règle.',
+    };
+  }
+
+  // Une facture déjà payée accepte une nouvelle date : c'est une correction, pas une
+  // anomalie — on s'est trompé d'un jour en saisissant un virement. Refuser obligerait à
+  // défaire puis refaire, pour le même résultat et deux clics de plus.
+  await prisma.facture.updateMany({
+    where: { id: factureId, entrepriseId },
+    data: { statut: 'payee', payeeLe },
+  });
+  return { ok: true };
+}
+
+/** Défait un paiement enregistré par erreur. La facture redevient simplement émise. */
+export async function annuleLePaiement(
+  entrepriseId: string,
+  factureId: string,
+): Promise<{ ok: boolean; message?: string }> {
+  const facture = await prisma.facture.findFirst({
+    where: { id: factureId, entrepriseId },
+    select: { statut: true },
+  });
+  if (facture === null) return { ok: false, message: 'Cette facture n’existe pas.' };
+  if (facture.statut !== 'payee') {
+    return { ok: false, message: 'Cette facture n’est pas marquée payée.' };
+  }
+
+  await prisma.facture.updateMany({
+    where: { id: factureId, entrepriseId },
+    data: { statut: 'emise', payeeLe: null },
+  });
+  return { ok: true };
 }

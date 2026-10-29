@@ -1389,3 +1389,42 @@ conforme en nommant ce qui manque.
 **Et un contrôle du SIREN volontairement faible :** neuf chiffres, sans clé de Luhn. Refuser
 un SIREN valide à cause d'un contrôle trop zélé bloquerait une facture légitime, ce qui coûte
 plus cher qu'un chiffre erroné.
+
+---
+
+## Q48 🟠 · Trente-trois colonnes mortes, et une qui manquait vraiment
+
+Un troisième audit — `node outils/champs-orphelins.mjs` — cherche les colonnes dont le nom
+n'apparaît nulle part dans le code. C'est l'échelle où se cachait le défaut le plus coûteux du
+projet : `Entreprise.verifiee` était écrite, décrite dans trois commentaires, et lue par aucune
+requête.
+
+Trente-trois colonnes ressortent. La plupart appartiennent à des fonctionnalités annoncées et
+non construites — les champs Stripe, les adresses de PDF, la résiliation d'abonnement — et
+sont couvertes par les questions ouvertes correspondantes.
+
+**Une sortait du lot, et elle est corrigée : `Facture.payeeLe`.** Le statut `payee` existait,
+le déclencheur de la base l'anticipait en toutes lettres — « une facture émise se paie » — et
+rien ne l'écrivait. Un professionnel ne pouvait donc pas répondre à la question la plus
+courante de son métier : _qu'est-ce qui me reste impayé ?_ L'encaissement s'enregistre
+maintenant, se défait, et l'écran des factures montre le reste à encaisser et ce qui a dépassé
+son échéance.
+
+**Ce qu'il reste à décider sur les autres :**
+
+- **`Devis.relanceLe` et `Devis.refuseLe`** : un devis envoyé n'est jamais relancé, et le
+  refus du client n'est pas daté. La relance d'un devis sans réponse est, dans ce métier, le
+  geste commercial qui rapporte le plus — faut-il l'automatiser, et au bout de combien de
+  jours ?
+- **`RendezVous.clientAbsent`** : un client qui ne se présente pas ne peut pas être signalé.
+  Cela compte pour le professionnel, qui s'est déplacé pour rien ;
+- **`Metier.codesNaf2025`** : le rattachement aux codes NAF est stocké et jamais utilisé. Il
+  servirait à classer automatiquement une entreprise importée de SIRENE, ce qui est
+  précisément ce qui manque au catalogue ;
+- **`JournalAudit.usurpationDe`** : la colonne prévoit qu'un administrateur ouvre le compte
+  d'un professionnel pour le dépanner, avec traçabilité. La fonctionnalité n'existe pas.
+
+**Ce que ce contrôle ne sait pas faire**, et c'est dit dans son en-tête : juger une colonne
+dont le nom _apparaît_. Prisma offre trop de formes — `select`, `include`, `data`,
+déstructuration — pour qu'une recherche de texte tranche. Ce qu'il signale mérite un regard ;
+ce qu'il tait ne prouve rien.
