@@ -123,6 +123,53 @@ export async function resoudLien(jeton: string): Promise<ResolutionLien> {
 }
 
 /**
+ * Retrouve un lien **pour en lire la cible**, consommé ou non.
+ *
+ * Un lien à usage unique se ferme après son action : c'est tout son intérêt, et une boîte mail
+ * compromise ne doit pas pouvoir resigner un devis. Mais « ne plus pouvoir agir » n'est pas
+ * « ne plus pouvoir lire ». Un client qui a signé son devis a le droit de le relire six mois
+ * plus tard, depuis le même message — c'est son exemplaire. Lui refuser au motif qu'il a signé
+ * serait la plus absurde des sécurités : on l'aurait protégé de son propre document.
+ *
+ * Cette fonction rend donc le lien même consommé, et **jamais** après expiration — un lien
+ * périmé est périmé pour tout. Elle ne doit servir qu'à des pages en lecture seule : son nom le
+ * dit, et c'est la seule garantie qui tienne, puisqu'elle ne peut pas vérifier ce que son
+ * appelant fera du résultat.
+ *
+ * Voir `QUESTIONS.md` §Q31 : la question « faut-il un second lien en lecture seule après
+ * l'acceptation ? » se répond ici par « non, le même suffit ».
+ */
+export async function resoudLienPourLecture(
+  jeton: string,
+): Promise<
+  | { readonly issue: 'valide'; readonly lien: LienResolu }
+  | { readonly issue: 'inconnu' }
+  | { readonly issue: 'expire' }
+> {
+  const resolution = await resoudLien(jeton);
+  if (resolution.issue === 'valide') return resolution;
+  if (resolution.issue !== 'deja-utilise') return resolution;
+
+  // Consommé : on le relit, et on ne rend que ce qui désigne la cible. L'expiration, elle,
+  // reste opposable — `decideLien` l'a déjà tranchée avant de dire « déjà utilisé », mais on
+  // ne s'appuie pas sur cet ordre : il n'est pas garanti par le type.
+  const lien = await prisma.lienAction.findUnique({
+    where: { jeton: empreinteJeton(jeton, secretVerification()) },
+    select: {
+      id: true,
+      action: true,
+      demandeId: true,
+      cibleId: true,
+      expireLe: true,
+      utiliseLe: true,
+    },
+  });
+  if (lien === null) return { issue: 'inconnu' };
+  if (lien.expireLe.getTime() <= Date.now()) return { issue: 'expire' };
+  return { issue: 'valide', lien };
+}
+
+/**
  * Comme `resoudLien`, mais pour les liens qui portent forcément une demande.
  *
  * Le suivi, l'annulation, le dépôt d'avis n'ont pas de sens sans elle : plutôt que de faire

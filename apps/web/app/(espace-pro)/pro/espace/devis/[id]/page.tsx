@@ -37,7 +37,15 @@ export default async function PageUnDevis({
         ← Tous mes devis
       </Link>
 
-      <h1 className="mt-4 text-[clamp(1.6rem,3.6vw,2.2rem)]">{devis.numero ?? 'Nouveau devis'}</h1>
+      <div className="mt-4 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
+        <h1 className="text-[clamp(1.6rem,3.6vw,2.2rem)]">{devis.numero ?? 'Nouveau devis'}</h1>
+        <Link
+          href={`/document/devis/${id}`}
+          className="text-encre hover:text-or-fonce text-sm font-semibold underline decoration-[1.5px] underline-offset-4 transition-colors"
+        >
+          Voir le document imprimable
+        </Link>
+      </div>
       <p className="text-encre-70 mt-2 max-w-[62ch]">
         {devis.modifiable
           ? 'Les mentions obligatoires sont suivies à droite : tant qu’il en manque une, l’envoi reste fermé.'

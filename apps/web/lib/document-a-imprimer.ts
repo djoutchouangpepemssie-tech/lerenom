@@ -38,6 +38,24 @@ import {
 
 export type TypeDocument = 'devis' | 'facture' | 'avoir';
 
+/**
+ * Les mentions obligatoires du devis de dépannage, de réparation et d'entretien à domicile
+ * (arrêté du 24 janvier 2017). Elles sont déjà vérifiées avant l'envoi par `devisConforme` ;
+ * ici, elles s'impriment. Les vérifier sans les imprimer n'aurait servi à rien.
+ */
+export interface MentionsDevisImprimees {
+  readonly validiteJours: number;
+  /** Les frais de déplacement, **même nuls** : « offerts » est une information. */
+  readonly fraisDeplacementTTC: number | null;
+  readonly devisPayant: boolean;
+  readonly piecesRemplaceesGardees: boolean;
+  readonly mentionRetractation: boolean;
+  readonly acomptePourcent: number;
+  readonly signeLe: Date | null;
+  /** Le mobile qui a validé le code, masqué : il prouve la signature sans l'exposer. */
+  readonly signeParTelephoneMasque: string | null;
+}
+
 export interface DocumentAImprimer {
   readonly type: TypeDocument;
   /** « Facture », « Facture d'acompte », « Devis », « Avoir » — le titre imprimé. */
@@ -75,6 +93,13 @@ export interface DocumentAImprimer {
   readonly devisNumero: string | null;
   /** Le motif, pour un avoir seulement. */
   readonly motif: string | null;
+  /** Les mentions propres au devis. `null` sur une facture et sur un avoir. */
+  readonly devis: MentionsDevisImprimees | null;
+  /** La facture qu'un avoir annule ou corrige. `null` ailleurs. */
+  readonly factureCreditee: {
+    readonly numero: string | null;
+    readonly emiseLe: Date | null;
+  } | null;
   /** Ce qui manque pour que le document soit conforme. Vide quand il l'est. */
   readonly conformite: ConformiteFacture;
 }
@@ -436,8 +461,234 @@ export async function factureAImprimer(
     couleur: parametres.couleur,
     devisNumero: facture.devis?.numero ?? null,
     motif: null,
+    devis: null,
+    factureCreditee: null,
     // Une facture non émise se vérifie avant de l'être : c'est le moment utile pour dire ce
     // qui manque, parce qu'après, elle ne se modifie plus.
+    conformite: factureConforme(mentions),
+  };
+}
+
+/** Un mobile masqué : « 06 •• •• •• 12 ». Il prouve la signature sans l'exposer. */
+function mobileMasque(numero: string | null): string | null {
+  if (numero === null) return null;
+  const chiffres = numero.replace(/\D/g, '');
+  if (chiffres.length < 4) return null;
+  return `${chiffres.slice(0, 2)} •• •• •• ${chiffres.slice(-2)}`;
+}
+
+/**
+ * Le devis d'un professionnel, prêt à imprimer.
+ *
+ * Le devis n'est pas une facture en attente : il porte ses propres mentions obligatoires —
+ * frais de déplacement même nuls, durée de validité, caractère gratuit ou payant, sort des
+ * pièces remplacées — imposées par l'arrêté du 24 janvier 2017 pour le dépannage à domicile.
+ * `devisConforme` les vérifie avant l'envoi ; cette fonction les imprime. Vérifier sans
+ * imprimer n'aurait protégé personne.
+ */
+export async function devisAImprimer(
+  entrepriseId: string,
+  devisId: string,
+  maintenant: Date = new Date(),
+): Promise<DocumentAImprimer | null> {
+  const devis = await prisma.devis.findFirst({
+    where: { id: devisId, entrepriseId },
+    select: {
+      numero: true,
+      type: true,
+      statut: true,
+      envoyeLe: true,
+      signeLe: true,
+      signeParTelephone: true,
+      creeLe: true,
+      validiteJours: true,
+      remisePourcent: true,
+      acomptePourcent: true,
+      fraisDeplacementTTC: true,
+      devisPayant: true,
+      piecesRemplaceesGardees: true,
+      mentionRetractation: true,
+      lignes: SELECTION_LIGNES,
+      client: { select: SELECTION_CLIENT },
+      entreprise: { select: SELECTION_ENTREPRISE },
+    },
+  });
+  if (devis === null) return null;
+
+  const parametres = devis.entreprise.parametresDocuments ?? PARAMETRES_VIDES;
+  const lignes = lignesDe(devis.lignes);
+  const destinataire = destinataireDe(devis.client);
+  const emetteur = emetteurDe(devis.entreprise, parametres);
+  const totaux = calculeTotaux({
+    lignes,
+    remisePourcent: nombre(devis.remisePourcent),
+    acomptePourcent: devis.acomptePourcent as 0 | 30 | 40,
+  });
+  const emisLe = devis.envoyeLe;
+  const categorieOperation = categorieDesLignes(lignes);
+  const tauxPenalites = tauxPenalitesDe(parametres);
+
+  // Un devis n'est pas une facture : son échéance n'est pas un délai de paiement mais la fin
+  // de sa validité. On ne lui applique donc pas `echeanceDe`, qui compterait trente jours de
+  // règlement sur un document qui n'en réclame aucun.
+  const base = emisLe ?? maintenant;
+  const finDeValidite = new Date(base.getTime());
+  finDeValidite.setDate(finDeValidite.getDate() + devis.validiteJours);
+
+  const mentions: MentionsFacture = {
+    numero: devis.numero ?? 'à attribuer',
+    emiseLe: base,
+    prestationLe: base,
+    emetteur,
+    destinataire,
+    reglement: {
+      echeanceLe: finDeValidite,
+      tauxPenalites,
+      escompte: texteOuNull(parametres.escompte),
+    },
+    categorieOperation,
+    adresseLivraison: null,
+    tvaSurLesDebits: false,
+    autoliquidation: false,
+  };
+
+  return {
+    type: 'devis',
+    intitule: devis.type === 'estimatif' ? 'Devis estimatif' : 'Devis',
+    numero: devis.numero,
+    emiseLe: emisLe,
+    echeanceLe: finDeValidite,
+    prestationLe: null,
+    emetteur,
+    destinataire,
+    lignes,
+    totaux,
+    acompteDejaFactureTTC: 0,
+    acompte: false,
+    montantAPayerTTC: totaux.totalTTC,
+    tauxPenalites,
+    escompte: texteOuNull(parametres.escompte),
+    categorieOperation,
+    adresseLivraison: null,
+    autoliquidation: false,
+    rib: null,
+    conditionsGenerales: texteOuNull(parametres.conditionsGenerales),
+    piedDePage: texteOuNull(parametres.piedDePage),
+    couleur: parametres.couleur,
+    devisNumero: null,
+    motif: null,
+    devis: {
+      validiteJours: devis.validiteJours,
+      fraisDeplacementTTC:
+        devis.fraisDeplacementTTC === null ? null : nombre(devis.fraisDeplacementTTC),
+      devisPayant: devis.devisPayant,
+      piecesRemplaceesGardees: devis.piecesRemplaceesGardees,
+      mentionRetractation: devis.mentionRetractation,
+      acomptePourcent: devis.acomptePourcent,
+      signeLe: devis.signeLe,
+      signeParTelephoneMasque: mobileMasque(devis.signeParTelephone),
+    },
+    factureCreditee: null,
+    // Le contrôle des mentions de l'émetteur vaut aussi pour un devis : il porte la même
+    // identité, et un devis signé devient une facture sans qu'on repose la question.
+    conformite: factureConforme(mentions),
+  };
+}
+
+/**
+ * L'avoir d'un professionnel, prêt à imprimer.
+ *
+ * Un avoir n'a pas de lignes : il porte un montant et un motif. C'est voulu — le détail est
+ * dans la facture qu'il corrige, et le recopier créerait deux versions d'un même décompte.
+ * Le document désigne donc la facture créditée, en toutes lettres : un avoir qui ne dit pas
+ * ce qu'il annule n'est pas opposable.
+ *
+ * Il n'est jamais « à compléter » : un avoir ne se prépare pas, il est émis d'emblée. Ses
+ * mentions sont celles de sa facture, qui les portait déjà.
+ */
+export async function avoirAImprimer(
+  entrepriseId: string,
+  avoirId: string,
+): Promise<DocumentAImprimer | null> {
+  const avoir = await prisma.avoir.findFirst({
+    where: { id: avoirId, entrepriseId },
+    select: {
+      numero: true,
+      motif: true,
+      montantTTC: true,
+      emisLe: true,
+      facture: {
+        select: {
+          numero: true,
+          emiseLe: true,
+          client: { select: SELECTION_CLIENT },
+        },
+      },
+      entreprise: { select: SELECTION_ENTREPRISE },
+    },
+  });
+  if (avoir === null) return null;
+
+  const parametres = avoir.entreprise.parametresDocuments ?? PARAMETRES_VIDES;
+  const destinataire = destinataireDe(avoir.facture.client);
+  const emetteur = emetteurDe(avoir.entreprise, parametres);
+  const montant = nombre(avoir.montantTTC);
+
+  const mentions: MentionsFacture = {
+    numero: avoir.numero,
+    emiseLe: avoir.emisLe,
+    prestationLe: avoir.facture.emiseLe ?? avoir.emisLe,
+    emetteur,
+    destinataire,
+    reglement: {
+      echeanceLe: avoir.emisLe,
+      tauxPenalites: tauxPenalitesDe(parametres),
+      escompte: null,
+    },
+    categorieOperation: 'services',
+    adresseLivraison: null,
+    tvaSurLesDebits: false,
+    autoliquidation: false,
+  };
+
+  return {
+    type: 'avoir',
+    intitule: 'Avoir',
+    numero: avoir.numero,
+    emiseLe: avoir.emisLe,
+    echeanceLe: null,
+    prestationLe: null,
+    emetteur,
+    destinataire,
+    lignes: [],
+    // Un avoir ne détaille pas : il crédite un montant. Les totaux sont donc tous ce montant,
+    // et la TVA n'est pas reventilée — elle l'a été sur la facture d'origine.
+    totaux: {
+      totalBrutHT: 0,
+      remiseHT: 0,
+      totalHT: 0,
+      tva: [],
+      totalTVA: 0,
+      totalTTC: montant,
+      acompteTTC: 0,
+      soldeTTC: montant,
+    },
+    acompteDejaFactureTTC: 0,
+    acompte: false,
+    montantAPayerTTC: montant,
+    tauxPenalites: { mode: 'legal' },
+    escompte: null,
+    categorieOperation: 'services',
+    adresseLivraison: null,
+    autoliquidation: false,
+    rib: null,
+    conditionsGenerales: null,
+    piedDePage: texteOuNull(parametres.piedDePage),
+    couleur: parametres.couleur,
+    devisNumero: null,
+    motif: avoir.motif,
+    devis: null,
+    factureCreditee: { numero: avoir.facture.numero, emiseLe: avoir.facture.emiseLe },
     conformite: factureConforme(mentions),
   };
 }

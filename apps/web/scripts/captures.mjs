@@ -64,6 +64,21 @@ function cheminDuDocumentFacture() {
   return valeur === null ? null : `/document/facture/${valeur}`;
 }
 
+function cheminDuDocumentDevis() {
+  const valeur = jeton('devis');
+  return valeur === null ? null : `/document/devis/${valeur}`;
+}
+
+function cheminDuDocumentDevisClient() {
+  const valeur = jeton('devis-client');
+  return valeur === null ? null : `/document/devis/jeton/${valeur}`;
+}
+
+function cheminDuDocumentAvoir() {
+  const valeur = jeton('avoir');
+  return valeur === null ? null : `/document/avoir/${valeur}`;
+}
+
 function cheminDuDocumentFactureEmise() {
   const valeur = jeton('facture-emise');
   return valeur === null ? null : `/document/facture/${valeur}`;
@@ -412,6 +427,19 @@ const PAGES = [
     connexionPro: true,
   },
   {
+    nom: 'document-devis',
+    chemin: cheminDuDocumentDevis,
+    titre: 'Document — devis du professionnel',
+    connexionPro: true,
+    debordementAutorise: true,
+  },
+  {
+    nom: 'document-devis-client',
+    chemin: cheminDuDocumentDevisClient,
+    titre: 'Document — devis reçu par le client',
+    debordementAutorise: true,
+  },
+  {
     nom: 'document-facture',
     chemin: cheminDuDocumentFacture,
     titre: 'Document — facture prête à émettre',
@@ -425,6 +453,13 @@ const PAGES = [
     nom: 'document-facture-emise',
     chemin: cheminDuDocumentFactureEmise,
     titre: 'Document — facture émise',
+    connexionPro: true,
+    debordementAutorise: true,
+  },
+  {
+    nom: 'document-avoir',
+    chemin: cheminDuDocumentAvoir,
+    titre: 'Document — avoir',
     connexionPro: true,
     debordementAutorise: true,
   },

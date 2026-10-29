@@ -910,6 +910,26 @@
     "erreursConsole": []
   },
   {
+    "page": "Document — devis du professionnel",
+    "largeur": 390,
+    "fichier": "document-devis-390.png",
+    "defilementHorizontal": false,
+    "largeurDocument": 794,
+    "largeurFenetre": 794,
+    "debordements": [],
+    "erreursConsole": []
+  },
+  {
+    "page": "Document — devis reçu par le client",
+    "largeur": 390,
+    "fichier": "document-devis-client-390.png",
+    "defilementHorizontal": false,
+    "largeurDocument": 794,
+    "largeurFenetre": 794,
+    "debordements": [],
+    "erreursConsole": []
+  },
+  {
     "page": "Document — facture prête à émettre",
     "largeur": 390,
     "fichier": "document-facture-390.png",
@@ -940,6 +960,26 @@
     "erreursConsole": []
   },
   {
+    "page": "Document — devis du professionnel",
+    "largeur": 1440,
+    "fichier": "document-devis-1440.png",
+    "defilementHorizontal": false,
+    "largeurDocument": 1440,
+    "largeurFenetre": 1440,
+    "debordements": [],
+    "erreursConsole": []
+  },
+  {
+    "page": "Document — devis reçu par le client",
+    "largeur": 1440,
+    "fichier": "document-devis-client-1440.png",
+    "defilementHorizontal": false,
+    "largeurDocument": 1440,
+    "largeurFenetre": 1440,
+    "debordements": [],
+    "erreursConsole": []
+  },
+  {
     "page": "Document — facture prête à émettre",
     "largeur": 1440,
     "fichier": "document-facture-1440.png",
@@ -953,6 +993,26 @@
     "page": "Document — facture émise",
     "largeur": 1440,
     "fichier": "document-facture-emise-1440.png",
+    "defilementHorizontal": false,
+    "largeurDocument": 1440,
+    "largeurFenetre": 1440,
+    "debordements": [],
+    "erreursConsole": []
+  },
+  {
+    "page": "Document — avoir",
+    "largeur": 390,
+    "fichier": "document-avoir-390.png",
+    "defilementHorizontal": false,
+    "largeurDocument": 794,
+    "largeurFenetre": 794,
+    "debordements": [],
+    "erreursConsole": []
+  },
+  {
+    "page": "Document — avoir",
+    "largeur": 1440,
+    "fichier": "document-avoir-1440.png",
     "defilementHorizontal": false,
     "largeurDocument": 1440,
     "largeurFenetre": 1440,

@@ -1817,6 +1817,61 @@ les textes et probablement juste ; « probablement » n'est pas le mot qu'on veu
 
 ---
 
+## Le devis et l'avoir, et ce qu'on voit en regardant
+
+La facture imprimable tenait. Le devis et l'avoir suivent, avec le même assemblage et le même
+composant — un seul document, trois types. Le devis porte en plus ses mentions propres, celles
+de l'arrêté du 24 janvier 2017 sur le dépannage à domicile : frais de déplacement **même nuls**,
+durée de validité, caractère gratuit ou payant, sort des pièces remplacées. `devisConforme` les
+vérifiait déjà avant l'envoi ; elles s'impriment enfin. Vérifier sans imprimer n'avait protégé
+personne.
+
+### Relire n'est pas agir
+
+Le devis est le document que le **client** garde : il le compare, le montre, le ressort six
+mois plus tard. Or son lien est à usage unique, et il se ferme à la signature. Un client ayant
+signé n'aurait plus pu relire ce qu'il avait signé.
+
+D'où `resoudLienPourLecture`, à côté de `resoudLien` : elle rend la cible d'un lien même
+consommé, et **jamais** après expiration. _Ne plus pouvoir agir_ n'est pas _ne plus pouvoir
+lire_ — et lui refuser l'accès au motif qu'il a signé aurait été la plus absurde des sécurités :
+on l'aurait protégé de son propre document. Cela répond au passage à une question laissée
+ouverte en Q31 : non, il n'y a pas besoin d'un second lien en lecture seule après l'acceptation.
+
+Le paquet `@lerenom/liens` n'avait **aucun test**, alors qu'il tient toute l'action sans mot de
+passe : signer un devis, accepter un rendez-vous, déposer un avis. Il en a neuf maintenant, à
+commencer par celui qui garde la règle la plus facile à casser par inadvertance — un lien à
+usage unique ne sert qu'une fois — et par celui qui garde la seule borne que la lecture
+conserve : l'expiration.
+
+### Un avoir qui héritait d'une facture
+
+La capture de l'avoir montrait ceci : un tableau de lignes vide avec « Aucune ligne chiffrée »,
+un « Total HT 0 € » posé au-dessus d'un « Total TTC 45 € », une échéance à blanc, et un
+paragraphe réclamant **des pénalités de retard et quarante euros de frais de recouvrement** —
+sur un document où c'est l'artisan qui doit de l'argent à son client.
+
+Rien de cela n'était un bogue. Chaque ligne faisait ce qu'on lui demandait ; c'est l'héritage
+silencieux de la mise en page de la facture qui produisait l'absurdité. Un avoir ne détaille
+rien — le détail est sur la facture qu'il corrige, et le recopier créerait deux versions d'un
+même décompte —, ne vient pas à échéance, et ne réclame rien.
+
+D'où une règle : **réutiliser une mise en page, ce n'est pas réutiliser un document.** Trois
+documents qui partagent un composant partagent une apparence, pas une signification ; et la
+signification, elle, se vérifie en regardant, pas en compilant.
+
+Trois autres détails sont sortis de la même façon : « Facturé à » sur un devis, qui n'est pas
+facturé mais établi ; « Net à payer » sur un devis, qui n'appelle aucun paiement ; et
+« Émise le » là où un devis est établi. Aucun n'aurait jamais fait échouer un test.
+
+### La vérification
+
+994 tests verts, porte de validation franchie, douze captures à 390 et 1440 px — devis du
+professionnel, devis reçu par le client, facture prête, facture émise, avoir, et l'écran de
+réglages qui les alimente tous.
+
+---
+
 ## Phases 5 à 11 · à venir
 
 Agenda et documents du pro, monétisation Stripe, back-office, personnalisation, avis et

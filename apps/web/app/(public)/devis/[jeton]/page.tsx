@@ -96,6 +96,18 @@ export default async function PageDevisClient({
             {devis.expireLe !== null && ` Valable jusqu’au ${dateSeule(devis.expireLe)}.`}
           </p>
 
+          {/* Le devis imprimable, à part : le client garde son exemplaire, le compare, et le
+              ressort des mois plus tard. Le lien reste valable après signature — relire n'est
+              pas agir. */}
+          <p className="mt-3">
+            <a
+              href={`/document/devis/jeton/${jeton}`}
+              className="text-encre hover:text-or-fonce text-sm font-semibold underline decoration-[1.5px] underline-offset-4 transition-colors"
+            >
+              Imprimer ou enregistrer ce devis
+            </a>
+          </p>
+
           <Carte className="mt-7 p-5 sm:p-6">
             {devis.clientNom !== null && (
               <p className="text-encre-40 text-[0.68rem] font-bold tracking-[0.16em] uppercase">

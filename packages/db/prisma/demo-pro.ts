@@ -426,6 +426,15 @@ async function semeFacturesDeDemonstration(entrepriseId: string): Promise<string
       `${dejaEmise.id}\n`,
       'utf8',
     );
+    // L'avoir existe aussi : il n'est pas effaçable, et les captures en ont besoin.
+    const avoirExistant = await prisma.avoir.findFirst({
+      where: { entrepriseId },
+      select: { id: true },
+      orderBy: { emisLe: 'desc' },
+    });
+    if (avoirExistant !== null) {
+      await writeFile(path.join(racineExistante, '.jeton-avoir'), `${avoirExistant.id}\n`, 'utf8');
+    }
     return solde.id;
   }
 
@@ -511,6 +520,7 @@ async function semeFacturesDeDemonstration(entrepriseId: string): Promise<string
   const rib = await prisma.rib.findFirstOrThrow({ where: { entrepriseId, actif: true } });
 
   let acompteId: string | null = null;
+  let avoirId: string | null = null;
   if (acompte !== null) {
     const emiseLe = new Date(Date.now() - 4 * 86_400_000);
     const echeance = new Date(emiseLe);
@@ -550,7 +560,7 @@ async function semeFacturesDeDemonstration(entrepriseId: string): Promise<string
 
     // Un avoir partiel sur cette facture émise : l'écran de correction n'a de sens que s'il
     // montre à la fois ce qui a déjà été crédité et ce qu'il reste.
-    await prisma.avoir.create({
+    const avoir = await prisma.avoir.create({
       data: {
         entrepriseId,
         factureId: enregistre.id,
@@ -559,7 +569,9 @@ async function semeFacturesDeDemonstration(entrepriseId: string): Promise<string
         montantTTC: 45,
         emisLe: new Date(Date.now() - 2 * 86_400_000),
       },
+      select: { id: true },
     });
+    avoirId = avoir.id;
   }
 
   const soldeEnregistre = await prisma.facture.create({
@@ -594,6 +606,9 @@ async function semeFacturesDeDemonstration(entrepriseId: string): Promise<string
   await writeFile(path.join(racine, '.jeton-facture'), `${soldeEnregistre.id}\n`, 'utf8');
   if (acompteId !== null) {
     await writeFile(path.join(racine, '.jeton-facture-emise'), `${acompteId}\n`, 'utf8');
+  }
+  if (avoirId !== null) {
+    await writeFile(path.join(racine, '.jeton-avoir'), `${avoirId}\n`, 'utf8');
   }
 
   return soldeEnregistre.id;

@@ -62,6 +62,13 @@ function Lacune({ quoi, montrer }: { readonly quoi: string; readonly montrer: bo
 export function DocumentImprimable({ document }: { readonly document: DocumentAImprimer }) {
   const { emetteur, destinataire, totaux } = document;
   const chiffrees = document.lignes.filter((ligne) => ligne.type === 'prestation');
+  /**
+   * Un avoir ne détaille rien, ne vient pas à échéance et ne porte pas de pénalités de
+   * retard : c'est le professionnel qui doit, pas le client. Réutiliser la mise en page de
+   * la facture telle quelle lui donnait un tableau de lignes vide, un « Total HT 0 € » sous
+   * un « Total TTC 45 € », et un paragraphe réclamant des intérêts au créancier.
+   */
+  const estUnAvoir = document.type === 'avoir';
   // Avant l'émission, ce qui manque se signale ; après, le document est ce qu'il est.
   const aCompleter = document.emiseLe === null;
   const aUnAcompte = document.acompteDejaFactureTTC > 0;
@@ -129,7 +136,9 @@ export function DocumentImprimable({ document }: { readonly document: DocumentAI
             {document.numero ?? <span className="text-[9pt] font-normal italic">non émise</span>}
           </p>
           <dl className="mt-3 ml-auto grid w-max grid-cols-[auto_auto] gap-x-3 text-[8.5pt]">
-            <dt className="text-right font-semibold">Émise le</dt>
+            <dt className="text-right font-semibold">
+              {document.type === 'devis' ? 'Établi le' : 'Émise le'}
+            </dt>
             <dd className="text-right">
               {document.emiseLe === null ? '—' : dateSeule(document.emiseLe)}
             </dd>
@@ -139,14 +148,26 @@ export function DocumentImprimable({ document }: { readonly document: DocumentAI
                 <dd className="text-right">{dateSeule(document.prestationLe)}</dd>
               </>
             )}
-            <dt className="text-right font-semibold">Échéance</dt>
-            <dd className="text-right">
-              {document.echeanceLe === null ? '—' : dateSeule(document.echeanceLe)}
-            </dd>
+            {!estUnAvoir && (
+              <>
+                <dt className="text-right font-semibold">
+                  {document.type === 'devis' ? 'Valable jusqu’au' : 'Échéance'}
+                </dt>
+                <dd className="text-right">
+                  {document.echeanceLe === null ? '—' : dateSeule(document.echeanceLe)}
+                </dd>
+              </>
+            )}
             {document.devisNumero !== null && (
               <>
                 <dt className="text-right font-semibold">Devis</dt>
                 <dd className="text-right">{document.devisNumero}</dd>
+              </>
+            )}
+            {document.factureCreditee !== null && (
+              <>
+                <dt className="text-right font-semibold">Facture créditée</dt>
+                <dd className="text-right">{document.factureCreditee.numero ?? '—'}</dd>
               </>
             )}
           </dl>
@@ -156,7 +177,15 @@ export function DocumentImprimable({ document }: { readonly document: DocumentAI
       {/* ── Le destinataire ─────────────────────────────────────────────────────────── */}
       <section className="mt-8 flex flex-wrap justify-between gap-6">
         <div className="min-w-[14rem]">
-          <p className="text-[7.5pt] font-bold tracking-[0.14em] uppercase">Facturé à</p>
+          {/* Un devis n'est pas facturé : il est établi pour quelqu'un. Un avoir, lui, est
+              crédité à celui qui a payé. Le mot change ; l'adresse reste obligatoire. */}
+          <p className="text-[7.5pt] font-bold tracking-[0.14em] uppercase">
+            {document.type === 'devis'
+              ? 'Établi pour'
+              : document.type === 'avoir'
+                ? 'Crédité à'
+                : 'Facturé à'}
+          </p>
           <address className="mt-1 text-[9.5pt] not-italic">
             <span className="block font-semibold">
               {destinataire.nom === '' ? (
@@ -188,77 +217,90 @@ export function DocumentImprimable({ document }: { readonly document: DocumentAI
       </section>
 
       {/* ── Les lignes ──────────────────────────────────────────────────────────────── */}
-      <table className="mt-7 w-full border-collapse text-[9pt]">
-        <thead>
-          <tr style={{ borderBottom: '1.5px solid var(--teinte)' }}>
-            <th className="pb-1 text-left font-bold">Désignation</th>
-            <th className="pb-1 text-right font-bold whitespace-nowrap">Qté</th>
-            <th className="pb-1 text-right font-bold whitespace-nowrap">P.U. HT</th>
-            <th className="pb-1 text-right font-bold whitespace-nowrap">TVA</th>
-            <th className="pb-1 text-right font-bold whitespace-nowrap">Total HT</th>
-          </tr>
-        </thead>
-        <tbody>
-          {document.lignes.map((ligne) => {
-            if (ligne.type === 'section') {
+      {estUnAvoir ? (
+        <p className="mt-7 text-[9pt]">
+          Avoir émis sur la facture{' '}
+          <span className="font-semibold">{document.factureCreditee?.numero ?? '—'}</span>
+          {document.factureCreditee?.emiseLe != null &&
+            ` du ${dateSeule(document.factureCreditee.emiseLe)}`}
+          . Le détail des prestations figure sur cette facture : le recopier ici créerait deux
+          versions d’un même décompte.
+        </p>
+      ) : (
+        <table className="mt-7 w-full border-collapse text-[9pt]">
+          <thead>
+            <tr style={{ borderBottom: '1.5px solid var(--teinte)' }}>
+              <th className="pb-1 text-left font-bold">Désignation</th>
+              <th className="pb-1 text-right font-bold whitespace-nowrap">Qté</th>
+              <th className="pb-1 text-right font-bold whitespace-nowrap">P.U. HT</th>
+              <th className="pb-1 text-right font-bold whitespace-nowrap">TVA</th>
+              <th className="pb-1 text-right font-bold whitespace-nowrap">Total HT</th>
+            </tr>
+          </thead>
+          <tbody>
+            {document.lignes.map((ligne) => {
+              if (ligne.type === 'section') {
+                return (
+                  <tr key={ligne.id} className="break-inside-avoid">
+                    <th colSpan={5} className="pt-4 pb-1 text-left text-[9.5pt] font-bold">
+                      {ligne.designation}
+                    </th>
+                  </tr>
+                );
+              }
+              if (ligne.type === 'texte') {
+                return (
+                  <tr key={ligne.id} className="break-inside-avoid">
+                    <td colSpan={5} className="py-1.5 text-[8.5pt] italic">
+                      {ligne.designation}
+                    </td>
+                  </tr>
+                );
+              }
               return (
-                <tr key={ligne.id} className="break-inside-avoid">
-                  <th colSpan={5} className="pt-4 pb-1 text-left text-[9.5pt] font-bold">
+                <tr key={ligne.id} className="break-inside-avoid align-top">
+                  <td className="border-t border-[#d8d8d8] py-1.5 pr-3">
                     {ligne.designation}
-                  </th>
-                </tr>
-              );
-            }
-            if (ligne.type === 'texte') {
-              return (
-                <tr key={ligne.id} className="break-inside-avoid">
-                  <td colSpan={5} className="py-1.5 text-[8.5pt] italic">
-                    {ligne.designation}
+                    {ligne.detail !== undefined && (
+                      <span className="mt-0.5 block text-[8pt] text-[#444]">{ligne.detail}</span>
+                    )}
+                  </td>
+                  <td className="border-t border-[#d8d8d8] py-1.5 text-right whitespace-nowrap">
+                    {ligne.quantite === undefined
+                      ? '—'
+                      : `${ligne.quantite.toLocaleString('fr-FR')} ${
+                          ligne.unite === undefined ? '' : LIBELLES_UNITE[ligne.unite]
+                        }`}
+                  </td>
+                  <td className="border-t border-[#d8d8d8] py-1.5 text-right whitespace-nowrap">
+                    {ligne.prixUnitaireHT === undefined ? '—' : formatEuros(ligne.prixUnitaireHT)}
+                  </td>
+                  <td className="border-t border-[#d8d8d8] py-1.5 text-right whitespace-nowrap">
+                    {ligne.tauxTva === undefined
+                      ? '—'
+                      : `${ligne.tauxTva.toLocaleString('fr-FR')} %`}
+                  </td>
+                  <td className="border-t border-[#d8d8d8] py-1.5 text-right font-semibold whitespace-nowrap">
+                    {formatEuros(montantLigneHT(ligne))}
                   </td>
                 </tr>
               );
-            }
-            return (
-              <tr key={ligne.id} className="break-inside-avoid align-top">
-                <td className="border-t border-[#d8d8d8] py-1.5 pr-3">
-                  {ligne.designation}
-                  {ligne.detail !== undefined && (
-                    <span className="mt-0.5 block text-[8pt] text-[#444]">{ligne.detail}</span>
-                  )}
-                </td>
-                <td className="border-t border-[#d8d8d8] py-1.5 text-right whitespace-nowrap">
-                  {ligne.quantite === undefined
-                    ? '—'
-                    : `${ligne.quantite.toLocaleString('fr-FR')} ${
-                        ligne.unite === undefined ? '' : LIBELLES_UNITE[ligne.unite]
-                      }`}
-                </td>
-                <td className="border-t border-[#d8d8d8] py-1.5 text-right whitespace-nowrap">
-                  {ligne.prixUnitaireHT === undefined ? '—' : formatEuros(ligne.prixUnitaireHT)}
-                </td>
-                <td className="border-t border-[#d8d8d8] py-1.5 text-right whitespace-nowrap">
-                  {ligne.tauxTva === undefined ? '—' : `${ligne.tauxTva.toLocaleString('fr-FR')} %`}
-                </td>
-                <td className="border-t border-[#d8d8d8] py-1.5 text-right font-semibold whitespace-nowrap">
-                  {formatEuros(montantLigneHT(ligne))}
+            })}
+            {chiffrees.length === 0 && (
+              <tr>
+                <td colSpan={5} className="border-t border-[#d8d8d8] py-3 text-[8.5pt] italic">
+                  Aucune ligne chiffrée.
                 </td>
               </tr>
-            );
-          })}
-          {chiffrees.length === 0 && (
-            <tr>
-              <td colSpan={5} className="border-t border-[#d8d8d8] py-3 text-[8.5pt] italic">
-                Aucune ligne chiffrée.
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
+            )}
+          </tbody>
+        </table>
+      )}
 
       {/* ── Les totaux ──────────────────────────────────────────────────────────────── */}
       <section className="mt-5 flex break-inside-avoid justify-end">
         <dl className="grid w-[22rem] grid-cols-[1fr_auto] gap-x-6 gap-y-1 text-[9pt]">
-          {totaux.remiseHT > 0 && (
+          {!estUnAvoir && totaux.remiseHT > 0 && (
             <>
               <dt>Total brut HT</dt>
               <dd className="text-right tabular-nums">{formatEuros(totaux.totalBrutHT)}</dd>
@@ -268,8 +310,12 @@ export function DocumentImprimable({ document }: { readonly document: DocumentAI
               </dd>
             </>
           )}
-          <dt>Total HT</dt>
-          <dd className="text-right tabular-nums">{formatEuros(totaux.totalHT)}</dd>
+          {!estUnAvoir && (
+            <>
+              <dt>Total HT</dt>
+              <dd className="text-right tabular-nums">{formatEuros(totaux.totalHT)}</dd>
+            </>
+          )}
 
           {totaux.tva.map((taux) => (
             <div key={taux.taux} className="col-span-2 grid grid-cols-[1fr_auto] gap-x-6">
@@ -280,8 +326,12 @@ export function DocumentImprimable({ document }: { readonly document: DocumentAI
             </div>
           ))}
 
-          <dt className="font-bold">Total TTC</dt>
-          <dd className="text-right font-bold tabular-nums">{formatEuros(totaux.totalTTC)}</dd>
+          {!estUnAvoir && (
+            <>
+              <dt className="font-bold">Total TTC</dt>
+              <dd className="text-right font-bold tabular-nums">{formatEuros(totaux.totalTTC)}</dd>
+            </>
+          )}
 
           {aUnAcompte && (
             <>
@@ -296,7 +346,15 @@ export function DocumentImprimable({ document }: { readonly document: DocumentAI
             className="col-span-2 mt-1 grid grid-cols-[1fr_auto] gap-x-6 pt-2 text-[11pt]"
             style={{ borderTop: '1.5px solid var(--teinte)' }}
           >
-            <dt className="font-bold">{document.acompte ? 'Acompte à régler' : 'Net à payer'}</dt>
+            <dt className="font-bold">
+              {document.type === 'avoir'
+                ? 'Montant crédité'
+                : document.type === 'devis'
+                  ? 'Total à prévoir'
+                  : document.acompte
+                    ? 'Acompte à régler'
+                    : 'Net à payer'}
+            </dt>
             <dd className="text-right font-bold tabular-nums">
               {formatEuros(document.montantAPayerTTC)}
             </dd>
@@ -311,6 +369,60 @@ export function DocumentImprimable({ document }: { readonly document: DocumentAI
         </p>
       )}
 
+      {document.devis !== null && (
+        <section className="mt-7 break-inside-avoid border-t border-[#d8d8d8] pt-4 text-[8.3pt] leading-[1.55]">
+          <p className="text-[7.5pt] font-bold tracking-[0.14em] uppercase">
+            Conditions de ce devis
+          </p>
+          <ul className="mt-2 space-y-1">
+            <li>
+              Ce devis est valable {document.devis.validiteJours} jours à compter de son envoi
+              {document.echeanceLe !== null && `, soit jusqu’au ${dateSeule(document.echeanceLe)}`}.
+            </li>
+            <li>
+              {/* « Même nuls » : la gratuité du déplacement est une information, pas une
+                  absence. L'arrêté du 24 janvier 2017 impose de l'indiquer dans les deux cas. */}
+              Frais de déplacement :{' '}
+              {document.devis.fraisDeplacementTTC === null
+                ? 'non indiqués'
+                : document.devis.fraisDeplacementTTC === 0
+                  ? 'offerts'
+                  : `${formatEuros(document.devis.fraisDeplacementTTC)} TTC`}
+              .
+            </li>
+            <li>
+              L’établissement de ce devis est {document.devis.devisPayant ? 'payant' : 'gratuit'}.
+            </li>
+            <li>
+              {document.devis.piecesRemplaceesGardees
+                ? 'Vous pouvez conserver les pièces remplacées ; il vous suffit de le demander avant l’intervention.'
+                : 'Les pièces remplacées ne sont pas conservées.'}
+            </li>
+            {document.devis.acomptePourcent > 0 && (
+              <li>
+                Un acompte de {document.devis.acomptePourcent} % est demandé à la commande ; le
+                solde est dû à l’achèvement.
+              </li>
+            )}
+            {document.devis.mentionRetractation && (
+              <li>
+                Démarchage à domicile : vous disposez d’un délai de rétractation de quatorze jours à
+                compter de la signature.
+              </li>
+            )}
+          </ul>
+
+          {document.devis.signeLe !== null && (
+            <p className="mt-3 font-semibold">
+              Devis accepté le {dateSeule(document.devis.signeLe)}
+              {document.devis.signeParTelephoneMasque !== null &&
+                `, par code reçu au ${document.devis.signeParTelephoneMasque}`}
+              .
+            </p>
+          )}
+        </section>
+      )}
+
       {/* ── Les mentions ────────────────────────────────────────────────────────────── */}
       <footer className="mt-8 break-inside-avoid border-t border-[#d8d8d8] pt-4 text-[7.8pt] leading-[1.5]">
         <p>
@@ -318,7 +430,7 @@ export function DocumentImprimable({ document }: { readonly document: DocumentAI
           {LIBELLE_CATEGORIE_OPERATION[document.categorieOperation]}.
         </p>
         {document.autoliquidation && <p className="mt-1">{MENTION_AUTOLIQUIDATION}</p>}
-        <p className="mt-1">{phrasePenalites(document.tauxPenalites)}</p>
+        {!estUnAvoir && <p className="mt-1">{phrasePenalites(document.tauxPenalites)}</p>}
         {document.escompte !== null && (
           <p className="mt-1">
             <span className="font-semibold">Escompte</span> : {document.escompte}
