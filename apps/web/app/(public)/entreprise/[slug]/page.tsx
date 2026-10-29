@@ -20,9 +20,31 @@ import { FilAriane } from '@/composants/FilAriane';
 import { HorairesPubliques } from '@/composants/HorairesPubliques';
 import { entrepriseParSlug } from '@/lib/donnees';
 import { FUSEAU, nomVille } from '@/lib/affichage';
+import { jsonLdEntreprise, partage } from '@/lib/referencement';
 
 interface Parametres {
   readonly params: Promise<{ readonly slug: string }>;
+}
+
+/**
+ * Une fiche mérite-t-elle d'être indexée ?
+ *
+ * Une fiche qui ne porte que les données SIRENE n'apporte rien : publier des millions de
+ * pages reproduites à grande échelle est exactement ce que les règles anti-spam visent. Il
+ * faut qu'un humain soit passé — revendication, avis, ou fiche à moitié remplie.
+ *
+ * La règle est ici, en un seul endroit, parce qu'elle sert à deux : les métadonnées qui
+ * portent le `noindex`, et le corps qui décide de publier ou non le balisage structuré. Deux
+ * copies auraient fini par diverger, et la page aurait alors annoncé l'inverse d'elle-même.
+ */
+function ficheEnrichie(entreprise: {
+  readonly revendiquee: boolean;
+  readonly nombreAvis: number;
+  readonly fiche: { readonly completude: number } | null;
+}): boolean {
+  return (
+    entreprise.revendiquee || entreprise.nombreAvis > 0 || (entreprise.fiche?.completude ?? 0) > 0.5
+  );
 }
 
 export async function generateMetadata({ params }: Parametres): Promise<Metadata> {
@@ -33,11 +55,26 @@ export async function generateMetadata({ params }: Parametres): Promise<Metadata
   const metier = entreprise.metiers.find((m) => m.principal)?.metier.nom ?? 'Professionnel';
   const ville = nomVille(entreprise.agences[0]?.commune.nom ?? 'Île-de-France');
 
+  const titre = `${entreprise.nom} — ${metier} à ${ville}`;
+  const description =
+    entreprise.fiche?.description?.slice(0, 160) ??
+    `${entreprise.nom}, ${metier.toLowerCase()} à ${ville}. Avis vérifiés et demande de devis gratuite.`;
+
   return {
-    title: `${entreprise.nom} — ${metier} à ${ville}`,
-    description:
-      entreprise.fiche?.description?.slice(0, 160) ??
-      `${entreprise.nom}, ${metier.toLowerCase()} à ${ville}. Avis vérifiés et demande de devis gratuite.`,
+    title: titre,
+    description,
+    ...partage({ titre, description, chemin: `/entreprise/${slug}` }),
+    // Trois motifs de ne pas indexer, et la règle qui les portait vivait jusqu'ici dans une
+    // balise du corps du document — hors spécification, et dépendante de la tolérance des
+    // moteurs. Une fiche retirée ou suspendue reste accessible à qui a son adresse, pour ne
+    // pas casser les liens déjà partagés, mais n'est plus proposée. Une fiche qui ne porte
+    // que les données SIRENE n'est pas indexée non plus : `follow` est conservé, ses liens
+    // restent utiles.
+    ...(entreprise.retireeLe !== null || entreprise.suspendue
+      ? { robots: { index: false, follow: false } }
+      : ficheEnrichie(entreprise)
+        ? {}
+        : { robots: { index: false, follow: true } }),
   };
 }
 
@@ -66,10 +103,7 @@ export default async function PageEntreprise({ params }: Parametres) {
   // confiance à ce qu'une version précédente du code y a écrit.
   const horaires = horairesDepuisJson(fiche?.horaires);
 
-  // Une fiche qui ne contient que les données SIRENE reste en `noindex` : publier des millions
-  // de pages reproduites à grande échelle est exactement ce que les règles anti-spam visent.
-  const enrichie =
-    entreprise.revendiquee || entreprise.nombreAvis > 0 || (fiche?.completude ?? 0) > 0.5;
+  const enrichie = ficheEnrichie(entreprise);
 
   const merites: Merite[] = [];
   if (entreprise.verifiee) merites.push('entreprise-verifiee');
@@ -81,9 +115,36 @@ export default async function PageEntreprise({ params }: Parametres) {
 
   const estExclusif = formule === 'exclusif';
 
+  // Le balisage n'est publié que si la page l'est. Décrire en données structurées une fiche
+  // qu'on refuse d'indexer serait contradictoire — et sur une fiche issue du seul SIRENE,
+  // ce serait précisément la reproduction en masse que le `noindex` cherche à éviter.
+  const balisage = enrichie
+    ? jsonLdEntreprise({
+        nom: entreprise.nom,
+        slug: entreprise.slug,
+        description: fiche?.description ?? null,
+        telephone: formule === 'gratuit' ? null : (fiche?.telephone ?? null),
+        siteWeb: fiche?.siteWeb ?? null,
+        adresse: agencePrincipale?.adresse ?? null,
+        codePostal: agencePrincipale?.codePostal ?? null,
+        commune: agencePrincipale?.commune.nom ?? null,
+        latitude: agencePrincipale?.latitude ?? null,
+        longitude: agencePrincipale?.longitude ?? null,
+        metier: metierPrincipal?.metier.nom ?? null,
+        noteMoyenne: entreprise.noteMoyenne,
+        nombreAvis: entreprise.nombreAvis,
+        diffusible: entreprise.diffusible,
+      })
+    : null;
+
   return (
     <>
-      {!enrichie && <meta name="robots" content="noindex, follow" />}
+      {balisage !== null && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(balisage) }}
+        />
+      )}
 
       {/* ── Couverture ─────────────────────────────────────────────────────── */}
       <header className={estExclusif ? 'bg-nuit text-creme' : 'bg-creme'}>

@@ -4,6 +4,9 @@ import { FormulaireDemande } from '@/composants/FormulaireDemande';
 import { catalogue } from '@/lib/donnees';
 
 export const metadata = {
+  // L'adresse canonique, sans paramètre : une page partagée avec une ancre ou un
+  // marqueur de campagne reste la même page.
+  alternates: { canonical: '/demande' },
   title: 'Demander un devis',
   description:
     'Décrivez votre besoin en trois minutes. Jusqu’à trois professionnels vous répondent, sans que vous ayez de compte à créer.',

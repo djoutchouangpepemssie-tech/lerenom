@@ -4,6 +4,9 @@ import { PARAMETRES_PAR_DEFAUT, REGLES_VALIDEES } from '@lerenom/core';
 import { FilAriane } from '@/composants/FilAriane';
 
 export const metadata = {
+  // L'adresse canonique, sans paramètre : une page partagée avec une ancre ou un
+  // marqueur de campagne reste la même page.
+  alternates: { canonical: '/comment-nous-classons' },
   title: 'Comment nous classons les professionnels',
   description:
     'La méthode de classement de Le Renom : les emplacements payés, le score de qualité et ce que le paiement ne change pas.',

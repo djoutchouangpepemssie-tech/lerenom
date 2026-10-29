@@ -1,6 +1,9 @@
 import { PageContenu } from '@/composants/PageContenu';
 
 export const metadata = {
+  // L'adresse canonique, sans paramètre : une page partagée avec une ancre ou un
+  // marqueur de campagne reste la même page.
+  alternates: { canonical: '/cookies' },
   title: 'Cookies',
   description:
     'Ce que nous déposons sur votre appareil, et ce que nous ne déposons pas sans votre accord.',

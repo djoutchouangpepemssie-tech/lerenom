@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { canonique } from '@/lib/referencement';
 
 export interface ElementFilAriane {
   readonly libelle: string;
@@ -24,7 +25,11 @@ export function FilAriane({
       '@type': 'ListItem',
       position: index + 1,
       name: element.libelle,
-      ...(element.href !== undefined ? { item: `https://lerenom.fr${element.href}` } : {}),
+      // L'adresse vient de l'environnement, jamais du domaine de production écrit en dur.
+      // Elle l'était : une préproduction publiait un fil d'Ariane désignant les pages de la
+      // production, c'est-à-dire deux sites se réclamant des mêmes adresses — précisément ce
+      // que `baseDuSite()` existe pour empêcher, et que ce composant contournait seul.
+      ...(element.href !== undefined ? { item: canonique(element.href) } : {}),
     })),
   };
 

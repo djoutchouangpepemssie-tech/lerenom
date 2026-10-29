@@ -1,6 +1,9 @@
 import { PageContenu } from '@/composants/PageContenu';
 
 export const metadata = {
+  // L'adresse canonique, sans paramètre : une page partagée avec une ancre ou un
+  // marqueur de campagne reste la même page.
+  alternates: { canonical: '/signaler' },
   title: 'Signaler un',
   description:
     'Un avis, une fiche, une photo ou un texte vous semble illicite ou trompeur ? Voici comment nous le dire, et ce que nous en faisons.',

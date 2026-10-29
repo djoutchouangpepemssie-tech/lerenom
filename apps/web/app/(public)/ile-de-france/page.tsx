@@ -5,6 +5,9 @@ import { FilAriane } from '@/composants/FilAriane';
 import { ListeCommunes } from '@/composants/ListeCommunes';
 
 export const metadata = {
+  // L'adresse canonique, sans paramètre : une page partagée avec une ancre ou un
+  // marqueur de campagne reste la même page.
+  alternates: { canonical: '/ile-de-france' },
   title: 'Île-de-France',
   description:
     'Les 8 départements et 1 285 villes et arrondissements d’Île-de-France, avec le statut des demandes de devis dans chacun.',

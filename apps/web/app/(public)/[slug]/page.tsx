@@ -5,6 +5,7 @@ import { PageMetier } from '@/composants/pages/PageMetier';
 import { PageVille } from '@/composants/pages/PageVille';
 import { PageDepartement } from '@/composants/pages/PageDepartement';
 import { aLaVille } from '@/lib/affichage';
+import { partage } from '@/lib/referencement';
 
 interface Parametres {
   readonly params: Promise<{ readonly slug: string }>;
@@ -38,27 +39,27 @@ export async function generateMetadata({ params }: Parametres): Promise<Metadata
   if (cible.genre === 'metier') {
     const metier = await prisma.metier.findUnique({ where: { slug } });
     if (metier === null) return {};
+    const description = `${metier.nom} en Île-de-France : prestations, prix constatés, avis vérifiés et jusqu’à 3 devis gratuits.`;
     return {
       title: metier.nom,
-      description: `${metier.nom} en Île-de-France : prestations, prix constatés, avis vérifiés et jusqu’à 3 devis gratuits.`,
+      description,
+      ...partage({ titre: metier.nom, description, chemin: `/${slug}` }),
     };
   }
 
   if (cible.genre === 'ville') {
     const commune = await prisma.commune.findUnique({ where: { slug } });
     if (commune === null) return {};
-    return {
-      title: `Artisans et professionnels ${aLaVille(commune.nom)}`,
-      description: `Trouvez un professionnel vérifié ${aLaVille(commune.nom)} : avis, prix constatés et jusqu’à 3 devis gratuits.`,
-    };
+    const titre = `Artisans et professionnels ${aLaVille(commune.nom)}`;
+    const description = `Trouvez un professionnel vérifié ${aLaVille(commune.nom)} : avis, prix constatés et jusqu’à 3 devis gratuits.`;
+    return { title: titre, description, ...partage({ titre, description, chemin: `/${slug}` }) };
   }
 
   const departement = await prisma.departement.findUnique({ where: { slug } });
   if (departement === null) return {};
-  return {
-    title: `Professionnels en ${departement.nom}`,
-    description: `Toutes les communes du département ${departement.code} et les professionnels qui y interviennent.`,
-  };
+  const titre = `Professionnels en ${departement.nom}`;
+  const description = `Toutes les communes du département ${departement.code} et les professionnels qui y interviennent.`;
+  return { title: titre, description, ...partage({ titre, description, chemin: `/${slug}` }) };
 }
 
 export default async function PageSlug({ params }: Parametres) {

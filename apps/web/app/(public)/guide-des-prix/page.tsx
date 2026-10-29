@@ -5,6 +5,9 @@ import { FilAriane } from '@/composants/FilAriane';
 import { Estimateur } from '@/composants/Estimateur';
 
 export const metadata = {
+  // L'adresse canonique, sans paramètre : une page partagée avec une ancre ou un
+  // marqueur de campagne reste la même page.
+  alternates: { canonical: '/guide-des-prix' },
   title: 'Guide des prix',
   description:
     'Les prix constatés en Île-de-France, métier par métier et prestation par prestation, avec la TVA applicable et le crédit d’impôt.',

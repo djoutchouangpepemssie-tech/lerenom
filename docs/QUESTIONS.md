@@ -1293,3 +1293,29 @@ recette est un mensonge comptable, et celui qui le lit prendrait des décisions 
   signale — « une recette qu'on compte et qu'on ne touchera peut-être pas » — mais rien ne
   décide au bout de combien de temps la place payée s'éteint. La couper trop vite perd un
   client qui a changé de carte ; trop tard, c'est du service offert.
+
+---
+
+## Q45 🟠 · Référencement : ce qui reste après les canoniques
+
+Les adresses canoniques, le partage social et les données structurées sont posés. Trois
+points restent, dont deux demandent une décision.
+
+**Défauts appliqués :** la canonique d'une page filtrée est la page non filtrée ; une page de
+résultats qui compte moins de trois professionnels n'est pas indexée ; une fiche qui ne porte
+que les données SIRENE n'est pas indexée non plus ; une entreprise non diffusible n'est pas
+balisée du tout.
+
+**Ce qu'il reste :**
+
+- **l'image de partage n'existe pas.** Le balisage désigne `/opengraph.png` ; le fichier n'est
+  pas là. Une fiche partagée affiche donc un aperçu sans image. Il faut la dessiner — ou
+  mieux, la générer par page (métier, ville) avec `ImageResponse`, ce qui donnerait des
+  aperçus qui disent de quoi parle la page ;
+- **les avis ne sont pas balisés individuellement.** `aggregateRating` est publié ; chaque
+  avis pourrait l'être en `Review`. C'est tentant et c'est risqué : baliser des avis les rend
+  éligibles aux étoiles dans les résultats de recherche, et une erreur sur ce balisage se
+  sanctionne durement. À faire une fois la modération rodée (§Q38) ;
+- **aucune mesure de performance.** Les Core Web Vitals pèsent sur le classement et rien ne
+  les relève. La mesure d'audience vient d'être posée (§Q43) ; celle-ci est du même ordre et
+  demanderait un budget — faut-il un outil tiers, ou se contenter de relevés ponctuels ?

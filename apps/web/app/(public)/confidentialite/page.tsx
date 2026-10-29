@@ -1,6 +1,9 @@
 import { PageContenu } from '@/composants/PageContenu';
 
 export const metadata = {
+  // L'adresse canonique, sans paramètre : une page partagée avec une ancre ou un
+  // marqueur de campagne reste la même page.
+  alternates: { canonical: '/confidentialite' },
   title: 'Confidentialité',
   description:
     'Quelles données nous traitons, pourquoi, combien de temps, et comment exercer vos droits.',

@@ -2791,6 +2791,78 @@ désormais scriptées.
 
 ---
 
+## Phase 10 · le référencement technique
+
+### Le défaut le plus coûteux : aucune adresse canonique
+
+Audit avant travaux, comme pour les modules précédents. `robots.txt` et le plan du site
+étaient soignés — adresse tirée de l'environnement, préproduction refusée, jeton de suivi
+exclu. En revanche, **aucune page n'annonçait d'adresse canonique.**
+
+C'est le manque le plus coûteux, et il vient de la nature du produit : un annuaire filtrable.
+`?urgence=1`, `?tri=note`, `?dispo=1` servent la même page à quelques lignes près. Sans
+canonique, un moteur découvre une dizaine d'adresses pour un seul contenu, répartit entre
+elles le crédit de la page, et n'en indexe correctement aucune.
+
+La canonique d'une page filtrée est donc la page **non** filtrée, et le helper retire les
+paramètres de requête par construction — pas par convention d'appel.
+
+### Une règle qui vivait dans le corps du document
+
+Deux pages portaient leur `noindex` par une balise `<meta>` écrite dans le corps : la page de
+résultats quand elle est filtrée ou trop maigre, la fiche quand elle ne contient que les
+données SIRENE. Hors spécification ; ce qui le fait fonctionner aujourd'hui est la tolérance
+des moteurs, pas une garantie.
+
+En le déplaçant vers l'API de métadonnées, j'ai failli **perdre la moitié de la règle**. La
+page de résultats a deux motifs de ne pas être indexée — filtrée, ou moins de trois
+professionnels — et ma première version ne reprenait que le premier. Toutes les pages maigres
+seraient redevenues indexables, sans que rien ne le signale : le balisage aurait disparu avec
+la balise qui le portait.
+
+> **Règle retenue** — _déplacer une règle, c'est d'abord l'énumérer._ Une condition écrite en
+> un seul endroit se déplace entière ou pas du tout, et le nombre de ses motifs ne se devine
+> pas à la lecture de la ligne qu'on déplace.
+
+Les deux seuils vivent maintenant dans une constante partagée entre les métadonnées et le
+corps de page : deux valeurs égales par hasard finissent par diverger, et la page annoncerait
+alors l'inverse d'elle-même.
+
+### Ce que le balisage refuse de dire
+
+`LocalBusiness` sur les fiches, `ItemList` sur les résultats. Deux refus, de nature
+différente.
+
+**Une entreprise non diffusible n'est pas balisée du tout.** Le statut de diffusion SIRENE est
+une obligation ; publier l'adresse d'une entreprise qui l'a refusée serait une faute, et la
+publier en données structurées la rendrait en plus réutilisable par des tiers. On rend `null`
+plutôt que de baliser à moitié.
+
+**La note n'est publiée que s'il y a de vrais avis.** Un `aggregateRating` sans avis, ou avec
+une note de repli, est une déclaration fausse adressée à un moteur de recherche. C'est
+sanctionné, et ce serait mérité.
+
+Et le balisage n'est publié que si la page l'est : décrire en données structurées une fiche
+qu'on refuse d'indexer serait contradictoire.
+
+### Le domaine en dur, revenu par la petite porte
+
+Le site a une fonction `baseDuSite()` et un commentaire qui explique pourquoi l'adresse ne
+doit jamais être écrite en dur — une préproduction qui annonce les adresses de la production
+présente deux sites réclamant les mêmes pages. En vérifiant le HTML servi, le fil d'Ariane
+publiait pourtant un `BreadcrumbList` pointant sur `https://lerenom.fr`, pendant que tout le
+reste de la page suivait `LERENOM_URL`.
+
+La centralisation avait été faite, le composant y avait échappé, et rien ne le voyait. Un
+test parcourt désormais `app`, `composants` et `lib` à la recherche du domaine écrit en dur —
+et **j'ai vérifié qu'il sait échouer** en réintroduisant le défaut un instant avant de le
+retirer. Un garde-fou qu'on n'a pas vu refuser n'est pas un garde-fou.
+
+Vérifié sur le site servi, avec `LERENOM_URL` pointant ailleurs : vingt-huit occurrences du
+domaine, toutes celles de l'environnement, aucune de la production.
+
+---
+
 ## Phases 5 à 11 · à venir
 
 Agenda et documents du pro, monétisation Stripe, back-office, personnalisation, avis et

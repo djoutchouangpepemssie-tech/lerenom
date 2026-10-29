@@ -11,6 +11,7 @@ import { communeParSlug, filtresActifs, metierParSlug, resultats } from '@/lib/d
 import type { FiltresResultats as Filtres } from '@/lib/donnees';
 import { aLaVille, nomVille } from '@/lib/affichage';
 import { enregistreLesAffichages } from '@/lib/mesure';
+import { jsonLdListeResultats, partage } from '@/lib/referencement';
 
 interface Parametres {
   readonly params: Promise<{ readonly slug: string; readonly ville: string }>;
@@ -38,14 +39,46 @@ function litFiltres(parametres: Record<string, string | string[] | undefined>): 
   };
 }
 
-export async function generateMetadata({ params }: Parametres): Promise<Metadata> {
+/**
+ * En dessous, la page n'apporte rien à qui la trouverait.
+ *
+ * Partagée entre les métadonnées et le corps de la page : deux constantes égales par hasard
+ * finissent par diverger, et la page serait alors indexée avec un balisage qui dit l'inverse.
+ */
+const PROS_MINIMUM_POUR_INDEXER = 3;
+
+export async function generateMetadata({ params, searchParams }: Parametres): Promise<Metadata> {
   const { slug, ville } = await params;
   const [metier, commune] = await Promise.all([metierParSlug(slug), communeParSlug(ville)]);
   if (metier === null || commune === null) return {};
 
+  const titre = `${metier.nom} ${aLaVille(commune.nom)}`;
+  const description = `Trouvez un ${metier.nom.toLowerCase()} ${aLaVille(commune.nom)} : avis vérifiés, prix constatés et jusqu’à 3 devis gratuits.`;
+
+  // La canonique d'une page filtrée est la page **non** filtrée : `?urgence=1` et `?tri=note`
+  // servent le même contenu à quelques lignes près, et les laisser vivre comme des pages
+  // distinctes éparpille le crédit d'une seule page sur une dizaine d'adresses.
+  const meta = partage({ titre, description, chemin: `/${slug}/${ville}` });
+
+  // `noindex` posé par l'API de métadonnées et non par une balise dans le corps du document :
+  // une `<meta>` écrite dans le corps est hors spécification, et ce qui la fait fonctionner
+  // aujourd'hui est la tolérance des moteurs, pas une garantie. `follow` est conservé : la
+  // page ne doit pas être indexée, mais ses liens vers les fiches restent utiles à suivre.
+  //
+  // **Deux motifs, et non un seul.** La page filtrée n'est pas indexable parce qu'elle
+  // double la page publiée ; la page qui compte moins de trois professionnels ne l'est pas
+  // parce qu'elle n'apporte rien à qui la trouverait. Ne garder que le premier motif aurait
+  // rouvert à l'indexation toutes les pages maigres — la règle existait, elle vivait dans le
+  // corps du document, et la déplacer sans l'emporter l'aurait supprimée en silence.
+  const filtree = filtresActifs(litFiltres(await searchParams));
+  const complet = await resultats(slug, ville);
+  const indexable = !filtree && (complet?.pros.length ?? 0) >= PROS_MINIMUM_POUR_INDEXER;
+
   return {
-    title: `${metier.nom} ${aLaVille(commune.nom)}`,
-    description: `Trouvez un ${metier.nom.toLowerCase()} ${aLaVille(commune.nom)} : avis vérifiés, prix constatés et jusqu’à 3 devis gratuits.`,
+    title: titre,
+    description,
+    ...meta,
+    ...(indexable ? {} : { robots: { index: false, follow: true } }),
   };
 }
 
@@ -70,7 +103,7 @@ export default async function PageResultats({ params, searchParams }: Parametres
 
   const { metier, commune, pros, dernierRangSponsorise } = donnees;
   // La règle d'indexation porte sur la page non filtrée : c'est elle qui est publiée.
-  const indexable = complet.pros.length >= 3 && !filtresActifs(filtres);
+  const indexable = complet.pros.length >= PROS_MINIMUM_POUR_INDEXER && !filtresActifs(filtres);
 
   // La mesure part **après** la réponse : un professionnel paie pour une place en haut de
   // page, et rien ne comptait combien de fois elle lui a été montrée. Mais compter ne doit
@@ -102,9 +135,24 @@ export default async function PageResultats({ params, searchParams }: Parametres
     decennale: complet.pros.filter((p) => p.decennaleVerifiee).length,
   };
 
+  // Le balisage de la liste décrit l'ordre réellement servi, emplacements payés compris :
+  // donner aux moteurs un classement différent de celui que voit le visiteur est exactement
+  // ce qu'ils sanctionnent.
+  const liste = indexable
+    ? jsonLdListeResultats(
+        `${metier.nom} ${aLaVille(commune.nom)}`,
+        pros.map((pro) => ({ nom: pro.nom, slug: pro.slug })),
+      )
+    : null;
+
   return (
     <>
-      {!indexable && <meta name="robots" content="noindex, follow" />}
+      {liste !== null && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(liste) }}
+        />
+      )}
 
       <Section fond="creme" className="pt-8 pb-10 md:pt-10">
         <Conteneur>

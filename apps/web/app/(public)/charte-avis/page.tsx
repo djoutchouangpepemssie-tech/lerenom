@@ -1,6 +1,9 @@
 import { PageContenu } from '@/composants/PageContenu';
 
 export const metadata = {
+  // L'adresse canonique, sans paramètre : une page partagée avec une ancre ou un
+  // marqueur de campagne reste la même page.
+  alternates: { canonical: '/charte-avis' },
   title: 'Charte des',
   description: 'Comment les avis sont collectés, contrôlés, publiés et refusés sur Le Renom.',
 };

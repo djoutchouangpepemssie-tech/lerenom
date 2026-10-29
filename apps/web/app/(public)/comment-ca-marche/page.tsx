@@ -4,6 +4,9 @@ import { PARAMETRES_PAR_DEFAUT, REGLES_VALIDEES } from '@lerenom/core';
 import { FilAriane } from '@/composants/FilAriane';
 
 export const metadata = {
+  // L'adresse canonique, sans paramètre : une page partagée avec une ancre ou un
+  // marqueur de campagne reste la même page.
+  alternates: { canonical: '/comment-ca-marche' },
   title: 'Comment ça marche',
   description:
     'De la demande au devis signé : ce qui se passe, dans quel ordre, et ce que vous recevez à chaque étape.',

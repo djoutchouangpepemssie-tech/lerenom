@@ -23,6 +23,9 @@ import { catalogue, communesOuvertes, departements, resultats } from '@/lib/donn
 import { nomVille } from '@/lib/affichage';
 
 export const metadata = {
+  // L'adresse canonique, sans paramètre : une page partagée avec une ancre ou un
+  // marqueur de campagne reste la même page.
+  alternates: { canonical: '/' },
   description:
     'Trouvez un professionnel vérifié en Île-de-France : plombier, électricien, nettoyage de canapé, déménagement. Comparez les avis, demandez jusqu’à 3 devis gratuitement, sans créer de compte.',
 };

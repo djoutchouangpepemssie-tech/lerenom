@@ -1,6 +1,9 @@
 import { PageContenu } from '@/composants/PageContenu';
 
 export const metadata = {
+  // L'adresse canonique, sans paramètre : une page partagée avec une ancre ou un
+  // marqueur de campagne reste la même page.
+  alternates: { canonical: '/cgv-pro' },
   title: 'Conditions générales',
   description:
     'Les règles contractuelles entre Le Renom et les entreprises référencées ou abonnées.',

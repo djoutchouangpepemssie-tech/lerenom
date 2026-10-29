@@ -4,6 +4,9 @@ import { FilAriane } from '@/composants/FilAriane';
 import { catalogue } from '@/lib/donnees';
 
 export const metadata = {
+  // L'adresse canonique, sans paramètre : une page partagée avec une ancre ou un
+  // marqueur de campagne reste la même page.
+  alternates: { canonical: '/services' },
   title: 'Tous les services',
   description:
     'Le catalogue complet de Le Renom : tous les univers, tous les métiers et toutes les prestations référencés en Île-de-France.',

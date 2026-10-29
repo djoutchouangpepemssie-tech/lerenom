@@ -20,6 +20,9 @@ import { FilAriane } from '@/composants/FilAriane';
 import { CalculateurPages } from '@/composants/CalculateurPages';
 
 export const metadata = {
+  // L'adresse canonique, sans paramètre : une page partagée avec une ancre ou un
+  // marqueur de campagne reste la même page.
+  alternates: { canonical: '/pro' },
   title: 'Professionnels et tarifs',
   description:
     'Fiche gratuite pour toutes les entreprises. Formules Essentiel, Premium et Exclusif pour passer en tête de vos pages métier × ville et recevoir des demandes de devis.',

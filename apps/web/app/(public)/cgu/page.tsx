@@ -1,6 +1,9 @@
 import { PageContenu } from '@/composants/PageContenu';
 
 export const metadata = {
+  // L'adresse canonique, sans paramètre : une page partagée avec une ancre ou un
+  // marqueur de campagne reste la même page.
+  alternates: { canonical: '/cgu' },
   title: 'Conditions d’utilisation',
   description:
     'Les règles d’usage du site Le Renom, pour les visiteurs qui cherchent un professionnel.',

@@ -1,6 +1,9 @@
 import { PageContenu } from '@/composants/PageContenu';
 
 export const metadata = {
+  // L'adresse canonique, sans paramètre : une page partagée avec une ancre ou un
+  // marqueur de campagne reste la même page.
+  alternates: { canonical: '/mentions-legales' },
   title: 'Mentions légales',
   description: 'L’éditeur du site, l’hébergeur, et l’origine des données publiées.',
 };
