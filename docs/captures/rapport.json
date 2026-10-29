@@ -1078,5 +1078,25 @@
     "largeurFenetre": 1440,
     "debordements": [],
     "erreursConsole": []
+  },
+  {
+    "page": "Back-office — centre de distribution",
+    "largeur": 390,
+    "fichier": "administration-demandes-390.png",
+    "defilementHorizontal": false,
+    "largeurDocument": 390,
+    "largeurFenetre": 390,
+    "debordements": [],
+    "erreursConsole": []
+  },
+  {
+    "page": "Back-office — centre de distribution",
+    "largeur": 1440,
+    "fichier": "administration-demandes-1440.png",
+    "defilementHorizontal": false,
+    "largeurDocument": 1440,
+    "largeurFenetre": 1440,
+    "debordements": [],
+    "erreursConsole": []
   }
 ]

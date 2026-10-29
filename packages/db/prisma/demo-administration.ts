@@ -43,6 +43,136 @@ if (process.env['LERENOM_ENV'] === 'production') {
 
 const prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString: url }) });
 
+/**
+ * Deux demandes de démonstration pour le centre de distribution.
+ *
+ * Sans elles, deux des trois files de l'écran sont vides : on ne peut ni les regarder ni les
+ * éprouver. Elles sont **manifestement fictives** — référence préfixée, téléphone dans la
+ * plage réservée 01 99, adresse en `.exemple` — comme le reste de la démonstration.
+ *
+ * Idempotent : relancé, il remet les mêmes demandes dans le même état.
+ */
+async function semeDesDemandes(): Promise<void> {
+  const commune = await prisma.commune.findFirst({ select: { code: true } });
+  if (commune === null) return;
+
+  // La demande sans preneur a forcément été classée — c'est ce qui a permis de la distribuer
+  // avant que personne ne l'accepte. Sans métier, elle apparaîtrait aussi dans la file « à
+  // classer », ce qui n'a aucun sens et donnerait à l'écran un cas qui n'existe pas.
+  const metier = await prisma.metier.findFirst({
+    where: { masque: false },
+    orderBy: { rang: 'asc' },
+    select: { id: true },
+  });
+  const entreprises = await prisma.entreprise.findMany({
+    where: { retireeLe: null },
+    take: 3,
+    select: { id: true },
+  });
+
+  const scenarios = [
+    {
+      reference: 'DEMO-BO-A-CLASSER',
+      statut: 'en_distribution' as const,
+      // En dessous de 0,70, le classement automatique passe la main. C'est le cas qu'on veut
+      // voir : la machine hésite, et quelqu'un doit trancher. Sans métier, la cascade ne peut
+      // choisir personne — la demande attend donc, et c'est exactement le cas réel.
+      confianceClassement: 0.41,
+      metierId: null,
+      description:
+        'Il y a un bruit dans le mur quand j’ouvre l’eau chaude, et une tache au plafond du dessous.',
+      prenom: 'Camille',
+      nom: 'Besson',
+      telephone: '+33199000071',
+      urgence: 'normale' as const,
+    },
+    {
+      reference: 'DEMO-BO-SANS-PRENEUR',
+      statut: 'sans_preneur' as const,
+      confianceClassement: 0.93,
+      metierId: metier?.id ?? null,
+      description:
+        'Volet roulant bloqué en position haute, moteur qui tourne dans le vide. Immeuble sans ascenseur.',
+      prenom: 'Hakim',
+      nom: 'Ferhat',
+      telephone: '+33199000072',
+      urgence: 'rapide' as const,
+    },
+  ];
+
+  for (const scenario of scenarios) {
+    const existante = await prisma.demande.findUnique({
+      where: { reference: scenario.reference },
+      select: { id: true },
+    });
+    if (existante !== null) {
+      await prisma.demande.update({
+        where: { id: existante.id },
+        // Le métier est remis à chaque passage : une exécution précédente a pu classer la
+        // demande à la main, et elle ne serait plus dans la file qu'elle sert à montrer.
+        data: {
+          statut: scenario.statut,
+          confianceClassement: scenario.confianceClassement,
+          classeeParAdmin: false,
+          metierId: scenario.metierId,
+        },
+      });
+      continue;
+    }
+
+    const demande = await prisma.demande.create({
+      data: {
+        reference: scenario.reference,
+        type: 'partagee',
+        statut: scenario.statut,
+        confianceClassement: scenario.confianceClassement,
+        communeId: commune.code,
+        description: scenario.description,
+        urgence: scenario.urgence,
+        clientPrenom: scenario.prenom,
+        clientNom: scenario.nom,
+        clientEmail: `${scenario.prenom.toLowerCase()}.demo@exemple.test`,
+        clientTelephone: scenario.telephone,
+        telephoneVerifieLe: new Date(),
+        consentementTexte: 'Consentement de démonstration.',
+        consentementDonneLe: new Date(),
+        deposeeLe: new Date(Date.now() - 30 * 3_600_000),
+        objectifPros: 3,
+        ...(scenario.metierId !== null ? { metierId: scenario.metierId } : {}),
+      },
+      select: { id: true },
+    });
+
+    // La demande sans preneur montre une cascade entière : trois professionnels sollicités,
+    // aucun qui accepte. C'est le scénario que l'écran existe pour rendre visible, et une
+    // liste vide ne l'aurait pas montré.
+    if (scenario.statut === 'sans_preneur') {
+      for (const [rang, entreprise] of entreprises.entries()) {
+        await prisma.distribution.create({
+          data: {
+            demandeId: demande.id,
+            entrepriseId: entreprise.id,
+            rang: rang + 1,
+            tour: 1,
+            raisonRang: 'score_et_proximite',
+            statut: rang === 0 ? 'refusee' : 'expiree',
+            envoyeeLe: new Date(Date.now() - 29 * 3_600_000),
+            echeanceLe: new Date(Date.now() - 27 * 3_600_000),
+            ...(rang === 0
+              ? {
+                  ouverteLe: new Date(Date.now() - 28.5 * 3_600_000),
+                  repondueLe: new Date(Date.now() - 28 * 3_600_000),
+                  motifRefus: 'indisponible' as const,
+                }
+              : {}),
+            distanceKm: 2.4 + rang * 3.1,
+          },
+        });
+      }
+    }
+  }
+}
+
 async function main(): Promise<void> {
   const existant = await prisma.admin.findUnique({
     where: { email: EMAIL },
@@ -85,6 +215,8 @@ async function main(): Promise<void> {
       data: { motDePasseHash: await hacheMotDePasse(MOT_DE_PASSE) },
     });
   }
+
+  await semeDesDemandes();
 
   const racine = path.resolve(import.meta.dirname, '../../..');
   await writeFile(path.join(racine, '.jeton-administration'), `${totpSecret}\n`, 'utf8');

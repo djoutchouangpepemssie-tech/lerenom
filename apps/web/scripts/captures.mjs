@@ -516,6 +516,21 @@ const PAGES = [
     connexionAdmin: true,
   },
   {
+    nom: 'administration-demandes',
+    chemin: '/administration/demandes',
+    titre: 'Back-office — centre de distribution',
+    connexionAdmin: true,
+    // On ouvre la file « sans preneur » et on déplie sa demande : c'est le cas que l'écran
+    // existe pour montrer — trois professionnels sollicités, aucun qui accepte. Une liste
+    // repliée ne montre pas la cascade.
+    scenario: async (onglet) => {
+      await onglet.getByRole('tab', { name: /Sans preneur/ }).click();
+      await onglet.waitForTimeout(200);
+      await onglet.getByRole('button', { expanded: false }).first().click();
+      await onglet.waitForTimeout(250);
+    },
+  },
+  {
     nom: 'administration-catalogue',
     chemin: '/administration/catalogue',
     titre: 'Back-office — catalogue',

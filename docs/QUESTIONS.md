@@ -1031,3 +1031,38 @@ mobile en dépend. Ouvrir sans SMS changerait le parcours d'inscription et la v�
 
 _(Les chiffres ci-dessus viennent de comparatifs, pas des pages tarifaires officielles : ils
 donnent l'ordre de grandeur, ils ne font pas foi.)_
+
+---
+
+## Q37 🟠 — Reclasser une demande : faut-il la redistribuer ?
+
+_(métier — défaut prudent appliqué, décision à prendre)_
+
+Le centre de distribution permet de classer à la main une demande que le classement automatique
+n'a pas su trancher. Une question suit immédiatement, et elle n'a pas de bonne réponse
+évidente.
+
+**Que faire d'une demande déjà partie ?** Si elle a été distribuée à trois plombiers alors
+qu'elle relevait de la serrurerie, les trois vont la refuser. La reclasser corrige l'étiquette,
+mais ne la met pas pour autant entre les mains d'un serrurier.
+
+**Défaut appliqué : classer ne redistribue pas.** Relancer automatiquement vers trois nouveaux
+professionnels doublerait le dérangement — six pros sollicités pour un seul client — et la
+facture, puisque chaque envoi se paie. L'écran le dit en toutes lettres plutôt que de le taire.
+
+**Ce qu'il faudrait trancher avec Arcel :**
+
+- une demande mal classée **puis** reclassée doit-elle repartir, et si oui, les envois ratés
+  sont-ils recrédités aux professionnels qui les ont reçus à tort ? Le modèle prévoit déjà
+  `Distribution.recredite`, mais rien ne le pose ;
+- faut-il un **envoi manuel** depuis le back-office, vers des professionnels choisis à la
+  main ? Le modèle l'anticipe — `Distribution.manuel` et `auteur` existent — et l'écran
+  l'affiche déjà quand c'est le cas, mais rien ne permet encore de le faire. C'est la
+  différence entre constater une demande sans preneur et pouvoir y remédier ;
+- au bout de combien de refus une demande bascule-t-elle en `sans_preneur` plutôt que de
+  repartir à un tour suivant ? La règle existe dans `packages/core` ; sa valeur n'a pas été
+  confirmée.
+
+Tant que ces trois points ne sont pas tranchés, le back-office **observe** la distribution sans
+pouvoir la corriger. C'est une limite réelle du module, et elle est assumée : une action de
+redistribution posée au jugé coûterait de l'argent à des professionnels qui n'ont rien demandé.

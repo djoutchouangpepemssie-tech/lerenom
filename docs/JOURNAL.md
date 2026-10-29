@@ -2184,6 +2184,68 @@ quatre cent soixante-dix-neuf à valider. Une donnée de référence n'est pas u
 
 ---
 
+## Le centre de distribution, ou l'écran qui dit si le produit sert
+
+Troisième module du back-office, et celui qui compte le plus : une demande déposée doit trouver
+un professionnel, et tout le reste — les fiches, les avis, les devis, les factures — n'existe
+que pour cela.
+
+Trois files, une seule visible à la fois. **En cours** montre la cascade telle qu'elle est :
+chaque professionnel sollicité, son tour, son rang, ce qu'il a fait, le temps qui lui reste.
+**Sans preneur** montre les échecs — la seule liste qu'on espère vide. **À classer** montre les
+demandes dont le classement automatique doute, en dessous de 0,70 de confiance.
+
+Le détail se déplie **sur place**. Celui qui surveille la distribution passe d'une demande à
+l'autre ; lui faire perdre sa liste à chaque coup d'œil le ferait renoncer à regarder.
+
+Savoir qu'une demande est « en distribution » n'apprend rien. Savoir que trois plombiers l'ont
+reçue il y a vingt-neuf heures, que le premier a ouvert puis refusé, et que les deux autres ont
+laissé expirer, apprend tout — et c'est ce que la capture montre.
+
+### Ce que le module ne fait pas, et pourquoi
+
+Classer une demande ne la **redistribue pas**. Relancer automatiquement vers trois nouveaux
+professionnels doublerait le dérangement — six pros pour un client — et la facture, puisque
+chaque envoi se paie. L'écran le dit en toutes lettres plutôt que de le taire.
+
+Le back-office **observe** donc la distribution sans pouvoir encore la corriger. C'est une
+limite réelle, consignée en §Q37 avec les trois décisions qu'elle demande. Une action de
+redistribution posée au jugé coûterait de l'argent à des professionnels qui n'ont rien demandé.
+
+### Deux erreurs que le typecheck a laissées passer
+
+C'est la deuxième fois dans la journée, et cette fois j'avais été prévenu.
+
+**Un `orderBy` figé.** `as const` sur l'objet de sélection rend ses tableaux en lecture seule,
+et Prisma les refuse. J'ai « corrigé » en remplaçant le tableau par un objet unique — le
+typecheck est passé, et l'exécution a répondu : « Expected DistributionOrderByWithRelationInput[],
+provided Object ». La bonne réponse était `satisfies Prisma.DemandeSelect`, qui garde les
+littéraux sans figer les tableaux.
+
+Deux fois de suite, donc, un code qui compile et qui tombe à la première ouverture. La leçon
+n'est pas que TypeScript est faible : c'est que **le typage d'une requête n'est pas sa
+validation**, et que la seule preuve qu'une requête marche est de la lancer.
+
+### Trois défauts sortis de la capture
+
+La donnée de démonstration en a révélé deux. La demande « sans preneur » apparaissait aussi
+dans « à classer », faute de métier — or une demande sans preneur a forcément été classée,
+c'est ce qui a permis de la distribuer. Et elle n'avait aucune distribution, donc l'écran
+montrait une file vide là où il devait montrer une cascade entière. Les deux sont corrigées
+dans le script de démonstration, pas à la main dans la base.
+
+Le troisième était réel : à 390 px, le tableau de la cascade **poussait la page** — 416 px pour
+une fenêtre de 390. Six colonnes ne tiennent pas sur un téléphone ; elles défilent maintenant
+dans leur cadre, sans décaler le reste de l'écran.
+
+### La vérification
+
+Le classement a été exercé contre la vraie base : une demande classée, `classeeParAdmin` posé,
+une clé inconnue refusée par le schéma strict, et le journal d'audit qui retient le métier
+avant et après. La démonstration a ensuite été remise en état.
+
+---
+
 ## Phases 5 à 11 · à venir
 
 Agenda et documents du pro, monétisation Stripe, back-office, personnalisation, avis et

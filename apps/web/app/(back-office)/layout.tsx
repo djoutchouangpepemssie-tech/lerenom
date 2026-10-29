@@ -33,7 +33,7 @@ export const metadata: Metadata = {
  */
 const UNIVERS = [
   { href: '/administration', libelle: 'Accueil', prete: true },
-  { href: '/administration/demandes', libelle: 'Demandes', prete: false },
+  { href: '/administration/demandes', libelle: 'Demandes', prete: true },
   { href: '/administration/premium', libelle: 'Premium et Exclusif', prete: false },
   { href: '/administration/professionnels', libelle: 'Professionnels', prete: false },
   { href: '/administration/catalogue', libelle: 'Catalogue', prete: true },
