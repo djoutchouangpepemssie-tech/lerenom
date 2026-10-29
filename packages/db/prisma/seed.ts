@@ -33,6 +33,7 @@ const connectionString = process.env['DATABASE_URL'];
 if (connectionString === undefined || connectionString === '') {
   throw new Error('DATABASE_URL est requis.');
 }
+
 /**
  * Deux jeux de données, deux statuts.
  *
@@ -133,6 +134,28 @@ async function semeGeographie(): Promise<void> {
     skipDuplicates: true,
   });
 
+  const ouvertes = fichier.communes.filter((c) => c.statut === 'ouvert').length;
+  const bientot = fichier.communes.filter((c) => c.statut === 'bientot').length;
+  console.log(
+    `  géographie : ${fichier.departements.length} départements, ${fichier.communes.length} communes ` +
+      `(${ouvertes} ouvertes, ${bientot} bientôt)`,
+  );
+}
+
+/**
+ * Aligne le référentiel des communes sur le fichier du dépôt.
+ *
+ * **Cette étape tourne à chaque passage**, y compris quand le semis se juge « déjà fait ».
+ * C'est tout son intérêt : le raccourci existe pour éviter de reposer 1 285 communes et 479
+ * prestations à chaque déploiement, pas pour empêcher une correction d'arriver. Le jour où
+ * les coordonnées des communes sont entrées dans le fichier, le semis complet ne tournait
+ * plus en production depuis longtemps — la correction n'y serait jamais parvenue, et rien ne
+ * l'aurait signalé.
+ *
+ * Elle ne coûte rien quand il n'y a rien à faire : `IS DISTINCT FROM` écarte les lignes
+ * identiques, et une base à jour ne reçoit aucune écriture.
+ */
+async function aligneLesCommunes(fichier: FichierCommunes): Promise<number> {
   // `createMany` + `skipDuplicates` insère les nouvelles communes et **ignore** les
   // existantes. C'est ce qu'il faut pour ne pas écraser ce que la base sait en plus du
   // fichier — mais cela rendait le semis incapable de corriger ou d'enrichir un référentiel
@@ -181,12 +204,7 @@ async function semeGeographie(): Promise<void> {
       )
   `;
 
-  const ouvertes = fichier.communes.filter((c) => c.statut === 'ouvert').length;
-  const bientot = fichier.communes.filter((c) => c.statut === 'bientot').length;
-  console.log(
-    `  géographie : ${fichier.departements.length} départements, ${fichier.communes.length} communes ` +
-      `(${ouvertes} ouvertes, ${bientot} bientôt, ${ajustees} ajustées)`,
-  );
+  return ajustees;
 }
 
 async function semeCatalogue(): Promise<Map<string, string>> {
@@ -856,6 +874,12 @@ async function calculeLesCompletudes(): Promise<void> {
 }
 
 async function main(): Promise<void> {
+  // Le référentiel des communes s'aligne sur le fichier **avant** tout raccourci : une
+  // correction de données doit arriver en production même quand le semis complet n'a plus
+  // lieu d'être. Voir `aligneLesCommunes`.
+  const ajustees = await aligneLesCommunes(lit<FichierCommunes>('communes-ile-de-france.json'));
+  if (ajustees > 0) console.log(`  communes ajustées : ${String(ajustees)}`);
+
   if (await dejaSeme()) {
     console.log('Semis déjà fait : rien à reposer. FORCE_SEMIS=1 pour le refaire.');
     return;

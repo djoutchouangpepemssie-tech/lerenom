@@ -1436,6 +1436,25 @@ Quand un champ passe de « toujours vide » à « renseigné », il faut relire 
 qui le supprime, ce qui le restaure et ce qui l'affiche. Les quatre mentaient ici, et la porte
 de validation était verte.
 
+### Un quatrième défaut, trouvé en vérifiant le déploiement
+
+Le déploiement est passé au vert, et la production n'avait toujours pas les coordonnées.
+
+Le semis se juge « déjà fait » et s'arrête tôt — un raccourci posé pour éviter de reposer
+1 285 communes et 479 prestations à chaque déploiement. La convergence que je venais
+d'écrire était **après** ce raccourci. Elle n'a donc jamais tourné là où elle servait.
+
+Le commentaire du raccourci disait déjà ce qu'il fallait lire : « `FORCE_SEMIS=1` le force
+malgré tout : c'est ce qu'on veut après avoir changé le jeu de données, **sans quoi les
+corrections ne s'appliqueraient jamais** ». La phrase était juste, et personne — moi
+compris — n'en avait tiré la conséquence : une correction de données ne doit pas dépendre
+d'une variable d'environnement que le déploiement ne pose pas.
+
+L'alignement du référentiel tourne maintenant **avant** le raccourci, à chaque passage. Il
+ne coûte rien quand il n'y a rien à faire. C'est la même leçon que les trois précédentes,
+d'un cran plus haut : un chemin qu'on n'emprunte jamais n'est pas un chemin sûr, c'est un
+chemin inconnu.
+
 ### La vérification
 
 854 tests verts. Un test neuf garde ce que tout ceci devait débloquer : deux serruriers
