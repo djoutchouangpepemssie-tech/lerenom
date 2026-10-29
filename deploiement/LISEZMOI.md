@@ -18,6 +18,23 @@ ne s'arrête pas : il tient des files, attend des échéances à la seconde, ex�
 de nuit. Sans lui, **une demande déposée n'est jamais distribuée** — le site fonctionnerait et
 ne servirait à rien.
 
+## Le projet Vercel existe, et il est volontairement inutilisé
+
+Un projet Vercel nommé `lerenom` est relié à ce dépôt et **se redéploie à chaque poussée**. Il
+construit sans erreur, puis répond **500** sur toutes les pages : aucune variable
+d'environnement n'y est posée, et `DATABASE_URL` manque. Vingt-neuf erreurs enregistrées sur
+les premières vingt-quatre heures.
+
+Ce n'est pas une panne à réparer, c'est une décision : **le site est servi par Railway**, où il
+partage le réseau privé de PostgreSQL et de Redis. Le faire vivre aussi sur Vercel
+demanderait d'y poser les mêmes variables, d'exposer la base à un second consommateur public,
+et surtout de maintenir **deux adresses vivantes pour un même site** — deux URL indexées, et
+celle que personne ne regarde pourrit. C'est exactement ce qui est arrivé ici.
+
+Le projet Vercel est donc laissé tel quel, et ce paragraphe existe pour qu'on ne cherche pas à
+réparer ce qui n'a pas à l'être. Pour s'en débarrasser pour de bon : débrancher le dépôt dans
+les réglages Git du projet Vercel.
+
 ## Les commandes de chaque service
 
 | Service  | Construction                      | Démarrage                             |
@@ -94,6 +111,24 @@ croisée (`${{postgres.DATABASE_URL}}`). Une référence vers un autre service n
 toujours pendant la construction, et son absence ne se voit qu'au moment où la construction
 échoue — en annonçant une variable absente qui est pourtant bien déclarée. Écrire la valeur
 coûte une mise à jour si le mandataire change ; la référence coûtait une enquête.
+
+### Changer de domaine
+
+Le domaine se pose sur le service `web` : _Settings_ → _Networking_ → _Custom Domain_. Railway
+donne un CNAME **et** un TXT de vérification ; le domaine ne se valide pas avec le CNAME seul.
+Pour un domaine racine, le CNAME est interdit à l'apex par la norme DNS — Railway accepte le
+CNAME flattening et les ALIAS dynamiques, sinon il faut servir le site sur `www.` et rediriger
+l'apex.
+
+**Deux variables changent en même temps**, sur `web` **et** sur `worker` :
+
+| Variable      | Pourquoi elle ne peut pas être oubliée                                                                                                                                              |
+| ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `LERENOM_URL` | Adresses canoniques, plan du site, `robots.txt`, et surtout **les liens signés envoyés par SMS et par courriel**. Oubliée, les clients reçoivent des liens vers l'ancienne adresse. |
+| `LERENOM_ENV` | Tant qu'elle ne vaut pas exactement `production`, `robots.txt` **refuse toute indexation**. Le garde-fou protège les préproductions ; il bloquerait aussi un vrai domaine.          |
+
+C'est le worker qui fabrique les liens des relances et des rappels : une variable posée sur le
+seul service `web` laisserait la moitié des messages pointer ailleurs.
 
 ## Configuration as code
 
