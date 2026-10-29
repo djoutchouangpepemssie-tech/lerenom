@@ -2127,6 +2127,63 @@ attente.
 
 ---
 
+## Le Catalogue, ou cinq cent soixante-six lignes que personne n'a confirmées
+
+Dix-huit univers, soixante-neuf métiers, quatre cent soixante-dix-neuf prestations. Tous
+**reconstruits** à partir du cahier des charges, faute des fichiers annoncés et jamais fournis
+(§Q1). Tous marqués `aValider` depuis le premier jour. Et pendant ce temps, le site les
+propose : un visiteur cherche « plaquiste » dans une liste que personne n'a relue.
+
+C'est le deuxième module du back-office, et il vient tout de suite après l'accueil parce que
+c'est lui qui lève le plus de décisions en attente.
+
+### Trois refus, et ce qu'ils protègent
+
+**Pas de bouton « tout valider ».** Il viderait le compteur sans que rien n'ait été lu — or ce
+compteur est la seule trace de ce qui reste à faire. Le seul raccourci offert est par univers,
+parce qu'on vient d'en parcourir le contenu : dix-huit gestes pour tout relire, ce qui est le
+bon ordre de grandeur pour une décision qui engage le contenu du site. La validation d'un
+univers passe par une transaction : le valider sans ses métiers laisserait un état que personne
+n'a voulu, et qui se lirait comme « relu » alors qu'il ne l'est qu'à moitié.
+
+**Pas de renommage de slug.** Il vit dans des adresses déjà indexées ; le changer casse des
+liens sans prévenir. Il s'affiche — il sert à reconnaître une ligne — mais ne se modifie pas.
+
+**Masquer n'est pas supprimer.** Un métier masqué quitte le site et garde ses prestations, ses
+demandes passées et ses professionnels rattachés. Supprimer casserait des lignes qui font foi.
+
+### Un commentaire qui mentait
+
+Le fichier de route affirmait que le schéma de validation « n'accepte pas le slug du tout,
+plutôt que de l'ignorer en silence ». C'était faux : **Zod retire les clés inconnues sans rien
+dire**. Une requête portant un slug aurait été acceptée, le slug ignoré, et l'appelant aurait
+cru l'avoir changé.
+
+Le défaut n'est apparu qu'en essayant pour de vrai. Le refus que j'avais observé
+— `{"erreur":"Rien à modifier."}` — ne venait pas d'un contrôle mais du hasard : le slug était
+le seul champ envoyé, donc il ne restait rien à modifier. Glissé à côté d'un renommage
+légitime, il serait passé.
+
+Corrigé par `.strict()`, et vérifié dans l'autre sens : un renommage portant un slug est
+maintenant refusé **en bloc**, et le nom ne change pas non plus. C'est la bonne forme du refus
+— « je ne peux pas » plutôt que « j'ai fait semblant ».
+
+D'où une règle : **un commentaire qui décrit une protection doit être éprouvé comme elle.** Le
+mien décrivait une intention, pas un comportement, et il l'aurait décrite pendant des années.
+
+### La vérification
+
+Les écritures ont été exercées contre la vraie base : un renommage, une validation d'univers
+— vingt-six lignes, un univers, trois métiers, vingt-deux prestations —, un slug refusé, un nom
+vide refusé. Chaque écriture laisse sa trace au journal d'audit, avec l'état **avant** et après :
+sans l'avant, on saurait qu'une valeur a changé sans plus savoir laquelle elle était, et c'est
+exactement ce qu'on cherche six mois plus tard.
+
+Le catalogue a ensuite été remis dans son état d'origine — dix-huit, soixante-neuf,
+quatre cent soixante-dix-neuf à valider. Une donnée de référence n'est pas un bac à sable.
+
+---
+
 ## Phases 5 à 11 · à venir
 
 Agenda et documents du pro, monétisation Stripe, back-office, personnalisation, avis et

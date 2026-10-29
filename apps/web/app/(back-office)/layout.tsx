@@ -36,7 +36,7 @@ const UNIVERS = [
   { href: '/administration/demandes', libelle: 'Demandes', prete: false },
   { href: '/administration/premium', libelle: 'Premium et Exclusif', prete: false },
   { href: '/administration/professionnels', libelle: 'Professionnels', prete: false },
-  { href: '/administration/catalogue', libelle: 'Catalogue', prete: false },
+  { href: '/administration/catalogue', libelle: 'Catalogue', prete: true },
   { href: '/administration/finances', libelle: 'Finances', prete: false },
   { href: '/administration/croissance', libelle: 'Croissance', prete: false },
   { href: '/administration/confiance', libelle: 'Confiance', prete: false },

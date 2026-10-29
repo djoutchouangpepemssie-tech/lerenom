@@ -516,6 +516,12 @@ const PAGES = [
     connexionAdmin: true,
   },
   {
+    nom: 'administration-catalogue',
+    chemin: '/administration/catalogue',
+    titre: 'Back-office — catalogue',
+    connexionAdmin: true,
+  },
+  {
     nom: 'pro-documents-reglages',
     chemin: '/pro/espace/documents',
     titre: 'Espace pro — réglages des documents',
